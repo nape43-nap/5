@@ -139,14 +139,14 @@ function generateDummyChart() {
         { time: 1.0, lane: 0, type: 'tap' },
         { time: 1.6, lane: 4, type: 'tap' },
         { time: 2.2, lane: 1, lane2: 3, type: 'double' }, 
-        { time: 3.0, lane: 2, type: 'long', duration: 1.5 }, // ホールドノーツ
+        { time: 3.0, lane: 2, type: 'long', duration: 1.5 }, // ホールドノーツ（棒＋終点付き）
         { time: 5.0, lane: 0, type: 'tap' },
         { time: 5.6, lane: 4, type: 'tap' },
         { time: 6.3, lane: 1, type: 'tap' },
         { time: 6.3, lane: 3, type: 'tap' }, 
         { time: 7.2, lane: 0, lane2: 4, type: 'double' },
         { time: 8.5, lane: 1, type: 'long', duration: 1.2 },
-        { time: 8.5, lane: 3, type: 'long', duration: 1.2 }, // 同時ホールド
+        { time: 8.5, lane: 3, type: 'long', duration: 1.2 },
         { time: 10.5, lane: 2, type: 'tap' }
     ];
 
@@ -353,7 +353,6 @@ function gameLoop() {
                 if (note.type === 'long' && note.holding) {
                     let endTime = note.time + note.duration;
                     if (currentTime <= endTime) {
-                        // 濃い目の黄色（オレンジゴールド）でホールド中のエフェクトを表示
                         ctx.fillStyle = "rgba(241, 196, 15, 0.7)";
                         ctx.beginPath();
                         ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
@@ -373,35 +372,81 @@ function gameLoop() {
 
                 if (note.hit) continue;
 
+                // 通常ノーツおよびホールドノーツ全体の計算
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
 
-                if (progress >= 0 && progress <= 1.2) {
-                    let x = centerX + (target.x - centerX) * progress;
-                    let y = girlY + (target.y - girlY) * progress;
+                if (note.type === 'long') {
+                    // 【ホールドノーツ：頭から終点（テール）までの座標計算】
+                    let endProgress = (currentTime - ((note.time + note.duration) - noteSpeed)) / noteSpeed;
 
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = "#ffffff";
+                    let headX = centerX + (target.x - centerX) * progress;
+                    let headY = girlY + (target.y - girlY) * progress;
+                    let tailX = centerX + (target.x - centerX) * endProgress;
+                    let tailY = girlY + (target.y - girlY) * endProgress;
 
-                    if (note.type === 'long') {
-                        // ホールドノーツは濃い目の黄色（オレンジゴールド）
-                        ctx.fillStyle = "#f39c12";
-                    } else if (isDouble) {
-                        // 同時押しは濃い目のピンク
-                        ctx.fillStyle = "#e91e63";
-                    } else {
-                        // 単体ノーツはエメラルドグリーン
-                        ctx.fillStyle = "#1abc9c";
+                    // 画面内に入っている場合のみ描画
+                    if (progress <= 1.2 && endProgress >= -0.2) {
+                        // 1. 棒（帯）部分の描画
+                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
+                        ctx.lineWidth = 14;
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.moveTo(tailX, tailY);
+                        ctx.lineTo(headX, headY);
+                        ctx.stroke();
+
+                        // 2. 終点（テール）の丸を描画
+                        if (endProgress <= 1.0) {
+                            ctx.fillStyle = "#f39c12";
+                            ctx.strokeStyle = "#ffffff";
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.arc(tailX, tailY, 12, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
+
+                        // 3. 先頭（ヘッド）の丸を描画
+                        if (progress <= 1.2) {
+                            ctx.fillStyle = "#f39c12";
+                            ctx.strokeStyle = "#ffffff";
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
                     }
 
-                    ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                }
+                    if (progress > 1.2 && !note.hit) {
+                        note.hit = true;
+                        if (note.holding) note.holding = false;
+                    }
 
-                if (progress > 1.2 && !note.hit) {
-                    note.hit = true;
-                    if (note.holding) note.holding = false;
+                } else {
+                    // 通常・同時押しノーツの描画
+                    if (progress >= 0 && progress <= 1.2) {
+                        let x = centerX + (target.x - centerX) * progress;
+                        let y = girlY + (target.y - girlY) * progress;
+
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = "#ffffff";
+
+                        if (isDouble) {
+                            ctx.fillStyle = "#e91e63"; // 濃い目のピンク
+                        } else {
+                            ctx.fillStyle = "#1abc9c"; // エメラルドグリーン
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(x, y, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+
+                    if (progress > 1.2 && !note.hit) {
+                        note.hit = true;
+                    }
                 }
             }
         }
