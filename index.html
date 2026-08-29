@@ -132,11 +132,9 @@ function getLanePositions() {
     return positions;
 }
 
-// チャートデータ（通常タップ、同時押し、ロングノーツをミックス）
 let notes = [];
 function generateDummyChart() {
     notes = [];
-    // type: 'tap' または 'long' (durationで長さを指定)
     let chartData = [
         { time: 1.0, lane: 0, type: 'tap' },
         { time: 1.6, lane: 4, type: 'tap' },
@@ -157,13 +155,12 @@ function generateDummyChart() {
         ...n,
         hit: false,
         holding: false,
-        holdProgress: 0 // ロングノーツ用
+        holdProgress: 0
     }));
 }
 
 let animTimer = 0;
 let laneHitEffects = [0, 0, 0, 0, 0];
-// 現在タッチされているレーン（ロングノーツ判定用）
 let activeTouches = {}; 
 
 document.getElementById('start-btn').addEventListener('click', () => {
@@ -175,7 +172,6 @@ document.getElementById('start-btn').addEventListener('click', () => {
     gameState = 'PLAYING';
 });
 
-// タップ時の判定処理
 function handleLaneStart(laneIndex) {
     if (gameState !== 'PLAYING') return;
     
@@ -185,7 +181,6 @@ function handleLaneStart(laneIndex) {
 
     for (let note of notes) {
         if (!note.hit && (note.lane === laneIndex || note.lane2 === laneIndex)) {
-            // 同時押しの場合、該当レーン側を優先
             let targetLane = (note.lane2 === laneIndex && note.lane !== laneIndex) ? note.lane2 : note.lane;
             if(targetLane !== laneIndex) continue;
 
@@ -200,7 +195,7 @@ function handleLaneStart(laneIndex) {
     if (closestNote && minDiff < 0.35) {
         if (closestNote.type === 'long') {
             closestNote.holding = true;
-            laneHitEffects[laneIndex] = 999; // 長押し中は光らせ続ける
+            laneHitEffects[laneIndex] = 999;
             playHitSound();
         } else {
             closestNote.hit = true;
@@ -218,13 +213,11 @@ function handleLaneStart(laneIndex) {
     }
 }
 
-// 指を離したときの処理（ロングノーツ用）
 function handleLaneEnd(laneIndex) {
     for (let note of notes) {
         if (note.type === 'long' && note.holding && (note.lane === laneIndex || note.lane2 === laneIndex)) {
             let currentTime = audioCtx.currentTime - startTime;
             let endTime = note.time + note.duration;
-            // ちゃんと最後まで押し切れたか
             if (currentTime >= endTime - 0.2) {
                 score += 500;
                 showFeedback("Excellent!🌟");
@@ -241,7 +234,6 @@ function scoreBoardUpdate() {
     document.getElementById('score-board').innerText = `スコア: ${score}`;
 }
 
-// マルチタッチ対応のポインターイベント
 window.addEventListener('pointerdown', (e) => {
     if(e.target.tagName === 'BUTTON') return;
     if(gameState !== 'PLAYING') return;
@@ -323,8 +315,6 @@ function gameLoop() {
     ctx.arc(centerX, girlY + girlFloatY - 15, 30, 0, Math.PI * 2);
     ctx.fill();
 
-    // ※点線（ガイド線）は削除しました
-
     // 2. 5つの丸い判定枠の描画
     for (let i = 0; i < lanes.length; i++) {
         let x = lanes[i].x;
@@ -347,30 +337,28 @@ function gameLoop() {
         ctx.stroke();
     }
 
-    // 3. ノーツの移動と描画（通常・同時押し・ロング対応）
+    // 3. ノーツの移動と描画
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime;
 
         for (let note of notes) {
             let targetLanes = [note.lane];
-            if (note.type === 'double' && note.lane2 !== undefined) {
+            let isDouble = (note.type === 'double' && note.lane2 !== undefined);
+            if (isDouble) {
                 targetLanes.push(note.lane2);
             }
 
             for (let lIdx of targetLanes) {
                 let target = lanes[lIdx];
 
-                // ロングノーツ中の描画処理
                 if (note.type === 'long' && note.holding) {
                     let endTime = note.time + note.duration;
                     if (currentTime <= endTime) {
-                        // 押しっぱなし中は判定位置に光るエフェクト
                         ctx.fillStyle = "rgba(255, 224, 130, 0.6)";
                         ctx.beginPath();
                         ctx.arc(target.x, target.y, targetRadius + 4, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // 連続スコア加算
                         if (Math.random() < 0.2) {
                             score += 10;
                             scoreBoardUpdate();
@@ -391,21 +379,24 @@ function gameLoop() {
                     let x = centerX + (target.x - centerX) * progress;
                     let y = girlY + (target.y - girlY) * progress;
 
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = "#ffffff";
+
                     if (note.type === 'long') {
-                        // ロングノーツのしっぽ部分の簡易描画
-                        ctx.fillStyle = "#d4a373";
-                        ctx.beginPath();
-                        ctx.arc(x, y, 18, 0, Math.PI * 2);
-                        ctx.fill();
+                        // ロングノーツはエメラルドグリーンベース
+                        ctx.fillStyle = "#2ecc71";
+                    } else if (isDouble) {
+                        // 同時押しノーツは濃い目のピンク
+                        ctx.fillStyle = "#e91e63";
                     } else {
-                        ctx.fillStyle = "#e3c4a8";
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(x, y, 16, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
+                        // 単体ノーツは鮮やかなエメラルドグリーン
+                        ctx.fillStyle = "#1abc9c";
                     }
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
                 }
 
                 if (progress > 1.2 && !note.hit) {
