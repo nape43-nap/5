@@ -142,8 +142,8 @@ function generateDummyChart() {
         { time: 1.0, lane: 0, type: 'tap' },
         { time: 1.6, lane: 4, type: 'tap' },
         { time: 2.2, lane: 1, lane2: 3, type: 'double' }, 
-        { time: 3.0, lane: 1, type: 'long', duration: 2.0 }, // ホールドしながら...
-        { time: 4.0, lane: 3, type: 'tap' },                // 別レーンをタップする配置！
+        { time: 3.0, lane: 1, type: 'long', duration: 2.0 }, 
+        { time: 4.0, lane: 3, type: 'tap' },                
         { time: 6.0, lane: 0, type: 'tap' },
         { time: 6.0, lane: 4, type: 'tap' },
         { time: 7.5, lane: 2, type: 'long', duration: 1.5 },
@@ -160,7 +160,16 @@ function generateDummyChart() {
 
 let animTimer = 0;
 let laneHitEffects = [0, 0, 0, 0, 0];
-let activeTouches = {}; // pointerIdごとのタッチ情報を管理
+let activeTouches = {}; 
+
+// 判定文字アニメーション用のオブジェクト
+let feedback = {
+    text: "",
+    color: "#f1c40f",
+    timer: 0,
+    maxTime: 25, // 表示フレーム数
+    yOffset: 0
+};
 
 document.getElementById('start-btn').addEventListener('click', () => {
     document.getElementById('start-screen').style.display = 'none';
@@ -201,17 +210,17 @@ function handleLaneStart(laneIndex) {
             closestNote.holding = true;
             laneHitEffects[laneIndex] = 999; 
             score += 100;
-            showFeedback("Hold...♪");
+            showFeedback("Hold...♪", "#f39c12");
             scoreBoardUpdate();
             playHitSound();
         } else {
             closestNote.hit = true;
             if (minDiff < 0.12) {
                 score += 300;
-                showFeedback("Great!✨");
+                showFeedback("Wonderful!✨", "#e67e22");
             } else {
                 score += 100;
-                showFeedback("Good♪");
+                showFeedback("Good♪", "#3498db");
             }
             laneHitEffects[laneIndex] = 15;
             scoreBoardUpdate();
@@ -233,10 +242,10 @@ function handleLaneEnd(laneIndex) {
 
                 if (diff < 0.3) {
                     score += 400;
-                    showFeedback("Excellent!🌟");
+                    showFeedback("Sparkling!🌟", "#f1c40f");
                 } else {
                     score += 100;
-                    showFeedback("Good♪");
+                    showFeedback("Good♪", "#3498db");
                 }
 
                 note.hit = true;
@@ -252,7 +261,6 @@ function scoreBoardUpdate() {
     document.getElementById('score-board').innerText = `スコア: ${score}`;
 }
 
-// マルチタッチ対応：画面のどこを触っても、その位置から一番近い判定レーンを特定して処理する
 window.addEventListener('pointerdown', (e) => {
     if(e.target.tagName === 'BUTTON') return;
     if(gameState !== 'PLAYING') return;
@@ -265,7 +273,6 @@ window.addEventListener('pointerdown', (e) => {
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
         if (distance < targetRadius * 1.8) {
-            // このポインターIDがどのレーンを触っているか記録
             activeTouches[e.pointerId] = i;
             handleLaneStart(i);
             break;
@@ -279,7 +286,6 @@ window.addEventListener('pointerup', (e) => {
         handleLaneEnd(laneIndex);
         delete activeTouches[e.pointerId];
         
-        // 他の指がこのレーンをホールド中でなければエフェクトを消す
         let stillHeld = Object.values(activeTouches).includes(laneIndex);
         if (!stillHeld) {
             laneHitEffects[laneIndex] = 0;
@@ -318,11 +324,10 @@ function playHitSound() {
     osc.stop(audioCtx.currentTime + 0.1);
 }
 
-let feedbackText = "";
-let feedbackTimer = 0;
-function showFeedback(text) {
-    feedbackText = text;
-    feedbackTimer = 30;
+function showFeedback(text, color) {
+    feedback.text = text;
+    feedback.color = color;
+    feedback.timer = feedback.maxTime;
 }
 
 function gameLoop() {
@@ -467,6 +472,7 @@ function gameLoop() {
 
                     if (progress > 1.2 && !note.started) {
                         note.hit = true;
+                        showFeedback("Oh no...", "#95a5a6");
                     }
 
                 } else {
@@ -492,18 +498,42 @@ function gameLoop() {
 
                     if (progress > 1.2 && !note.hit) {
                         note.hit = true;
+                        showFeedback("Oh no...", "#95a5a6");
                     }
                 }
             }
         }
     }
 
-    if (feedbackTimer > 0) {
-        feedbackTimer--;
-        ctx.fillStyle = "#d4a373";
-        ctx.font = "bold 24px sans-serif";
+    // 判定文字のぴょこっと浮き出てフェードアウトするエフェクト描画
+    if (feedback.timer > 0) {
+        feedback.timer--;
+        let progressRate = 1 - (feedback.timer / feedback.maxTime); // 0.0 -> 1.0
+        
+        // 下から上に少しぴょこっと移動するオフセット (sin波やイージングで滑らかに)
+        let floatY = -Math.sin(progressRate * Math.PI) * 25;
+        // 後半で透明度を下げる
+        let alpha = feedback.timer < 8 ? (feedback.timer / 8) : 1.0;
+        // 現れる瞬間に少しポンと大きくするスケール
+        let scale = progressRate < 0.2 ? (0.8 + progressRate * 1.0) : 1.0;
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(centerX, girlY - 65 + floatY);
+        ctx.scale(scale, scale);
+
+        ctx.fillStyle = feedback.color;
+        ctx.font = "bold 22px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(feedbackText, centerX, girlY - 70);
+        ctx.textBaseline = "middle";
+        
+        // 文字に可愛いフチをつける
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#ffffff";
+        ctx.strokeText(feedback.text, 0, 0);
+        ctx.fillText(feedback.text, 0, 0);
+
+        ctx.restore();
     }
 
     requestAnimationFrame(gameLoop);
