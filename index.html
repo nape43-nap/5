@@ -17,6 +17,8 @@
             overflow: hidden;
             touch-action: none;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none; /* iPhoneの長押しメニューを防止 */
         }
         #game-container {
             position: relative;
@@ -29,6 +31,7 @@
             border-radius: 20px;
             overflow: hidden;
             border: 8px solid #f0e6d2;
+            -webkit-touch-callout: none;
         }
         canvas {
             display: block;
@@ -139,7 +142,7 @@ function generateDummyChart() {
         { time: 1.0, lane: 0, type: 'tap' },
         { time: 1.6, lane: 4, type: 'tap' },
         { time: 2.2, lane: 1, lane2: 3, type: 'double' }, 
-        { time: 3.0, lane: 2, type: 'long', duration: 1.5 }, // ホールドノーツ
+        { time: 3.0, lane: 2, type: 'long', duration: 1.5 }, 
         { time: 5.0, lane: 0, type: 'tap' },
         { time: 5.6, lane: 4, type: 'tap' },
         { time: 6.3, lane: 1, type: 'tap' },
@@ -151,9 +154,9 @@ function generateDummyChart() {
 
     notes = chartData.map(n => ({
         ...n,
-        hit: false,       // 処理完了したか
-        holding: false,   // 現在押しっぱなし中か
-        started: false    // 始点を押したか
+        hit: false,       
+        holding: false,   
+        started: false    
     }));
 }
 
@@ -170,7 +173,6 @@ document.getElementById('start-btn').addEventListener('click', () => {
     gameState = 'PLAYING';
 });
 
-// タップした瞬間（始点の判定）
 function handleLaneStart(laneIndex) {
     if (gameState !== 'PLAYING') return;
     
@@ -197,16 +199,14 @@ function handleLaneStart(laneIndex) {
 
     if (closestNote && minDiff < 0.35) {
         if (closestNote.type === 'long') {
-            // ホールドの始点ヒット
             closestNote.started = true;
             closestNote.holding = true;
-            laneHitEffects[laneIndex] = 999; // 押し中は枠を光らせる
+            laneHitEffects[laneIndex] = 999; 
             score += 100;
             showFeedback("Hold...♪");
             scoreBoardUpdate();
             playHitSound();
         } else {
-            // 通常・同時押しノーツのヒット
             closestNote.hit = true;
             if (minDiff < 0.12) {
                 score += 300;
@@ -222,7 +222,6 @@ function handleLaneStart(laneIndex) {
     }
 }
 
-// 指を離した瞬間（ホールド終点の判定）
 function handleLaneEnd(laneIndex) {
     for (let note of notes) {
         if (note.type === 'long' && note.holding) {
@@ -234,7 +233,6 @@ function handleLaneEnd(laneIndex) {
                 let endTime = note.time + note.duration;
                 let diff = Math.abs(currentTime - endTime);
 
-                // 終点のタイミングでしっかり離せたか（±0.3秒以内）
                 if (diff < 0.3) {
                     score += 400;
                     showFeedback("Excellent!🌟");
@@ -293,6 +291,11 @@ window.addEventListener('pointercancel', (e) => {
     }
 });
 
+// コンテキストメニュー（長押しメニュー）のポップアップを完全に禁止
+window.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+});
+
 function playHitSound() {
     if (!audioCtx) return;
     let osc = audioCtx.createOscillator();
@@ -322,7 +325,6 @@ function gameLoop() {
     let girlY = canvas.height * 0.3; 
     let lanes = getLanePositions();
 
-    // 1. 上部の女の子エリア
     let girlFloatY = Math.sin(animTimer * 2) * 4;
     ctx.fillStyle = "#f5d0c5";
     ctx.beginPath();
@@ -337,7 +339,6 @@ function gameLoop() {
     ctx.arc(centerX, girlY + girlFloatY - 15, 30, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. 5つの丸い判定枠の描画
     for (let i = 0; i < lanes.length; i++) {
         let x = lanes[i].x;
         let y = lanes[i].y;
@@ -359,7 +360,6 @@ function gameLoop() {
         ctx.stroke();
     }
 
-    // 3. ノーツの移動と描画
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime;
 
@@ -376,7 +376,6 @@ function gameLoop() {
                 if (note.type === 'long') {
                     let endTime = note.time + note.duration;
 
-                    // 押しっぱなし中のボーナススコア＆帯の固定表示
                     if (note.holding) {
                         if (currentTime <= endTime) {
                             ctx.fillStyle = "rgba(241, 196, 15, 0.7)";
@@ -384,13 +383,11 @@ function gameLoop() {
                             ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
                             ctx.fill();
 
-                            // 押している間少しずつスコア加算
                             if (Math.random() < 0.25) {
                                 score += 5;
                                 scoreBoardUpdate();
                             }
 
-                            // 終点が近づいてきたら、キャラクター側から終点までの帯を描画
                             let endProgress = (currentTime - (endTime - noteSpeed)) / noteSpeed;
                             if (endProgress < 1.0) {
                                 let tailX = centerX + (target.x - centerX) * endProgress;
@@ -404,7 +401,6 @@ function gameLoop() {
                                 ctx.lineTo(tailX, tailY);
                                 ctx.stroke();
 
-                                // 終点の丸を描画
                                 ctx.fillStyle = "#f39c12";
                                 ctx.strokeStyle = "#ffffff";
                                 ctx.lineWidth = 2;
@@ -414,7 +410,6 @@ function gameLoop() {
                                 ctx.stroke();
                             }
                         } else {
-                            // 時間切れ（自動終了）
                             note.hit = true;
                             note.holding = false;
                             laneHitEffects[lIdx] = 0;
@@ -422,7 +417,6 @@ function gameLoop() {
                         continue;
                     }
 
-                    // 尚未入力の場合の通常流れる描画
                     let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                     let endProgress = (currentTime - (endTime - noteSpeed)) / noteSpeed;
 
@@ -432,7 +426,6 @@ function gameLoop() {
                         let tailX = centerX + (target.x - centerX) * endProgress;
                         let tailY = girlY + (target.y - girlY) * endProgress;
 
-                        // 帯
                         ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                         ctx.lineWidth = 14;
                         ctx.lineCap = "round";
@@ -441,7 +434,6 @@ function gameLoop() {
                         ctx.lineTo(headX, headY);
                         ctx.stroke();
 
-                        // 終点
                         if (endProgress <= 1.0) {
                             ctx.fillStyle = "#f39c12";
                             ctx.strokeStyle = "#ffffff";
@@ -452,7 +444,6 @@ function gameLoop() {
                             ctx.stroke();
                         }
 
-                        // 始点（まだ押されていなければ表示）
                         if (!note.started && progress <= 1.0) {
                             ctx.fillStyle = "#f39c12";
                             ctx.strokeStyle = "#ffffff";
@@ -464,13 +455,11 @@ function gameLoop() {
                         }
                     }
 
-                    // 押し逃し判定（通り過ぎた場合）
                     if (progress > 1.2 && !note.started) {
                         note.hit = true;
                     }
 
                 } else {
-                    // 通常・同時押しノーツの描画
                     let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                     if (progress >= 0 && progress <= 1.2) {
                         let x = centerX + (target.x - centerX) * progress;
@@ -499,7 +488,6 @@ function gameLoop() {
         }
     }
 
-    // 4. 判定文字の表示
     if (feedbackTimer > 0) {
         feedbackTimer--;
         ctx.fillStyle = "#d4a373";
