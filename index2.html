@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>絵本風リズムゲーム</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fdfbf7;
+            font-family: 'Zen Maru Gothic', sans-serif, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 450px;
+            max-height: 800px;
+            background: #fffdf9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 8px solid #f0e6d2;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(253, 251, 247, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        h1 {
+            color: #7c6f64;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #a89f91;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        button {
+            background-color: #e3c4a8;
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #score-board {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #7c6f64;
+            font-size: 20px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="score-board">スコア: 0</div>
+    <div id="start-screen">
+        <h1>おひめさまの音楽会</h1>
+        <p>画面のどこをタップしても遊べます</p>
+        <button id="start-btn">はじめる</button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let gameState = 'START'; // START, PLAYING
+let score = 0;
+let audioCtx = null;
+let startTime = 0;
+
+// 五角形・中心の設定
+let centerX, centerY;
+function updateCenter() {
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2 + 30; // 少し下
+}
+updateCenter();
+
+const spawnRadius = Math.min(canvas.width, canvas.height) * 0.45;
+const targetRadius = 55; // 判定枠の大きさ
+const noteSpeed = 2.5; // 流れるスピード (秒)
+
+// 5方向の角度（上を起点に綺麗に配置：0, 72, 144, 216, 288度）
+const lanes = [
+    -Math.PI / 2,
+    -Math.PI / 2 + (Math.PI * 2 / 5) * 1,
+    -Math.PI / 2 + (Math.PI * 2 / 5) * 2,
+    -Math.PI / 2 + (Math.PI * 2 / 5) * 3,
+    -Math.PI / 2 + (Math.PI * 2 / 5) * 4
+];
+
+// 【DAWの代わりとなる自動生成譜面データ】
+// ここにMIDIのタイミングや音ゲーの譜面を割り当てます
+let notes = [];
+function generateDummyChart() {
+    notes = [];
+    // 0.5秒おきにランダムなレーンからノーツを生成するテストデータ (10秒間)
+    for (let t = 1.0; t <= 12.0; t += 0.6) {
+        let laneIndex = Math.floor(Math.random() * 5);
+        notes.push({
+            time: t, // 秒
+            lane: laneIndex,
+            hit: false,
+            type: 'tap'
+        });
+    }
+}
+
+// ふんわりアニメーション用の変数
+let animTimer = 0;
+
+document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('start-screen').style.display = 'none';
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    generateDummyChart();
+    startTime = audioCtx.currentTime + 1.0; // 1秒後にスタート
+    gameState = 'PLAYING';
+});
+
+// 画面のどこを叩いても「今一番タイミングが近いノーツ」を判定する仕組み
+function handleTap() {
+    if (gameState !== 'PLAYING') return;
+    
+    let currentTime = audioCtx.currentTime - startTime;
+    let closestNote = null;
+    let minDiff = 999;
+
+    // まだ叩かれていないノーツの中で一番近いものを探す
+    for (let note of notes) {
+        if (!note.hit) {
+            let diff = Math.abs(currentTime - note.time);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestNote = note;
+            }
+        }
+    }
+
+    // 許容誤差 0.25秒以内ならヒット
+    if (closestNote && minDiff < 0.25) {
+        closestNote.hit = true;
+        if (minDiff < 0.1) {
+            score += 300; // Perfect
+            showFeedback("Great!✨");
+        } else {
+            score += 100; // Good
+            showFeedback("Good♪");
+        }
+        document.getElementById('score-board').innerText = `スコア: ${score}`;
+        playHitSound();
+    }
+}
+
+// タッチ・クリックイベント（画面どこでもOK）
+window.addEventListener('pointerdown', (e) => {
+    // スタートボタンの上では誤爆を防ぐ
+    if(e.target.tagName === 'BUTTON') return;
+    handleTap();
+});
+
+function playHitSound() {
+    if (!audioCtx) return;
+    let osc = audioCtx.createOscillator();
+    let gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
+let feedbackText = "";
+let feedbackTimer = 0;
+function showFeedback(text) {
+    feedbackText = text;
+    feedbackTimer = 30; // 30フレーム表示
+}
+
+// 描画ループ
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updateCenter();
+
+    animTimer += 0.05;
+
+    // 1. 絵本風の背景・装飾
+    ctx.fillStyle = "#faf6ed";
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, spawnRadius + 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. 5方向のレーンガイド線（うっすらと点線）
+    ctx.strokeStyle = "#e8dfd1";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 8]);
+    for (let angle of lanes) {
+        ctx.beginPath();
+        ctx.moveTo(centerX + Math.cos(angle) * targetRadius, centerY + Math.sin(angle) * targetRadius);
+        ctx.lineTo(centerX + Math.cos(angle) * spawnRadius, centerY + Math.sin(angle) * spawnRadius);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]); // リセット
+
+    // 3. 中心にいる女の子（プレースホルダー：ふんわり上下に揺れる）
+    let girlFloatY = Math.sin(animTimer * 2) * 4;
+    ctx.fillStyle = "#f5d0c5"; // ドレスのイメージ
+    ctx.beginPath();
+    ctx.arc(centerX, centerY + girlFloatY + 10, 25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#e6beae"; // 顔
+    ctx.beginPath();
+    ctx.arc(centerX, centerY + girlFloatY - 10, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 4. 丸い判定枠（5方向の先端に配置）
+    for (let angle of lanes) {
+        let x = centerX + Math.cos(angle) * spawnRadius;
+        let y = centerY + Math.sin(angle) * spawnRadius;
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.strokeStyle = "#d4c5b9";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x, y, targetRadius * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    // 5. ノーツの移動と描画
+    if (gameState === 'PLAYING') {
+        let currentTime = audioCtx.currentTime - startTime;
+
+        for (let note of notes) {
+            if (note.hit) continue;
+
+            // ノーツが流れる進捗度 (0.0 = 出現位置, 1.0 = 判定位置)
+            let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+
+            if (progress >= 0 && progress <= 1.2) {
+                let angle = lanes[note.lane];
+                // 出現位置から判定位置（中心方向）へ移動
+                let currentSpawnRadius = spawnRadius;
+                let x = centerX + Math.cos(angle) * (currentSpawnRadius * (1 - progress) + targetRadius * progress);
+                let y = centerY + Math.sin(angle) * (currentSpawnRadius * (1 - progress) + targetRadius * progress);
+
+                // 丸い可愛いノーツを描画
+                ctx.fillStyle = "#e3c4a8";
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(x, y, 18, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // 通り過ぎたらミス扱いにする
+            if (progress > 1.2 && !note.hit) {
+                note.hit = true;
+            }
+        }
+    }
+
+    // 6. 判定文字の表示
+    if (feedbackTimer > 0) {
+        feedbackTimer--;
+        ctx.fillStyle = "#d4a373";
+        ctx.font = "bold 24px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(feedbackText, centerX, centerY - 70);
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
