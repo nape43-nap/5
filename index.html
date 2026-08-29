@@ -138,24 +138,22 @@ function generateDummyChart() {
     let chartData = [
         { time: 1.0, lane: 0, type: 'tap' },
         { time: 1.6, lane: 4, type: 'tap' },
-        { time: 2.2, lane: 1, lane2: 3, type: 'double' }, // 同時押し
-        { time: 3.0, lane: 2, type: 'long', duration: 1.2 }, // ロングノーツ
-        { time: 4.5, lane: 0, type: 'tap' },
-        { time: 5.1, lane: 4, type: 'tap' },
-        { time: 5.8, lane: 1, type: 'tap' },
-        { time: 5.8, lane: 3, type: 'tap' }, // 同時押し
-        { time: 6.6, lane: 2, type: 'long', duration: 1.5 },
-        { time: 8.5, lane: 0, lane2: 4, type: 'double' },
-        { time: 9.2, lane: 1, type: 'tap' },
-        { time: 9.8, lane: 3, type: 'tap' },
-        { time: 10.5, lane: 2, type: 'long', duration: 1.0 }
+        { time: 2.2, lane: 1, lane2: 3, type: 'double' }, 
+        { time: 3.0, lane: 2, type: 'long', duration: 1.5 }, // ホールドノーツ
+        { time: 5.0, lane: 0, type: 'tap' },
+        { time: 5.6, lane: 4, type: 'tap' },
+        { time: 6.3, lane: 1, type: 'tap' },
+        { time: 6.3, lane: 3, type: 'tap' }, 
+        { time: 7.2, lane: 0, lane2: 4, type: 'double' },
+        { time: 8.5, lane: 1, type: 'long', duration: 1.2 },
+        { time: 8.5, lane: 3, type: 'long', duration: 1.2 }, // 同時ホールド
+        { time: 10.5, lane: 2, type: 'tap' }
     ];
 
     notes = chartData.map(n => ({
         ...n,
         hit: false,
-        holding: false,
-        holdProgress: 0
+        holding: false
     }));
 }
 
@@ -218,7 +216,7 @@ function handleLaneEnd(laneIndex) {
         if (note.type === 'long' && note.holding && (note.lane === laneIndex || note.lane2 === laneIndex)) {
             let currentTime = audioCtx.currentTime - startTime;
             let endTime = note.time + note.duration;
-            if (currentTime >= endTime - 0.2) {
+            if (currentTime >= endTime - 0.25) {
                 score += 500;
                 showFeedback("Excellent!🌟");
                 scoreBoardUpdate();
@@ -351,15 +349,17 @@ function gameLoop() {
             for (let lIdx of targetLanes) {
                 let target = lanes[lIdx];
 
+                // ホールド中（長押し判定継続中）の処理
                 if (note.type === 'long' && note.holding) {
                     let endTime = note.time + note.duration;
                     if (currentTime <= endTime) {
-                        ctx.fillStyle = "rgba(255, 224, 130, 0.6)";
+                        // 濃い目の黄色（オレンジゴールド）でホールド中のエフェクトを表示
+                        ctx.fillStyle = "rgba(241, 196, 15, 0.7)";
                         ctx.beginPath();
-                        ctx.arc(target.x, target.y, targetRadius + 4, 0, Math.PI * 2);
+                        ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
                         ctx.fill();
 
-                        if (Math.random() < 0.2) {
+                        if (Math.random() < 0.25) {
                             score += 10;
                             scoreBoardUpdate();
                         }
@@ -383,13 +383,13 @@ function gameLoop() {
                     ctx.strokeStyle = "#ffffff";
 
                     if (note.type === 'long') {
-                        // ロングノーツはエメラルドグリーンベース
-                        ctx.fillStyle = "#2ecc71";
+                        // ホールドノーツは濃い目の黄色（オレンジゴールド）
+                        ctx.fillStyle = "#f39c12";
                     } else if (isDouble) {
-                        // 同時押しノーツは濃い目のピンク
+                        // 同時押しは濃い目のピンク
                         ctx.fillStyle = "#e91e63";
                     } else {
-                        // 単体ノーツは鮮やかなエメラルドグリーン
+                        // 単体ノーツはエメラルドグリーン
                         ctx.fillStyle = "#1abc9c";
                     }
 
