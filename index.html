@@ -91,7 +91,7 @@
     <div id="score-board">スコア: 0</div>
     <div id="start-screen">
         <h1>おひめさまの音楽会</h1>
-        <p>下にある5つの丸をタップしてね</p>
+        <p>5つの丸をタップしてね</p>
         <button id="start-btn">はじめる</button>
     </div>
     <canvas id="gameCanvas"></canvas>
@@ -113,21 +113,22 @@ let score = 0;
 let audioCtx = null;
 let startTime = 0;
 
-const targetRadius = 35; // 判定枠の大きさ
+const targetRadius = 32; // 判定枠の大きさ
 const noteSpeed = 3.0;   
 
-// 5つの判定レーンの位置を計算する関数（左右に広げ、きれいな逆向きの弧にする）
-function getLanePositions() {
+// 5つの判定レーンの位置を計算する関数（全体を上に上げ、幅を画面内に収める）
+function getLanePositions(girlY) {
     let positions = [];
     let centerX = canvas.width / 2;
-    let baseY = canvas.height - 180; // 全体的に少し上に配置（遠ざける）
-    let totalWidth = canvas.width * 0.85; // 左右の広がりを拡大
+    // 女の子の少し下に、左右に適度な幅で収まるように配置
+    let baseY = girlY + 130; 
+    let totalWidth = canvas.width * 0.65; // 端が切れないよう少し狭めて画面内に収める
     let spacing = totalWidth / 4;
 
     for (let i = 0; i < 5; i++) {
         let x = centerX - (totalWidth / 2) + (spacing * i);
-        // 中央が高く、両端が低くなる逆向きの弧の深さを調整
-        let offsetY = -Math.pow((i - 2), 2) * 22 + 35; 
+        // 中央が高く、両端が低くなる逆向きの弧
+        let offsetY = -Math.pow((i - 2), 2) * 12 + 20; 
         let y = baseY + offsetY;
         positions.push({ x: x, y: y });
     }
@@ -166,6 +167,7 @@ function handleLaneTap(laneIndex) {
     let currentTime = audioCtx.currentTime - startTime;
     let closestNote = null;
     let minDiff = 999;
+    let lanes = getLanePositions(canvas.height / 2 - 90); // 同じ基準で判定
 
     for (let note of notes) {
         if (!note.hit && note.lane === laneIndex) {
@@ -200,7 +202,8 @@ window.addEventListener('pointerdown', (e) => {
     const touchX = e.clientX - rect.left;
     const touchY = e.clientY - rect.top;
 
-    let lanes = getLanePositions();
+    let girlY = canvas.height / 2 - 90;
+    let lanes = getLanePositions(girlY);
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
         if (distance < targetRadius * 1.8) {
@@ -236,11 +239,9 @@ function gameLoop() {
     animTimer += 0.05;
 
     let centerX = canvas.width / 2;
-    let lanes = getLanePositions();
-    
-    // 判定ラインの最上部（中央）と女の子の距離を適度にとる（少し離す）
-    let highestLaneY = Math.min(...lanes.map(l => l.y));
-    let girlY = highestLaneY - 140; 
+    // 全体的に上に持ち上げるため、女の子の位置を画面の上のほうに固定
+    let girlY = canvas.height / 2 - 90; 
+    let lanes = getLanePositions(girlY);
 
     // 1. 女の子（歌っているイメージ）
     let girlFloatY = Math.sin(animTimer * 2) * 4;
@@ -323,7 +324,7 @@ function gameLoop() {
         ctx.fillStyle = "#d4a373";
         ctx.font = "bold 24px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(feedbackText, centerX, canvas.height - 230);
+        ctx.fillText(feedbackText, centerX, girlY - 60);
     }
 
     requestAnimationFrame(gameLoop);
