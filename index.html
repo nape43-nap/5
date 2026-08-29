@@ -1,3 +1,4 @@
+タイトル画面を省いてアプリ起動時に直接「曲選択画面」がトップにくるようにし、さらにリザルト画面によくある音ゲーらしい詳細なリザルト（判定ごとの数、総スコア、S〜Dのランク判定）を実装しました！
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -67,7 +68,7 @@
         p {
             color: #a89f91;
             font-size: 14px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-align: center;
         }
         .btn {
@@ -80,7 +81,7 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
             transition: 0.2s;
-            margin: 8px 0;
+            margin-top: 15px;
         }
         .btn:active {
             transform: scale(0.95);
@@ -93,7 +94,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         .song-card {
             background: #fff;
@@ -121,20 +122,67 @@
             color: #b8aea1;
         }
 
-        /* リザルト画面 */
-        .result-box {
+        /* リザルト画面専用デザイン */
+        .result-panel {
             background: #fff;
-            border: 3px dashed #e3c4a8;
-            padding: 25px 40px;
+            border: 3px solid #f0e6d2;
+            width: 100%;
+            max-width: 330px;
+            padding: 20px;
             border-radius: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            position: relative;
+        }
+        .rank-badge {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            background: #e3c4a8;
+            color: #fff;
+            font-size: 30px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
+            border: 3px solid #fff;
+        }
+        .result-score-container {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #f5efe6;
+            padding-bottom: 12px;
         }
         .result-score-val {
-            font-size: 38px;
+            font-size: 34px;
             font-weight: bold;
             color: #d4a373;
-            margin-top: 5px;
+        }
+        .judge-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .judge-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+        .stat-label-suteki { color: #e67e22; }
+        .stat-label-kirari { color: #f1c40f; }
+        .stat-label-ii { color: #3498db; }
+        .stat-label-alara { color: #95a5a6; }
+        .stat-value {
+            color: #7c6f64;
+            font-size: 16px;
         }
 
         #score-board {
@@ -155,14 +203,9 @@
 <div id="game-container">
     <div id="score-board" class="hidden">スコア: 0</div>
 
-    <div id="title-screen" class="screen">
+    <div id="select-screen" class="screen">
         <h1>おひめさまの音楽会</h1>
-        <p>リズムにのって楽しもう♪</p>
-        <button class="btn" id="to-select-btn">つぎへ</button>
-    </div>
-
-    <div id="select-screen" class="screen hidden">
-        <h1>曲を選んでね</h1>
+        <p>曲を選んでね♪</p>
         <div class="song-list">
             <div class="song-card" onclick="selectSong('easy')">
                 <div class="song-title">🏰 お城のメヌエット</div>
@@ -176,13 +219,38 @@
     </div>
 
     <div id="result-screen" class="screen hidden">
-        <h1>おんがく会おしまい！</h1>
-        <p>すてきな演奏でした♪</p>
-        <div class="result-box">
-            <div style="font-size: 14px; color: #a89f91;">きろくスコア</div>
-            <div class="result-score-val" id="final-score">0</div>
+        <h1>演奏おしまい！</h1>
+        <p>すてきな音楽会でした♪</p>
+        
+        <div class="result-panel">
+            <div class="rank-badge" id="result-rank">S</div>
+            
+            <div class="result-score-container">
+                <div style="font-size: 12px; color: #a89f91;">とくてん</div>
+                <div class="result-score-val" id="final-score">0</div>
+            </div>
+
+            <div class="judge-stats">
+                <div class="judge-row">
+                    <span class="stat-label-kirari">ｷﾗﾘ!</span>
+                    <span class="stat-value" id="count-kirari">0</span>
+                </div>
+                <div class="judge-row">
+                    <span class="stat-label-suteki">ｽﾃｷ!</span>
+                    <span class="stat-value" id="count-suteki">0</span>
+                </div>
+                <div class="judge-row">
+                    <span class="stat-label-ii">ｲｲ!</span>
+                    <span class="stat-value" id="count-ii">0</span>
+                </div>
+                <div class="judge-row">
+                    <span class="stat-label-alara">ｱﾗﾗ</span>
+                    <span class="stat-value" id="count-alara">0</span>
+                </div>
+            </div>
         </div>
-        <button class="btn" onclick="backToTitle()">もどる</button>
+
+        <button class="btn" onclick="backToSelect()">曲えらびへもどる</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -199,11 +267,19 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-let gameState = 'TITLE'; // TITLE, SELECT, PLAYING, RESULT
+let gameState = 'SELECT'; // SELECT, PLAYING, RESULT
 let score = 0;
 let audioCtx = null;
 let startTime = 0;
-let songDuration = 12.0; // 曲の長さ（秒）
+let songDuration = 12.0; 
+
+// 判定ごとのカウント記録用
+let judgeCounts = {
+    kirari: 0,
+    suteki: 0,
+    ii: 0,
+    alara: 0
+};
 
 const targetRadius = 34; 
 const noteSpeed = 2.8;   
@@ -226,7 +302,6 @@ function getLanePositions() {
 
 let notes = [];
 
-// 曲ごとの譜面データ
 function generateChart(type) {
     notes = [];
     let chartData = [];
@@ -275,18 +350,12 @@ let feedback = {
     maxTime: 25
 };
 
-// 画面切り替えの管理
-document.getElementById('to-select-btn').addEventListener('click', () => {
-    document.getElementById('title-screen').classList.add('hidden');
-    document.getElementById('select-screen').classList.remove('hidden');
-    gameState = 'SELECT';
-});
-
 function selectSong(type) {
     document.getElementById('select-screen').classList.add('hidden');
     document.getElementById('score-board').classList.remove('hidden');
     
     score = 0;
+    judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
     if (!audioCtx) {
@@ -301,14 +370,29 @@ function selectSong(type) {
 function finishGame() {
     gameState = 'RESULT';
     document.getElementById('score-board').classList.add('hidden');
+    
+    // リザルト画面に数値を反映
     document.getElementById('final-score').innerText = score;
+    document.getElementById('count-kirari').innerText = judgeCounts.kirari;
+    document.getElementById('count-suteki').innerText = judgeCounts.suteki;
+    document.getElementById('count-ii').innerText = judgeCounts.ii;
+    document.getElementById('count-alara').innerText = judgeCounts.alara;
+
+    // ランク判定（スコアに応じてS〜D）
+    let rank = 'D';
+    if (score >= 2500) rank = 'S';
+    else if (score >= 2000) rank = 'A';
+    else if (score >= 1400) rank = 'B';
+    else if (score >= 800) rank = 'C';
+    document.getElementById('result-rank').innerText = rank;
+
     document.getElementById('result-screen').classList.remove('hidden');
 }
 
-function backToTitle() {
+function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
-    document.getElementById('title-screen').classList.remove('hidden');
-    gameState = 'TITLE';
+    document.getElementById('select-screen').classList.remove('hidden');
+    gameState = 'SELECT';
 }
 
 function handleLaneStart(laneIndex) {
@@ -347,9 +431,11 @@ function handleLaneStart(laneIndex) {
             closestNote.hit = true;
             if (minDiff < 0.12) {
                 score += 300;
+                judgeCounts.suteki++;
                 showFeedback("ｽﾃｷ!", "#e67e22");
             } else {
                 score += 100;
+                judgeCounts.ii++;
                 showFeedback("ｲｲ!", "#3498db");
             }
             laneHitEffects[laneIndex] = 15;
@@ -372,9 +458,11 @@ function handleLaneEnd(laneIndex) {
 
                 if (diff < 0.3) {
                     score += 400;
+                    judgeCounts.kirari++;
                     showFeedback("ｷﾗﾘ!", "#f1c40f");
                 } else {
                     score += 100;
+                    judgeCounts.ii++;
                     showFeedback("ｲｲ!", "#3498db");
                 }
 
@@ -468,11 +556,9 @@ function gameLoop() {
     let girlY = canvas.height * 0.3; 
     let lanes = getLanePositions();
 
-    // プレイ中のみゲーム画面を描画
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime;
 
-        // 曲終了チェック
         if (currentTime >= songDuration) {
             finishGame();
         }
@@ -608,6 +694,7 @@ function gameLoop() {
 
                     if (progress > 1.2 && !note.started) {
                         note.hit = true;
+                        judgeCounts.alara++;
                         showFeedback("ｱﾗﾗ", "#95a5a6");
                     }
 
@@ -634,6 +721,7 @@ function gameLoop() {
 
                     if (progress > 1.2 && !note.hit) {
                         note.hit = true;
+                        judgeCounts.alara++;
                         showFeedback("ｱﾗﾗ", "#95a5a6");
                     }
                 }
@@ -675,3 +763,4 @@ gameLoop();
 
 </body>
 </html>
+
