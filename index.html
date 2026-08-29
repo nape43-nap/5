@@ -114,20 +114,20 @@ let audioCtx = null;
 let startTime = 0;
 
 const targetRadius = 35; // 判定枠の大きさ
-const noteSpeed = 2.8;   
+const noteSpeed = 3.0;   
 
-// 5つの判定レーンの位置を計算する関数（中央を高く、両端を低くする逆向きの弧）
+// 5つの判定レーンの位置を計算する関数（左右に広げ、きれいな逆向きの弧にする）
 function getLanePositions() {
     let positions = [];
     let centerX = canvas.width / 2;
-    let baseY = canvas.height - 130; 
-    let totalWidth = canvas.width * 0.75;
+    let baseY = canvas.height - 180; // 全体的に少し上に配置（遠ざける）
+    let totalWidth = canvas.width * 0.85; // 左右の広がりを拡大
     let spacing = totalWidth / 4;
 
     for (let i = 0; i < 5; i++) {
         let x = centerX - (totalWidth / 2) + (spacing * i);
-        // 中央(i=2)が高く、両端(i=0, 4)が低くなる逆向きの弧 (マイナスにする)
-        let offsetY = -Math.pow((i - 2), 2) * 10 + 20; 
+        // 中央が高く、両端が低くなる逆向きの弧の深さを調整
+        let offsetY = -Math.pow((i - 2), 2) * 22 + 35; 
         let y = baseY + offsetY;
         positions.push({ x: x, y: y });
     }
@@ -238,9 +238,9 @@ function gameLoop() {
     let centerX = canvas.width / 2;
     let lanes = getLanePositions();
     
-    // 判定ラインの最上部（中央）に合わせて女の子の位置を近くに配置
+    // 判定ラインの最上部（中央）と女の子の距離を適度にとる（少し離す）
     let highestLaneY = Math.min(...lanes.map(l => l.y));
-    let girlY = highestLaneY - 90; // 距離を縮める
+    let girlY = highestLaneY - 140; 
 
     // 1. 女の子（歌っているイメージ）
     let girlFloatY = Math.sin(animTimer * 2) * 4;
