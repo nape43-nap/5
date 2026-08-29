@@ -162,13 +162,11 @@ let animTimer = 0;
 let laneHitEffects = [0, 0, 0, 0, 0];
 let activeTouches = {}; 
 
-// 判定文字アニメーション用のオブジェクト
 let feedback = {
     text: "",
     color: "#f1c40f",
     timer: 0,
-    maxTime: 25, // 表示フレーム数
-    yOffset: 0
+    maxTime: 25
 };
 
 document.getElementById('start-btn').addEventListener('click', () => {
@@ -217,10 +215,10 @@ function handleLaneStart(laneIndex) {
             closestNote.hit = true;
             if (minDiff < 0.12) {
                 score += 300;
-                showFeedback("Wonderful!✨", "#e67e22");
+                showFeedback("ｽﾃｷ!", "#e67e22");
             } else {
                 score += 100;
-                showFeedback("Good♪", "#3498db");
+                showFeedback("ｲｲ!", "#3498db");
             }
             laneHitEffects[laneIndex] = 15;
             scoreBoardUpdate();
@@ -242,10 +240,10 @@ function handleLaneEnd(laneIndex) {
 
                 if (diff < 0.3) {
                     score += 400;
-                    showFeedback("Sparkling!🌟", "#f1c40f");
+                    showFeedback("ｷﾗﾘ!", "#f1c40f");
                 } else {
                     score += 100;
-                    showFeedback("Good♪", "#3498db");
+                    showFeedback("ｲｲ!", "#3498db");
                 }
 
                 note.hit = true;
@@ -472,7 +470,7 @@ function gameLoop() {
 
                     if (progress > 1.2 && !note.started) {
                         note.hit = true;
-                        showFeedback("Oh no...", "#95a5a6");
+                        showFeedback("ｱﾗﾗ", "#95a5a6");
                     }
 
                 } else {
@@ -498,23 +496,19 @@ function gameLoop() {
 
                     if (progress > 1.2 && !note.hit) {
                         note.hit = true;
-                        showFeedback("Oh no...", "#95a5a6");
+                        showFeedback("ｱﾗﾗ", "#95a5a6");
                     }
                 }
             }
         }
     }
 
-    // 判定文字のぴょこっと浮き出てフェードアウトするエフェクト描画
     if (feedback.timer > 0) {
         feedback.timer--;
-        let progressRate = 1 - (feedback.timer / feedback.maxTime); // 0.0 -> 1.0
+        let progressRate = 1 - (feedback.timer / feedback.maxTime);
         
-        // 下から上に少しぴょこっと移動するオフセット (sin波やイージングで滑らかに)
         let floatY = -Math.sin(progressRate * Math.PI) * 25;
-        // 後半で透明度を下げる
         let alpha = feedback.timer < 8 ? (feedback.timer / 8) : 1.0;
-        // 現れる瞬間に少しポンと大きくするスケール
         let scale = progressRate < 0.2 ? (0.8 + progressRate * 1.0) : 1.0;
 
         ctx.save();
@@ -523,11 +517,10 @@ function gameLoop() {
         ctx.scale(scale, scale);
 
         ctx.fillStyle = feedback.color;
-        ctx.font = "bold 22px sans-serif";
+        ctx.font = "bold 24px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         
-        // 文字に可愛いフチをつける
         ctx.lineWidth = 4;
         ctx.strokeStyle = "#ffffff";
         ctx.strokeText(feedback.text, 0, 0);
