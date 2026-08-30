@@ -782,7 +782,7 @@ function generateChart(type) {
         holding: false,   
         started: false,
         slideProgressIdx: 0,
-        slideDirection: 1 // 1: 正順, -1: 逆順
+        slideDirection: 1
     }));
 }
 
@@ -903,15 +903,14 @@ function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
-window.addEventListener('pointerdown', (e) => {
-    if(e.target.tagName === 'BUTTON' || e.target.closest('.song-list-viewport')) return;
+canvas.addEventListener('pointerdown', (e) => {
     if(gameState !== 'PLAYING') return;
 
     const rect = canvas.getBoundingClientRect();
     const touchX = e.clientX - rect.left;
     const touchY = e.clientY - rect.top;
 
-    activeTouches[e.pointerId] = { startX: touchX, startY: touchY, currentX: touchX, currentY: touchY };
+    activeTouches[e.pointerId] = { startX: touchX, startY: touchY, currentX: touchX, currentY: touchY, targetNote: null };
     touchHistory[e.pointerId] = [{ x: touchX, y: touchY, time: audioCtx.currentTime }];
 
     let lanes = getLanePositions();
@@ -934,6 +933,7 @@ window.addEventListener('pointerdown', (e) => {
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
+                                activeTouches[e.pointerId].targetNote = note;
                                 laneHitEffects[i] = 999; 
                                 score += 100;
                                 scoreBoardUpdate();
@@ -947,6 +947,7 @@ window.addEventListener('pointerdown', (e) => {
                                     note.holding = true;
                                     note.slideDirection = 1;
                                     note.slideProgressIdx = 0;
+                                    activeTouches[e.pointerId].targetNote = note;
                                     spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
                                     playHitSound();
                                 } else if (i === endLane) {
@@ -954,11 +955,11 @@ window.addEventListener('pointerdown', (e) => {
                                     note.holding = true;
                                     note.slideDirection = -1;
                                     note.slideProgressIdx = note.path.length - 1;
+                                    activeTouches[e.pointerId].targetNote = note;
                                     spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
                                     playHitSound();
                                 }
                             }
-                            // 複数ノーツの同時押しに対応するためbreakを削除
                         }
                     }
                 }
@@ -967,7 +968,7 @@ window.addEventListener('pointerdown', (e) => {
     }
 });
 
-window.addEventListener('pointermove', (e) => {
+canvas.addEventListener('pointermove', (e) => {
     if (!activeTouches[e.pointerId]) return;
     const rect = canvas.getBoundingClientRect();
     const touchX = e.clientX - rect.left;
@@ -1003,7 +1004,7 @@ window.addEventListener('pointermove', (e) => {
                         note.holding = false;
                         judgeCounts.kirari++;
                         showFeedback("ｷﾗﾘ!", "#f1c40f");
-                        playHitSound(); // 軌道ノーツの終点SE
+                        playHitSound();
                     }
                 }
             }
@@ -1011,10 +1012,10 @@ window.addEventListener('pointermove', (e) => {
     }
 });
 
-window.addEventListener('pointerup', (e) => {
+canvas.addEventListener('pointerup', (e) => {
     handleTouchEndOrCancel(e.pointerId);
 });
-window.addEventListener('pointercancel', (e) => {
+canvas.addEventListener('pointercancel', (e) => {
     handleTouchEndOrCancel(e.pointerId);
 });
 
@@ -1027,24 +1028,6 @@ function handleTouchEndOrCancel(pointerId) {
         let note = touchInfo.targetNote;
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let lanes = getLanePositions();
-
-        if (note.type === 'flick' && !note.hit) {
-            let diff = Math.abs(currentTime - note.time);
-            if (diff < 0.35 && history.length >= 2) {
-                let startPos = history[0];
-                let endPos = history[history.length - 1];
-                let dist = Math.hypot(endPos.x - startPos.x, endPos.y - startPos.y);
-
-                if (dist > 20) {
-                    note.hit = true;
-                    score += 350;
-                    judgeCounts.kirari++;
-                    showFeedback("ｷﾗﾘ!", "#f1c40f");
-                    spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
-                    playHitSound();
-                }
-            }
-        }
 
         if (note.type === 'long' && note.holding) {
             let endTime = note.time + note.duration;
@@ -1062,8 +1045,32 @@ function handleTouchEndOrCancel(pointerId) {
             note.holding = false;
             laneHitEffects[note.lane] = 0;
             spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
-            playHitSound(); // ホールドノーツの終点SE
+            playHitSound();
             scoreBoardUpdate();
+        }
+    } else {
+        // フリックなどの単発判定
+        let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+        let lanes = getLanePositions();
+        for (let note of notes) {
+            if (!note.hit && note.type === 'flick') {
+                let diff = Math.abs(currentTime - note.time);
+                if (diff < 0.35 && history.length >= 2) {
+                    let startPos = history[0];
+                    let endPos = history[history.length - 1];
+                    let dist = Math.hypot(endPos.x - startPos.x, endPos.y - startPos.y);
+
+                    if (dist > 20) {
+                        note.hit = true;
+                        score += 350;
+                        judgeCounts.kirari++;
+                        showFeedback("ｷﾗﾘ!", "#f1c40f");
+                        spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
+                        playHitSound();
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -1207,7 +1214,6 @@ function gameLoop() {
                     }
                     ctx.stroke();
 
-                    // 始点のマーカー
                     let startPos = lanes[path[0]];
                     let hx = centerX + (startPos.x - centerX) * progress;
                     let hy = girlY + (startPos.y - girlY) * progress;
@@ -1219,7 +1225,6 @@ function gameLoop() {
                     ctx.fill();
                     ctx.stroke();
 
-                    // 終点のマーカー
                     let endPos = lanes[path[path.length - 1]];
                     let ex = centerX + (endPos.x - centerX) * progress;
                     let ey = girlY + (endPos.y - girlY) * progress;
@@ -1303,7 +1308,7 @@ function gameLoop() {
                                 note.holding = false;
                                 laneHitEffects[lIdx] = 0;
                                 spawnParticles(target.x, target.y, '#f39c12');
-                                playHitSound(); // ホールドノーツ自動終了時SE
+                                playHitSound();
                             }
                         }
 
