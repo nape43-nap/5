@@ -772,7 +772,6 @@ function generateChart(type) {
 }
 
 let animTimer = 0;
-let laneHitEffects = [0, 0, 0, 0, 0];
 let activeTouch = null; 
 let activeTargetNote = null;
 
@@ -914,14 +913,12 @@ canvas.addEventListener('pointerdown', (e) => {
                             if (note.type === 'tap') {
                                 note.hit = true;
                                 judgeAction(diff);
-                                laneHitEffects[i] = 15;
                                 spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
                                 playHitSound();
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
                                 activeTargetNote = note;
-                                laneHitEffects[i] = 999; 
                                 score += 100;
                                 scoreBoardUpdate();
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
@@ -1001,7 +998,6 @@ function handleTouchEndOrCancel(e) {
             }
             note.hit = true;
             note.holding = false;
-            laneHitEffects[note.lane] = 0;
             spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
             playHitSound();
             scoreBoardUpdate();
@@ -1119,15 +1115,8 @@ function gameLoop() {
             let y = lanes[i].y;
             let currentRadius = targetRadius;
 
-            if (laneHitEffects[i] > 0) {
-                if (laneHitEffects[i] !== 999) laneHitEffects[i]--;
-                ctx.fillStyle = "#ffe082";
-                currentRadius += 5;
-            } else {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-            }
-
-            // 外側の丸を描画
+            // 判定ラインは常に同じ控えめな半透明の白背景にして、塗りつぶし変更をなしにしました
+            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -1283,17 +1272,12 @@ function gameLoop() {
                         ctx.fill();
                         ctx.stroke();
                     } else if (note.holding) {
-                        ctx.fillStyle = "rgba(241, 196, 15, 0.8)";
-                        ctx.beginPath();
-                        ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
-                        ctx.fill();
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
                         
                         if (currentTime >= endTime) {
                             note.hit = true;
                             note.holding = false;
                             activeTargetNote = null;
-                            laneHitEffects[note.lane] = 0;
                             spawnParticles(target.x, target.y, '#f39c12');
                             playHitSound();
                         }
