@@ -762,7 +762,7 @@ function generateChart(type) {
             { time: 2.2, lane: 1, lane2: 3, type: 'double' }, 
             { time: 3.0, lane: 1, type: 'long', duration: 2.0 }, 
             { time: 6.0, lane: 0, lane2: 4, type: 'double' },
-            { time: 7.5, lane: 2, type: 'slidenode', path: [2, 3, 4], pathTime: 1.5 },
+            { time: 7.5, lane: 2, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5 }, // 右から左の軌道テスト
             { time: 10.0, lane: 2, type: 'tap' }
         ];
     } else {
@@ -903,6 +903,7 @@ function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
+// 複数タッチ（同時押し対応）を完璧にキャプチャするため canvas に pointerdown を登録
 canvas.addEventListener('pointerdown', (e) => {
     if(gameState !== 'PLAYING') return;
 
@@ -912,6 +913,7 @@ canvas.addEventListener('pointerdown', (e) => {
 
     activeTouches[e.pointerId] = { startX: touchX, startY: touchY, currentX: touchX, currentY: touchY, targetNote: null };
     touchHistory[e.pointerId] = [{ x: touchX, y: touchY, time: audioCtx.currentTime }];
+    canvas.setPointerCapture(e.pointerId);
 
     let lanes = getLanePositions();
     let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
@@ -1013,13 +1015,14 @@ canvas.addEventListener('pointermove', (e) => {
 });
 
 canvas.addEventListener('pointerup', (e) => {
-    handleTouchEndOrCancel(e.pointerId);
+    handleTouchEndOrCancel(e);
 });
 canvas.addEventListener('pointercancel', (e) => {
-    handleTouchEndOrCancel(e.pointerId);
+    handleTouchEndOrCancel(e);
 });
 
-function handleTouchEndOrCancel(pointerId) {
+function handleTouchEndOrCancel(e) {
+    let pointerId = e.pointerId;
     if (!activeTouches[pointerId]) return;
     let touchInfo = activeTouches[pointerId];
     let history = touchHistory[pointerId] || [];
@@ -1074,6 +1077,7 @@ function handleTouchEndOrCancel(pointerId) {
         }
     }
 
+    try { canvas.releasePointerCapture(pointerId); } catch(err) {}
     delete activeTouches[pointerId];
     delete touchHistory[pointerId];
 }
