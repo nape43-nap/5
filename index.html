@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>絵本風リズムゲーム</title>
-    <!-- Google Fonts から RocknRoll One と Darumadrop One を読み込み -->
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
     <style>
         body {
@@ -109,9 +108,6 @@
             mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
             -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
         }
-        .song-list-viewport:active {
-            cursor: grabbing;
-        }
         .song-card {
             position: absolute;
             width: 300px;
@@ -125,7 +121,6 @@
             box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
             pointer-events: none;
-            transition: border-color 0.3s ease, background 0.3s ease;
         }
         .song-card.selected {
             border-color: #d4a373;
@@ -290,11 +285,6 @@
             box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
             border: 3px solid #fff;
             font-family: 'RocknRoll One', sans-serif;
-            animation: badgePop 0.4s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
-        }
-        @keyframes badgePop {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
         }
 
         .result-song-header {
@@ -778,7 +768,7 @@ function generateChart(type) {
         hit: false,       
         holding: false,   
         started: false,
-        slideProgressIdx: 0
+        slideProgressIdx: (n.direction === 'right') ? 0 : (n.path ? n.path.length - 1 : 0)
     }));
 }
 
@@ -901,7 +891,6 @@ function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
-// シングルタッチ中心で確実に応答する仕組み（同時押しなし）
 canvas.addEventListener('pointerdown', (e) => {
     if(gameState !== 'PLAYING') return;
 
@@ -941,7 +930,6 @@ canvas.addEventListener('pointerdown', (e) => {
                             } else if (note.type === 'slidenode') {
                                 note.started = true;
                                 note.holding = true;
-                                note.slideProgressIdx = (note.direction === 'right') ? 0 : (note.path.length - 1);
                                 activeTargetNote = note;
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
                                 playHitSound();
@@ -974,7 +962,7 @@ canvas.addEventListener('pointermove', (e) => {
 
             if (nextIdx >= 0 && nextIdx < path.length) {
                 let targetLanePos = lanes[path[nextIdx]];
-                if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 1.8) {
+                if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.2) {
                     note.slideProgressIdx = nextIdx;
                     score += 50;
                     scoreBoardUpdate();
@@ -1030,8 +1018,8 @@ function handleTouchEndOrCancel(e) {
             playHitSound();
             scoreBoardUpdate();
         }
+        activeTargetNote = null;
     } else {
-        // フリック判定
         for (let note of notes) {
             if (!note.hit && note.type === 'flick') {
                 let diff = Math.abs(currentTime - note.time);
@@ -1053,7 +1041,6 @@ function handleTouchEndOrCancel(e) {
 
     try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
     activeTouch = null;
-    activeTargetNote = null;
 }
 
 function judgeAction(diff) {
@@ -1173,6 +1160,7 @@ function gameLoop() {
                 let path = note.path;
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                 if (progress >= 0 && progress <= 1.5) {
+                    // スライド軌道の線を描画
                     ctx.strokeStyle = "rgba(241, 196, 15, 0.6)";
                     ctx.lineWidth = 6;
                     ctx.lineCap = "round";
@@ -1186,24 +1174,38 @@ function gameLoop() {
                     }
                     ctx.stroke();
 
-                    // 先頭ヘッドと矢印アイコン（▶︎ または ◀︎）の表示
+                    // パス上のすべてのポイントに丸ノーツを表示（始点・経由地・終点すべて）
+                    for (let pIdx = 0; pIdx < path.length; pIdx++) {
+                        let tPos = lanes[path[pIdx]];
+                        let px = centerX + (tPos.x - centerX) * progress;
+                        let py = girlY + (tPos.y - girlY) * progress;
+
+                        ctx.fillStyle = "#f1c40f";
+                        ctx.strokeStyle = "#fff";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(px, py, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // 中央（または各ノーツ）に「◆」の白文字を表示
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = "bold 13px sans-serif";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText("◆", px, py);
+                    }
+
+                    // 始点に方向を表すテキスト（▶︎ または ◀︎）を重ねて表示
                     let startPos = lanes[path[0]];
                     let hx = centerX + (startPos.x - centerX) * progress;
                     let hy = girlY + (startPos.y - girlY) * progress;
-                    ctx.fillStyle = "#f1c40f";
-                    ctx.strokeStyle = "#fff";
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(hx, hy, 18, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
                     ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 14px sans-serif";
+                    ctx.font = "bold 12px sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    let arrowText = (note.direction === 'right') ? "▶" : "◀";
-                    ctx.fillText(arrowText, hx, hy);
+                    let arrowText = (note.direction === 'right') ? "▶︎" : "◀︎";
+                    ctx.fillText(arrowText, hx, hy - 2);
                 }
                 if (progress > 1.5 && !note.hit) {
                     note.hit = true;
@@ -1225,6 +1227,7 @@ function gameLoop() {
                     let tailX = centerX + (target.x - centerX) * pTail;
                     let tailY = girlY + (target.y - girlY) * pTail;
 
+                    // ホールドのバー
                     ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                     ctx.lineWidth = 12;
                     ctx.lineCap = "round";
@@ -1233,6 +1236,18 @@ function gameLoop() {
                     ctx.lineTo(headX, headY);
                     ctx.stroke();
 
+                    // 終点ノーツ（テール）の描画
+                    if (tailProg <= 1.0) {
+                        ctx.fillStyle = "#f39c12";
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(tailX, tailY, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+
+                    // ヘッドノーツの描画
                     if (!note.holding && headProg <= 1.2) {
                         ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
