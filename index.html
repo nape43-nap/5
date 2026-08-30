@@ -1228,8 +1228,8 @@ function gameLoop() {
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
 
-                    // 1. 始点の位置計算
-                    if (note.started) {
+                    // 1. 始点の位置計算（判定ラインに到達した後は、targetの位置に固定）
+                    if (headProg >= 1.0 || note.started) {
                         headX = target.x;
                         headY = target.y;
                     } else {
