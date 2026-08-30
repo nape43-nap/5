@@ -271,12 +271,12 @@
             border: 3px solid #f0e6d2;
             width: 100%;
             max-width: 330px;
-            padding: 18px;
+            padding: 16px;
             border-radius: 20px;
             box-sizing: border-box;
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             position: relative;
-            margin-top: 10px;
+            margin-top: 5px;
             animation: panelPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         @keyframes panelPopup {
@@ -324,9 +324,9 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border-bottom: 2px dashed #f5efe6;
-            padding-bottom: 12px;
+            padding-bottom: 10px;
         }
         .result-jacket-small {
             width: 45px;
@@ -358,20 +358,20 @@
 
         .result-score-container {
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border-bottom: 2px dashed #f5efe6;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
         .result-score-val {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             color: #d4a373;
         }
         .judge-stats {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 5px;
+            gap: 4px;
+            margin-bottom: 2px;
         }
         .judge-row {
             display: flex;
@@ -388,6 +388,39 @@
         .stat-value {
             color: #7c6f64;
             font-size: 15px;
+        }
+
+        /* リザルト画面のボタン群レイアウト */
+        .result-btn-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 330px;
+            justify-content: center;
+        }
+        .result-btn {
+            background-color: #e3c4a8;
+            color: #fff;
+            border: none;
+            padding: 12px 0;
+            font-size: 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
+            transition: 0.2s;
+            margin-top: 12px;
+            font-family: 'RocknRoll One', sans-serif;
+            flex: 1;
+            z-index: 5;
+        }
+        .result-btn.sub {
+            background-color: #f7f2ea;
+            color: #7c6f64;
+            border: 2px solid #f0e6d2;
+            box-shadow: none;
+        }
+        .result-btn:active {
+            transform: scale(0.95);
         }
 
         #score-board {
@@ -553,7 +586,10 @@
             </div>
         </div>
 
-        <button class="btn" onclick="backToSelect()">曲選択へ</button>
+        <div class="result-btn-container">
+            <button class="result-btn sub" onclick="retryFromResult()">もう一度</button>
+            <button class="result-btn" onclick="backToSelect()">曲選択へ</button>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -588,7 +624,7 @@ const songs = [
 ];
 let currentSongIndex = 0;
 
-// ハイスコア読み込み・保存用の関数（※ハイスコア自体も割合％で保存するように変更）
+// ハイスコア読み込み・保存用の関数
 function getSongHighScore(songId) {
     const saved = localStorage.getItem('rhythm_game_hs_' + songId);
     return saved ? JSON.parse(saved) : { score: 0, accuracy: 0, rank: '-' };
@@ -875,17 +911,16 @@ function finishGame() {
     document.getElementById('count-ii').innerText = judgeCounts.ii;
     document.getElementById('count-alara').innerText = judgeCounts.alara;
 
-    // --- ここから「ｽﾃｷ！」＆「ｷﾗﾘ！」のパーセンテージによるランク判定 ---
+    // --- 「ｷﾗﾘ！」単体のパーセンテージによるランク判定 ---
     let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
-    let highAccuracyCount = judgeCounts.kirari + judgeCounts.suteki; // 最高判定の合計
-    let accuracyPercent = totalNotes > 0 ? (highAccuracyCount / totalNotes) * 100 : 0;
+    let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
 
     let rank = 'D';
-    if (accuracyPercent >= 85) rank = 'S';
-    else if (accuracyPercent >= 70) rank = 'A';
-    else if (accuracyPercent >= 50) rank = 'B';
-    else if (accuracyPercent >= 25) rank = 'C';
-    // -----------------------------------------------------------------
+    if (accuracyPercent >= 80) rank = 'S';
+    else if (accuracyPercent >= 60) rank = 'A';
+    else if (accuracyPercent >= 40) rank = 'B';
+    else if (accuracyPercent >= 20) rank = 'C';
+    // ----------------------------------------------------
 
     document.getElementById('result-rank').innerText = rank;
 
@@ -897,6 +932,12 @@ function finishGame() {
     resultScreen.style.animation = 'none';
     resultScreen.offsetHeight; // リフロウ強制
     resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
+}
+
+function retryFromResult() {
+    document.getElementById('result-screen').classList.add('hidden');
+    let selectedSong = songs[currentSongIndex];
+    startActualGame(selectedSong);
 }
 
 function backToSelect() {
