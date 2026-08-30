@@ -1302,9 +1302,11 @@ function gameLoop() {
     animTimer += 0.05;
 
     let centerX = canvas.width / 2;
-    // 女の子の位置をさらに約35px（合計約2cm）上に変更
     let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
+
+    // ノーツの始点を2cm（約75px）下に下げるためのオフセット座標
+    let spawnOffsetY = 75;
 
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
@@ -1365,8 +1367,10 @@ function gameLoop() {
                 let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
-                    let x = centerX + (target.x - centerX) * progress;
-                    let y = girlY + (target.y - girlY) * progress;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+                    let x = startSpawnX + (target.x - startSpawnX) * progress;
+                    let y = startSpawnY + (target.y - startSpawnY) * progress;
 
                     ctx.fillStyle = "#9b59b6";
                     ctx.strokeStyle = "#ffffff";
@@ -1396,10 +1400,13 @@ function gameLoop() {
                     let startPos = lanes[path[0]];
                     let endPos = lanes[path[path.length - 1]];
 
-                    let startX = centerX + (startPos.x - centerX) * progress;
-                    let startY = girlY + (startPos.y - girlY) * progress;
-                    let endX = centerX + (endPos.x - centerX) * progress;
-                    let endY = girlY + (endPos.y - girlY) * progress;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+
+                    let startX = startSpawnX + (startPos.x - startSpawnX) * progress;
+                    let startY = startSpawnY + (startPos.y - startSpawnY) * progress;
+                    let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
+                    let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
 
                     let midX = (startX + endX) / 2;
                     let midY = (startY + endY) / 2;
@@ -1452,14 +1459,16 @@ function gameLoop() {
 
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
 
                     if (headProg >= 1.0 || note.started) {
                         headX = target.x;
                         headY = target.y;
                     } else {
                         let pHead = Math.max(0, headProg);
-                        headX = centerX + (target.x - centerX) * pHead;
-                        headY = girlY + (target.y - girlY) * pHead;
+                        headX = startSpawnX + (target.x - startSpawnX) * pHead;
+                        headY = startSpawnY + (target.y - startSpawnY) * pHead;
                     }
 
                     if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
@@ -1467,8 +1476,8 @@ function gameLoop() {
                         tailY = target.y;
                     } else {
                         let pTail = Math.max(0, tailProg);
-                        tailX = centerX + (target.x - centerX) * pTail;
-                        tailY = girlY + (target.y - girlY) * pTail;
+                        tailX = startSpawnX + (target.x - startSpawnX) * pTail;
+                        tailY = startSpawnY + (target.y - startSpawnY) * pTail;
                     }
 
                     if (headProg >= 0) {
@@ -1516,8 +1525,10 @@ function gameLoop() {
                 let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
-                    let x = centerX + (target.x - centerX) * progress;
-                    let y = girlY + (target.y - girlY) * progress;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+                    let x = startSpawnX + (target.x - startSpawnX) * progress;
+                    let y = startSpawnY + (target.y - startSpawnY) * progress;
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = "#ffffff";
                     ctx.fillStyle = "#1abc9c";
