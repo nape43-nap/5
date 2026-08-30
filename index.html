@@ -61,7 +61,7 @@
         h1 {
             color: #7c6f64;
             font-size: 26px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             text-align: center;
         }
         .btn {
@@ -80,16 +80,38 @@
             transform: scale(0.95);
         }
 
-        /* 曲選択リスト */
-        .song-list {
-            width: 100%;
-            max-width: 340px;
+        /* 無限スクロール対応の曲選択エリア */
+        .song-selector-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 12px;
             margin-bottom: 10px;
         }
+        .scroll-arrow {
+            background: none;
+            border: none;
+            color: #d4a373;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            transition: transform 0.1s;
+        }
+        .scroll-arrow:active {
+            transform: scale(1.2);
+        }
+        .song-list-viewport {
+            width: 320px;
+            height: 110px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         .song-card {
+            position: absolute;
+            width: 100%;
             background: #fff;
             border: 3px solid #f0e6d2;
             padding: 12px 15px;
@@ -98,13 +120,9 @@
             align-items: center;
             gap: 15px;
             cursor: pointer;
-            transition: 0.2s;
+            box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-        }
-        .song-card:active {
-            transform: scale(0.97);
-            background: #fdfaf5;
-            border-color: #e3c4a8;
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .song-jacket {
             width: 50px;
@@ -180,12 +198,12 @@
             border: 3px solid #f0e6d2;
             width: 100%;
             max-width: 330px;
-            padding: 20px;
+            padding: 18px;
             border-radius: 20px;
             box-sizing: border-box;
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             position: relative;
-            margin-top: 15px;
+            margin-top: 10px;
         }
         .rank-badge {
             position: absolute;
@@ -204,28 +222,65 @@
             box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
             border: 3px solid #fff;
         }
-        .result-score-container {
-            text-align: center;
-            margin-bottom: 15px;
+        /* リザルト内の楽曲情報ヘッダー */
+        .result-song-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
             border-bottom: 2px dashed #f5efe6;
             padding-bottom: 12px;
         }
+        .result-jacket-small {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            background: #f7f2ea;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            border: 2px solid #f0e6d2;
+            flex-shrink: 0;
+        }
+        .result-song-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            text-align: left;
+        }
+        .result-title-text {
+            font-weight: bold;
+            color: #7c6f64;
+            font-size: 15px;
+        }
+        .result-artist-text {
+            font-size: 11px;
+            color: #b8aea1;
+        }
+
+        .result-score-container {
+            text-align: center;
+            margin-bottom: 12px;
+            border-bottom: 2px dashed #f5efe6;
+            padding-bottom: 10px;
+        }
         .result-score-val {
-            font-size: 34px;
+            font-size: 32px;
             font-weight: bold;
             color: #d4a373;
         }
         .judge-stats {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 5px;
         }
         .judge-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             padding: 0 10px;
         }
@@ -235,7 +290,7 @@
         .stat-label-alara { color: #95a5a6; }
         .stat-value {
             color: #7c6f64;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         #score-board {
@@ -256,26 +311,20 @@
 <div id="game-container">
     <div id="score-board" class="hidden">スコア: 0</div>
 
+    <!-- 1. 曲選択画面（トップ / 無限ループ対応） -->
     <div id="select-screen" class="screen">
         <h1>MUSIC SELECT</h1>
-        <div class="song-list">
-            <div class="song-card" onclick="prepareSong('easy')">
-                <div class="song-jacket">🏰</div>
-                <div class="song-info">
-                    <div class="song-title">お城のメヌエット</div>
-                    <div class="song-artist">Royal Orchestra</div>
-                </div>
+        <div class="song-selector-container">
+            <button class="scroll-arrow" onclick="moveSongSelection(-1)">▲</button>
+            <div class="song-list-viewport" id="song-viewport">
+                <!-- JavaScriptでカードが動的に挿入されます -->
             </div>
-            <div class="song-card" onclick="prepareSong('normal')">
-                <div class="song-jacket">✨</div>
-                <div class="song-info">
-                    <div class="song-title">星降る森の舞踏会</div>
-                    <div class="song-artist">Silky Night</div>
-                </div>
-            </div>
+            <button class="scroll-arrow" onclick="moveSongSelection(1)">▼</button>
         </div>
+        <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
 
+    <!-- 2. クレジット画面（3秒間の演出） -->
     <div id="credit-screen" class="screen hidden">
         <div class="credit-jacket-large" id="credit-jacket-icon">🏰</div>
         <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
@@ -283,12 +332,22 @@
         <div class="ready-text">READY...♪</div>
     </div>
 
+    <!-- 3. リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
             
+            <!-- リザルトの楽曲情報 -->
+            <div class="result-song-header">
+                <div class="result-jacket-small" id="result-jacket-icon">🏰</div>
+                <div class="result-song-meta">
+                    <div class="result-title-text" id="result-song-title">お城のメヌエット</div>
+                    <div class="result-artist-text" id="result-song-artist">Royal Orchestra</div>
+                </div>
+            </div>
+
             <div class="result-score-container">
-                <div style="font-size: 12px; color: #a89f91;">SCORE</div>
+                <div style="font-size: 11px; color: #a89f91;">SCORE</div>
                 <div class="result-score-val" id="final-score">0</div>
             </div>
 
@@ -334,7 +393,14 @@ let score = 0;
 let audioCtx = null;
 let startTime = 0;
 let songDuration = 12.0; 
-let currentSelectedType = 'easy';
+
+// 曲リストのデータ（将来的に何曲でも簡単に追加できます）
+const songs = [
+    { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
+    { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 },
+    { id: 'extra', title: 'おひめさまのパレード', artist: 'Dreamy Kingdom', jacket: '🎠', duration: 13.0 }
+];
+let currentSongIndex = 0;
 
 let judgeCounts = {
     kirari: 0,
@@ -345,6 +411,58 @@ let judgeCounts = {
 
 const targetRadius = 34; 
 const noteSpeed = 2.8;   
+
+// 曲選択の無限ループ描画を更新
+function renderSongSelector() {
+    const viewport = document.getElementById('song-viewport');
+    viewport.innerHTML = '';
+
+    // 現在選択されている曲、その前後をループ計算で取得
+    let prevIdx = (currentSongIndex - 1 + songs.length) % songs.length;
+    let nextIdx = (currentSongIndex + 1) % songs.length;
+
+    let indices = [prevIdx, currentSongIndex, nextIdx];
+    let positions = [-100, 0, 100]; // 上、中央、下の位置（pxオフセット）
+
+    indices.forEach((sIdx, i) => {
+        let song = songs[sIdx];
+        let card = document.createElement('div');
+        card.className = 'song-card';
+        
+        let offsetY = positions[i];
+        let scale = (i === 1) ? 1 : 0.85;
+        let opacity = (i === 1) ? 1 : 0.4;
+        let zIndex = (i === 1) ? 2 : 1;
+
+        card.style.transform = `translateY(${offsetY}px) scale(${scale})`;
+        card.style.opacity = opacity;
+        card.style.zIndex = zIndex;
+
+        card.innerHTML = `
+            <div class="song-jacket">${song.jacket}</div>
+            <div class="song-info">
+                <div class="song-title">${song.title}</div>
+                <div class="song-artist">${song.artist}</div>
+            </div>
+        `;
+
+        // 上下のカードをクリックしたときもそこに移動できるようにする
+        card.onclick = () => {
+            currentSongIndex = sIdx;
+            renderSongSelector();
+        };
+
+        viewport.appendChild(card);
+    });
+}
+
+function moveSongSelection(direction) {
+    currentSongIndex = (currentSongIndex + direction + songs.length) % songs.length;
+    renderSongSelector();
+}
+
+// 初回描画
+renderSongSelector();
 
 function getLanePositions() {
     let positions = [];
@@ -377,8 +495,7 @@ function generateChart(type) {
             { time: 8.5, lane: 3, type: 'tap' },
             { time: 10.0, lane: 2, type: 'tap' }
         ];
-        songDuration = 12.0;
-    } else {
+    } else if (type === 'normal') {
         chartData = [
             { time: 1.0, lane: 0, type: 'tap' },
             { time: 1.6, lane: 4, type: 'tap' },
@@ -390,7 +507,16 @@ function generateChart(type) {
             { time: 7.5, lane: 2, type: 'long', duration: 1.5 },
             { time: 10.0, lane: 2, type: 'tap' }
         ];
-        songDuration = 12.5;
+    } else {
+        // extra用
+        chartData = [
+            { time: 1.0, lane: 0, type: 'tap' },
+            { time: 2.0, lane: 1, type: 'tap' },
+            { time: 3.0, lane: 2, type: 'long', duration: 2.0 },
+            { time: 6.0, lane: 3, type: 'tap' },
+            { time: 7.0, lane: 4, type: 'tap' },
+            { time: 9.0, lane: 0, lane2: 4, type: 'double' }
+        ];
     }
 
     notes = chartData.map(n => ({
@@ -412,21 +538,17 @@ let feedback = {
     maxTime: 25
 };
 
-// 曲選択時の処理（3秒のクレジット表示に移行）
-function prepareSong(type) {
-    currentSelectedType = type;
+// 決定ボタンを押したときの処理
+function confirmSelectedSong() {
+    let selectedSong = songs[currentSongIndex];
+    songDuration = selectedSong.duration;
+
     document.getElementById('select-screen').classList.add('hidden');
 
-    // クレジット表示用の情報を設定
-    if (type === 'easy') {
-        document.getElementById('credit-jacket-icon').innerText = '🏰';
-        document.getElementById('credit-song-title').innerText = 'お城のメヌエット';
-        document.getElementById('credit-song-artist').innerText = 'Royal Orchestra';
-    } else {
-        document.getElementById('credit-jacket-icon').innerText = '✨';
-        document.getElementById('credit-song-title').innerText = '星降る森の舞踏会';
-        document.getElementById('credit-song-artist').innerText = 'Silky Night';
-    }
+    // クレジット表示へ反映
+    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
+    document.getElementById('credit-song-title').innerText = selectedSong.title;
+    document.getElementById('credit-song-artist').innerText = selectedSong.artist;
 
     document.getElementById('credit-screen').classList.remove('hidden');
     gameState = 'CREDIT';
@@ -435,13 +557,12 @@ function prepareSong(type) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    // 3秒後にゲームスタート
     setTimeout(() => {
-        startActualGame(type);
+        startActualGame(selectedSong);
     }, 3000);
 }
 
-function startActualGame(type) {
+function startActualGame(song) {
     document.getElementById('credit-screen').classList.add('hidden');
     document.getElementById('score-board').classList.remove('hidden');
     
@@ -449,8 +570,8 @@ function startActualGame(type) {
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
-    generateChart(type);
-    startTime = audioCtx.currentTime; // クレジット直後に開始
+    generateChart(song.id);
+    startTime = audioCtx.currentTime;
     gameState = 'PLAYING';
 }
 
@@ -458,6 +579,12 @@ function finishGame() {
     gameState = 'RESULT';
     document.getElementById('score-board').classList.add('hidden');
     
+    // リザルト画面に楽曲情報と数値を反映
+    let currentSong = songs[currentSongIndex];
+    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
+    document.getElementById('result-song-title').innerText = currentSong.title;
+    document.getElementById('result-song-artist').innerText = currentSong.artist;
+
     document.getElementById('final-score').innerText = score;
     document.getElementById('count-kirari').innerText = judgeCounts.kirari;
     document.getElementById('count-suteki').innerText = judgeCounts.suteki;
