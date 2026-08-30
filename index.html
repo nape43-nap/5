@@ -736,7 +736,7 @@ function getLanePositions() {
 }
 
 let notes = [];
-let particles = []; // タップ時のエフェクト用パーティクル配列
+let particles = [];
 
 function spawnParticles(x, y, color) {
     for (let i = 0; i < 10; i++) {
@@ -1232,14 +1232,17 @@ function gameLoop() {
                     if (note.type === 'long') {
                         let endTime = note.time + note.duration;
                         
-                        // 【修正点】未タップ時は通常通り接近、保持開始後は始点を判定位置（target）に固定し、終点（テール）だけを動かして縮ませる
-                        let headX, headY;
+                        let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                         let endProgress = (currentTime - (endTime - noteSpeed)) / noteSpeed;
+
+                        // 【修正】まだ出現タイミング（note.time - noteSpeed）になっていない場合は描画をスキップ
+                        if (progress < -0.2) continue;
+
+                        let headX, headY;
                         let tailX = centerX + (target.x - centerX) * endProgress;
                         let tailY = girlY + (target.y - girlY) * endProgress;
 
                         if (!note.started) {
-                            let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                             headX = centerX + (target.x - centerX) * progress;
                             headY = girlY + (target.y - girlY) * progress;
                         } else {
@@ -1271,7 +1274,6 @@ function gameLoop() {
 
                         // 始点（ヘッド）の丸の描画
                         if (!note.holding) {
-                            let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                             if (progress >= 0 && progress <= 1.2) {
                                 ctx.fillStyle = "#f39c12";
                                 ctx.strokeStyle = "#ffffff";
