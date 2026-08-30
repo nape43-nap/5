@@ -163,19 +163,19 @@
             color: #b8aea1;
         }
 
-        /* 雲のハイスコアボード（指定の赤枠位置へ移動し、少しコンパクトに調整） */
+        /* 雲のハイスコアボード（選択カードの枠線に重なる位置へ調整） */
         .cloud-highscore {
             position: absolute;
-            top: 152px;
-            right: 42px;
+            top: 156px;
+            right: 18px;
             background: #ffffff;
             border: 2.5px solid #f0e6d2;
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 15px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.04);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             animation: floatCloud 2.2s ease-in-out infinite alternate;
             z-index: 15;
             box-sizing: border-box;
@@ -185,15 +185,15 @@
             100% { transform: translateY(-8px); }
         }
         .cloud-rank-box {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             background: #fdfbf7;
             border: 2px solid #e3c4a8;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #d4a373;
         }
@@ -203,12 +203,12 @@
             text-align: left;
         }
         .cloud-label {
-            font-size: 8px;
+            font-size: 7px;
             color: #b8aea1;
             letter-spacing: 0.5px;
         }
         .cloud-score-val {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             color: #7c6f64;
         }
@@ -379,7 +379,7 @@
             <div class="song-list-viewport" id="song-viewport">
                 <!-- JavaScriptでリストが動的に挿入されます -->
             </div>
-            <!-- 指定の位置へ移動した雲ハイスコア表示 -->
+            <!-- カードの枠線にかかる位置へ調整した雲ハイスコア表示 -->
             <div class="cloud-highscore">
                 <div class="cloud-rank-box" id="selector-rank">-</div>
                 <div class="cloud-info">
