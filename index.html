@@ -911,7 +911,6 @@ function finishGame() {
     document.getElementById('count-ii').innerText = judgeCounts.ii;
     document.getElementById('count-alara').innerText = judgeCounts.alara;
 
-    // --- タップも含めた「ｷﾗﾘ！」単体のパーセンテージによるランク判定 ---
     let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
     let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
 
@@ -920,17 +919,15 @@ function finishGame() {
     else if (accuracyPercent >= 60) rank = 'A';
     else if (accuracyPercent >= 40) rank = 'B';
     else if (accuracyPercent >= 20) rank = 'C';
-    // -----------------------------------------------------------------
 
     document.getElementById('result-rank').innerText = rank;
 
     saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
 
-    // リザルト画面を表示（CSSアニメーションが毎回発火するように一度クラスを付け直す）
     const resultScreen = document.getElementById('result-screen');
     resultScreen.classList.remove('hidden');
     resultScreen.style.animation = 'none';
-    resultScreen.offsetHeight; // リフロウ強制
+    resultScreen.offsetHeight; 
     resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
 }
 
@@ -942,7 +939,7 @@ function retryFromResult() {
 
 function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
-    document.getElementById('select-screen').classList.add('hidden'); // 安全のため追加
+    document.getElementById('select-screen').classList.add('hidden'); 
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -982,7 +979,6 @@ function handleLaneStart(laneIndex) {
             playHitSound();
         } else {
             closestNote.hit = true;
-            // タップでも最高判定「ｷﾗﾘ！」が出るようにタイミング閾値を調整
             if (minDiff < 0.08) {
                 score += 300;
                 judgeCounts.kirari++;
@@ -1149,12 +1145,21 @@ function gameLoop() {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             }
 
+            // 外側の円（ベースの判定ライン）を描画
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
+
+            // --- ｷﾗﾘ！判定がわかりやすくなるうっすらとした二重円（内側円）を追加 ---
+            ctx.strokeStyle = "rgba(212, 197, 185, 0.45)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, currentRadius * 0.48, 0, Math.PI * 2);
+            ctx.stroke();
+            // -----------------------------------------------------------------
         }
 
         for (let note of notes) {
