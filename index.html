@@ -88,6 +88,30 @@
             transform: scale(0.95);
         }
 
+        /* セレクト画面用の設定ボタン */
+        #selector-config-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #fff;
+            border: 2.5px solid #f0e6d2;
+            color: #7c6f64;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+            z-index: 25;
+            transition: 0.15s;
+        }
+        #selector-config-btn:active {
+            transform: scale(0.92);
+        }
+
         .song-selector-container {
             display: flex;
             flex-direction: column;
@@ -466,6 +490,78 @@
             border: none;
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
         }
+
+        /* 共通モーダル画面デザイン */
+        .modal-panel {
+            background: #fff;
+            border: 3px solid #f0e6d2;
+            width: 90%;
+            max-width: 340px;
+            max-height: 85vh;
+            padding: 22px 18px;
+            border-radius: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 19px;
+            color: #7c6f64;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px dashed #f5efe6;
+            padding-bottom: 8px;
+        }
+        .modal-body {
+            font-size: 13px;
+            color: #7c6f64;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .modal-body p {
+            margin: 6px 0;
+        }
+        .modal-body ul {
+            margin: 6px 0;
+            padding-left: 20px;
+        }
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #fffcf7;
+            border: 2px solid #f5efe6;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .setting-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #7c6f64;
+            display: flex;
+            justify-content: space-between;
+        }
+        .setting-range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #d4a373;
+            cursor: pointer;
+        }
+        .x-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .x-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -473,9 +569,14 @@
 <div id="game-container">
     <div id="score-board">スコア: <span id="score-num">0</span></div>
 
+    <!-- プレイ中のポーズボタン -->
     <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
 
+    <!-- 曲選択画面 -->
     <div id="select-screen" class="screen">
+        <!-- 曲選択画面の右上設定ボタン -->
+        <button id="selector-config-btn" onclick="openConfigModal()">⚙️</button>
+
         <h1 class="en-font">MUSIC SELECT</h1>
         <div class="song-selector-container">
             <div class="song-list-viewport" id="song-viewport"></div>
@@ -490,6 +591,7 @@
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
 
+    <!-- カウントダウン画面 -->
     <div id="credit-screen" class="screen hidden">
         <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
         <div class="credit-title" id="credit-song-title">どんぐりころころ</div>
@@ -497,6 +599,7 @@
         <div class="ready-text en-font">READY...♪</div>
     </div>
 
+    <!-- プレイ中ポーズ画面 -->
     <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
         <div class="pause-panel">
             <div class="pause-title en-font">PAUSE</div>
@@ -506,6 +609,41 @@
         </div>
     </div>
 
+    <!-- 設定モーダル画面 -->
+    <div id="config-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.92); z-index: 40;">
+        <div class="modal-panel">
+            <div class="modal-title en-font">CONFIG / INFO</div>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>ノーツの速さ (速度)</span>
+                    <span id="speed-val-text" style="color: #d4a373;">1.0倍</span>
+                </div>
+                <div class="setting-range-container">
+                    <span style="font-size: 11px; color: #b8aea1;">0.5x</span>
+                    <input type="range" id="speed-range" min="0.5" max="10.0" step="0.5" value="1.0" oninput="onSpeedChange(this.value)">
+                    <span style="font-size: 11px; color: #b8aea1;">10.0x</span>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>📖 遊び方</strong></p>
+                <ul>
+                    <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
+                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
+                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
+                </ul>
+                <br>
+                <p><strong>🎨 クレジット</strong></p>
+                <p>開発・制作：あなたのお名前</p>
+                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
+            </div>
+
+            <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
+        </div>
+    </div>
+
+    <!-- リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
@@ -572,6 +710,9 @@ let songDuration = 18.0;
 let pauseStartTime = 0;
 let totalPausedTime = 0;
 
+// ノーツスピードの設定管理 (localStorageから読み込み、デフォルト1.0)
+let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
+
 const songs = [
     { id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0 },
     { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
@@ -601,6 +742,23 @@ function updateSelectorHighScoreDisplay() {
     document.getElementById('selector-rank').innerText = hsData.rank;
 }
 
+// 設定モーダルの開閉・速度変更処理
+function openConfigModal() {
+    document.getElementById('speed-range').value = noteSpeedMultiplier;
+    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
+    document.getElementById('config-screen').classList.remove('hidden');
+}
+
+function closeConfigModal() {
+    document.getElementById('config-screen').classList.add('hidden');
+}
+
+function onSpeedChange(val) {
+    noteSpeedMultiplier = parseFloat(val);
+    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
+    localStorage.setItem('rhythm_game_speed', noteSpeedMultiplier);
+}
+
 let dragStartY = 0;
 let dragCurrentOffset = 0;
 let isDragging = false;
@@ -609,7 +767,7 @@ const itemHeight = 75;
 let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
 
 const targetRadius = 32; 
-const noteSpeed = 2.8;   
+const baseNoteSpeed = 2.8;   
 
 function renderSongSelector(animating = false) {
     const viewport = document.getElementById('song-viewport');
@@ -1151,6 +1309,7 @@ function gameLoop() {
 
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+        let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
 
         if (songs[currentSongIndex].id === 'donguri') {
             for (let m of scheduledMelodyNotes) {
@@ -1204,7 +1363,8 @@ function gameLoop() {
 
             if (note.type === 'flick') {
                 let target = lanes[note.lane];
-                let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
                     let x = centerX + (target.x - centerX) * progress;
                     let y = girlY + (target.y - girlY) * progress;
@@ -1231,7 +1391,8 @@ function gameLoop() {
             }
             else if (note.type === 'slidenode') {
                 let path = note.path;
-                let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.5) {
                     let startPos = lanes[path[0]];
                     let endPos = lanes[path[path.length - 1]];
@@ -1286,8 +1447,9 @@ function gameLoop() {
             else if (note.type === 'long') {
                 let target = lanes[note.lane];
                 let endTime = note.time + note.duration;
-                let headProg = (currentTime - (note.time - noteSpeed)) / noteSpeed;
-                let tailProg = (currentTime - (endTime - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let headProg = (currentTime - (note.time - travelTime)) / travelTime;
+                let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
 
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
@@ -1352,7 +1514,8 @@ function gameLoop() {
             }
             else {
                 let target = lanes[note.lane];
-                let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
                     let x = centerX + (target.x - centerX) * progress;
                     let y = girlY + (target.y - girlY) * progress;
