@@ -740,26 +740,36 @@ function generateChart(type) {
         chartData = [
             { time: 1.5, lane: 0, type: 'tap' },
             { time: 3.0, lane: 4, type: 'flick' },
-            { time: 4.5, lane: 2, type: 'long', duration: 1.5 },
-            { time: 7.0, lane: 1, type: 'tap' },
-            { time: 8.5, lane: 3, type: 'flick' },
+            // 同時押しのサンプル (例: 1.5秒や4.5秒などに同時に2つ配置)
+            { time: 4.5, lane: 1, type: 'tap' },
+            { time: 4.5, lane: 3, type: 'tap' }, // ★同時のタップ
+            { time: 7.0, lane: 2, type: 'long', duration: 1.5 },
+            { time: 8.5, lane: 0, type: 'tap' },
+            { time: 8.5, lane: 4, type: 'flick' }, // ★同時押し（タップとフリック）
             { time: 10.0, lane: 2, type: 'tap' }
         ];
     } else if (type === 'normal') {
         chartData = [
             { time: 1.0, lane: 0, type: 'tap' },
-            { time: 2.0, lane: 4, type: 'flick' },
-            { time: 3.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
-            { time: 6.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
-            { time: 9.5, lane: 2, type: 'long', duration: 2.0 }
+            { time: 1.0, lane: 4, type: 'tap' }, // ★同時押し
+            { time: 2.5, lane: 1, type: 'flick' },
+            { time: 2.5, lane: 3, type: 'flick' }, // ★同時フリック
+            { time: 4.0, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
+            { time: 7.0, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
+            { time: 10.0, lane: 1, type: 'long', duration: 2.0 },
+            { time: 10.0, lane: 3, type: 'long', duration: 2.0 } // ★同時ロング
         ];
     } else {
         chartData = [
             { time: 1.0, lane: 0, type: 'flick' },
-            { time: 2.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
-            { time: 5.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
-            { time: 8.5, lane: 2, type: 'long', duration: 2.0 },
-            { time: 11.0, lane: 4, type: 'flick' }
+            { time: 1.0, lane: 4, type: 'flick' },
+            { time: 2.5, lane: 1, type: 'slidenode', path: [1, 2, 3], pathTime: 1.5, direction: 'right' },  
+            { time: 2.5, lane: 3, type: 'slidenode', path: [3, 2, 1], pathTime: 1.5, direction: 'left' },  
+            { time: 6.0, lane: 0, type: 'long', duration: 2.0 },
+            { time: 6.0, lane: 4, type: 'long', duration: 2.0 },
+            { time: 9.5, lane: 2, type: 'tap' },
+            { time: 11.0, lane: 1, type: 'flick' },
+            { time: 11.0, lane: 3, type: 'flick' }
         ];
     }
 
@@ -767,13 +777,15 @@ function generateChart(type) {
         ...n,
         hit: false,       
         holding: false,   
-        started: false
+        started: false,
+        activePointerId: null // どの指でホールド中かを紐付けるID
     }));
 }
 
 let animTimer = 0;
-let activeTouch = null; 
-let activeTargetNote = null;
+
+// ★【マルチタッチ管理用マップ】画面上にあるすべての指を pointerId ごとに追跡する
+let activeTouches = new Map();
 
 let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
 
@@ -803,8 +815,7 @@ function startActualGame(song) {
     
     score = 0;
     totalPausedTime = 0;
-    activeTouch = null;
-    activeTargetNote = null;
+    activeTouches.clear();
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
@@ -889,6 +900,7 @@ function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
+// ★【マルチタッチ対応】ポインタが押された瞬間
 canvas.addEventListener('pointerdown', (e) => {
     if(gameState !== 'PLAYING') return;
 
@@ -896,12 +908,21 @@ canvas.addEventListener('pointerdown', (e) => {
     const touchX = e.clientX - rect.left;
     const touchY = e.clientY - rect.top;
 
-    activeTouch = { id: e.pointerId, startX: touchX, startY: touchY, currentX: touchX, currentY: touchY };
+    // タッチ情報をMapに保存
+    activeTouches.set(e.pointerId, {
+        id: e.pointerId,
+        startX: touchX,
+        startY: touchY,
+        currentX: touchX,
+        currentY: touchY,
+        assignedNote: null // この指が操作している長押し・スライドノーツ
+    });
     canvas.setPointerCapture(e.pointerId);
 
     let lanes = getLanePositions();
     let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
 
+    // どのレーン付近を叩いたか判定
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
         if (distance < targetRadius * 2.0) {
@@ -918,7 +939,8 @@ canvas.addEventListener('pointerdown', (e) => {
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
-                                activeTargetNote = note;
+                                note.activePointerId = e.pointerId;
+                                activeTouches.get(e.pointerId).assignedNote = note;
                                 score += 100;
                                 scoreBoardUpdate();
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
@@ -926,10 +948,13 @@ canvas.addEventListener('pointerdown', (e) => {
                             } else if (note.type === 'slidenode') {
                                 note.started = true;
                                 note.holding = true;
-                                activeTargetNote = note;
+                                note.activePointerId = e.pointerId;
+                                activeTouches.get(e.pointerId).assignedNote = note;
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
                                 playHitSound();
                             }
+                            // 1つのタップで同じレーンの複数の未処理ノーツが反応しすぎないようにする
+                            break;
                         }
                     }
                 }
@@ -938,17 +963,19 @@ canvas.addEventListener('pointerdown', (e) => {
     }
 });
 
+// ★【マルチタッチ対応】指が動いた瞬間（スライドや長押しの追跡）
 canvas.addEventListener('pointermove', (e) => {
-    if (!activeTouch || activeTouch.id !== e.pointerId) return;
+    if (!activeTouches.has(e.pointerId)) return;
     const rect = canvas.getBoundingClientRect();
     const touchX = e.clientX - rect.left;
     const touchY = e.clientY - rect.top;
 
-    activeTouch.currentX = touchX;
-    activeTouch.currentY = touchY;
+    let touchInfo = activeTouches.get(e.pointerId);
+    touchInfo.currentX = touchX;
+    touchInfo.currentY = touchY;
 
-    if (activeTargetNote && activeTargetNote.holding) {
-        let note = activeTargetNote;
+    if (touchInfo.assignedNote && touchInfo.assignedNote.holding) {
+        let note = touchInfo.assignedNote;
         if (note.type === 'slidenode') {
             let lanes = getLanePositions();
             let endLaneIdx = note.path[note.path.length - 1];
@@ -957,7 +984,7 @@ canvas.addEventListener('pointermove', (e) => {
             if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
                 note.hit = true;
                 note.holding = false;
-                activeTargetNote = null;
+                touchInfo.assignedNote = null;
                 score += 300;
                 scoreBoardUpdate();
                 judgeCounts.kirari++;
@@ -976,14 +1003,15 @@ canvas.addEventListener('pointercancel', (e) => {
     handleTouchEndOrCancel(e);
 });
 
+// ★【マルチタッチ対応】指が離れた瞬間の処理
 function handleTouchEndOrCancel(e) {
-    if (!activeTouch || activeTouch.id !== e.pointerId) return;
-    let touchInfo = activeTouch;
+    if (!activeTouches.has(e.pointerId)) return;
+    let touchInfo = activeTouches.get(e.pointerId);
     let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
     let lanes = getLanePositions();
 
-    if (activeTargetNote) {
-        let note = activeTargetNote;
+    if (touchInfo.assignedNote) {
+        let note = touchInfo.assignedNote;
         if (note.type === 'long' && note.holding) {
             let endTime = note.time + note.duration;
             let diff = Math.abs(currentTime - endTime);
@@ -1017,8 +1045,8 @@ function handleTouchEndOrCancel(e) {
             }
             scoreBoardUpdate();
         }
-        activeTargetNote = null;
     } else {
+        // フリック判定
         for (let note of notes) {
             if (!note.hit && note.type === 'flick') {
                 let diff = Math.abs(currentTime - note.time);
@@ -1039,7 +1067,7 @@ function handleTouchEndOrCancel(e) {
     }
 
     try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
-    activeTouch = null;
+    activeTouches.delete(e.pointerId);
 }
 
 function judgeAction(diff) {
@@ -1115,7 +1143,6 @@ function gameLoop() {
             let y = lanes[i].y;
             let currentRadius = targetRadius;
 
-            // 判定ラインは常に同じ控えめな半透明の白背景にして、塗りつぶし変更をなしにしました
             ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
@@ -1124,7 +1151,6 @@ function gameLoop() {
             ctx.fill();
             ctx.stroke();
 
-            // 内側の二重円（アクセント）を描画
             ctx.strokeStyle = "#e8dfd1";
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1277,7 +1303,6 @@ function gameLoop() {
                         if (currentTime >= endTime) {
                             note.hit = true;
                             note.holding = false;
-                            activeTargetNote = null;
                             spawnParticles(target.x, target.y, '#f39c12');
                             playHitSound();
                         }
