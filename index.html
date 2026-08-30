@@ -744,27 +744,27 @@ function generateChart(type) {
     if (type === 'easy') {
         chartData = [
             { time: 1.5, lane: 0, type: 'tap' },
-            { time: 3.0, lane: 4, type: 'flick', flickDir: 'UP' },
+            { time: 3.0, lane: 4, type: 'flick' },
             { time: 4.5, lane: 2, type: 'long', duration: 1.5 },
             { time: 7.0, lane: 1, type: 'tap' },
-            { time: 8.5, lane: 3, type: 'flick', flickDir: 'UP' },
+            { time: 8.5, lane: 3, type: 'flick' },
             { time: 10.0, lane: 2, type: 'tap' }
         ];
     } else if (type === 'normal') {
         chartData = [
             { time: 1.0, lane: 0, type: 'tap' },
-            { time: 1.6, lane: 4, type: 'flick', flickDir: 'UP' },
+            { time: 1.6, lane: 4, type: 'flick' },
             { time: 2.2, lane: 1, lane2: 3, type: 'double' }, 
             { time: 3.0, lane: 1, type: 'long', duration: 2.0 }, 
             { time: 6.0, lane: 0, lane2: 4, type: 'double' },
-            { time: 7.5, lane: 2, type: 'slidenode', path: [2, 3, 4], pathTime: 1.5 }, // 軌跡なぞりノーツ
+            { time: 7.5, lane: 2, type: 'slidenode', path: [2, 3, 4], pathTime: 1.5 },
             { time: 10.0, lane: 2, type: 'tap' }
         ];
     } else {
         chartData = [
-            { time: 1.0, lane: 0, type: 'flick', flickDir: 'LEFT' },
-            { time: 2.0, lane: 2, type: 'flick', flickDir: 'UP' },
-            { time: 3.0, lane: 4, type: 'flick', flickDir: 'RIGHT' },
+            { time: 1.0, lane: 0, type: 'flick' },
+            { time: 2.0, lane: 2, type: 'flick' },
+            { time: 3.0, lane: 4, type: 'flick' },
             { time: 5.0, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 2.0 },
             { time: 8.0, lane: 2, type: 'long', duration: 2.0 },
             { time: 11.0, lane: 0, lane2: 4, type: 'double' }
@@ -776,14 +776,14 @@ function generateChart(type) {
         hit: false,       
         holding: false,   
         started: false,
-        slideProgressIdx: 0 // 軌跡なぞり用の進捗
+        slideProgressIdx: 0 
     }));
 }
 
 let animTimer = 0;
 let laneHitEffects = [0, 0, 0, 0, 0];
-let activeTouches = {}; // pointerId => { lane, startX, startY, currentNote }
-let touchHistory = {};  // フリック検出用座標
+let activeTouches = {}; 
+let touchHistory = {};  
 
 let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
 
@@ -915,7 +915,6 @@ window.addEventListener('pointerdown', (e) => {
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
         if (distance < targetRadius * 1.8) {
-            // タップ・ロング・スライド・フリックの判定受付
             for (let note of notes) {
                 if (!note.hit && !note.started) {
                     if (note.lane === i || (note.type === 'double' && note.lane2 === i)) {
@@ -929,7 +928,7 @@ window.addEventListener('pointerdown', (e) => {
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
-                                laneHitEffects[i] = 999;
+                                laneHitEffects[i] = 999; // 保持中は光り続ける
                                 score += 100;
                                 scoreBoardUpdate();
                                 playHitSound();
@@ -938,7 +937,6 @@ window.addEventListener('pointerdown', (e) => {
                                 note.holding = true;
                                 playHitSound();
                             }
-                            // フリックは指を離した瞬間や動かした時に判定するためここでは保持
                             activeTouches[e.pointerId].targetNote = note;
                         }
                     }
@@ -949,7 +947,7 @@ window.addEventListener('pointerdown', (e) => {
     }
 });
 
-// タッチ移動時（スライド・軌跡なぞり・フリックの追跡）
+// タッチ移動時
 window.addEventListener('pointermove', (e) => {
     if (!activeTouches[e.pointerId]) return;
     const rect = canvas.getBoundingClientRect();
@@ -966,7 +964,6 @@ window.addEventListener('pointermove', (e) => {
     let touchInfo = activeTouches[e.pointerId];
     if (touchInfo && touchInfo.targetNote) {
         let note = touchInfo.targetNote;
-        // 軌跡なぞり（slidenode）の処理
         if (note.type === 'slidenode' && note.holding) {
             let lanes = getLanePositions();
             let path = note.path;
@@ -990,7 +987,6 @@ window.addEventListener('pointermove', (e) => {
     }
 });
 
-// タッチ終了時（フリックの判定やロングの離し判定）
 window.addEventListener('pointerup', (e) => {
     handleTouchEndOrCancel(e.pointerId);
 });
@@ -1007,36 +1003,25 @@ function handleTouchEndOrCancel(pointerId) {
         let note = touchInfo.targetNote;
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
 
-        // フリックノーツの判定
+        // フリックノーツの判定（全方向スライドOK）
         if (note.type === 'flick' && !note.hit) {
             let diff = Math.abs(currentTime - note.time);
             if (diff < 0.35 && history.length >= 2) {
                 let startPos = history[0];
                 let endPos = history[history.length - 1];
-                let dx = endPos.x - startPos.x;
-                let dy = endPos.y - startPos.y;
-                let dist = Math.hypot(dx, dy);
+                let dist = Math.hypot(endPos.x - startPos.x, endPos.y - startPos.y);
 
-                if (dist > 25) { // 一定以上スワイプされていたらフリック成功
-                    let dir = 'UP';
-                    if (Math.abs(dx) > Math.abs(dy)) {
-                        dir = dx > 0 ? 'RIGHT' : 'LEFT';
-                    } else {
-                        dir = dy > 0 ? 'DOWN' : 'UP';
-                    }
-
-                    if (dir === note.flickDir || note.flickDir === 'ANY') {
-                        note.hit = true;
-                        score += 350;
-                        judgeCounts.kirari++;
-                        showFeedback("ｷﾗﾘ!", "#f1c40f");
-                        playHitSound();
-                    }
+                if (dist > 20) { // どの方向でも一定距離スワイプされていればOK
+                    note.hit = true;
+                    score += 350;
+                    judgeCounts.kirari++;
+                    showFeedback("ｷﾗﾘ!", "#f1c40f");
+                    playHitSound();
                 }
             }
         }
 
-        // ロングノーツの離し判定
+        // ロングノーツの離し判定（保持中で到達または途中解除）
         if (note.type === 'long' && note.holding) {
             let endTime = note.time + note.duration;
             let diff = Math.abs(currentTime - endTime);
@@ -1148,7 +1133,6 @@ function gameLoop() {
             ctx.fill();
             ctx.stroke();
 
-            // 二重のキラリ誘導円
             ctx.strokeStyle = "rgba(212, 197, 185, 0.45)";
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1159,7 +1143,7 @@ function gameLoop() {
         for (let note of notes) {
             if (note.hit) continue;
 
-            // 1. フリックノーツの描画
+            // 1. フリックノーツの描画（矢印なし、全方向スライドOK）
             if (note.type === 'flick') {
                 let target = lanes[note.lane];
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
@@ -1167,24 +1151,13 @@ function gameLoop() {
                     let x = centerX + (target.x - centerX) * progress;
                     let y = girlY + (target.y - girlY) * progress;
 
-                    ctx.fillStyle = "#9b59b6"; // フリックは紫色のハート・星風
+                    ctx.fillStyle = "#9b59b6";
                     ctx.strokeStyle = "#ffffff";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
-                    ctx.arc(x, y, 18, 0, Math.PI * 2);
+                    ctx.arc(x, y, 16, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
-
-                    // 矢印マークの描画
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "14px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    let arrowSymbol = "▲";
-                    if (note.flickDir === 'LEFT') arrowSymbol = "◀";
-                    else if (note.flickDir === 'RIGHT') arrowSymbol = "▶";
-                    else if (note.flickDir === 'DOWN') arrowSymbol = "▼";
-                    ctx.fillText(arrowSymbol, x, y);
                 }
                 if (progress > 1.2 && !note.hit) {
                     note.hit = true;
@@ -1197,7 +1170,6 @@ function gameLoop() {
                 let path = note.path;
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                 if (progress >= 0 && progress <= 1.5) {
-                    // 軌跡のラインを描画
                     ctx.strokeStyle = "rgba(241, 196, 15, 0.5)";
                     ctx.lineWidth = 6;
                     ctx.lineCap = "round";
@@ -1211,7 +1183,6 @@ function gameLoop() {
                     }
                     ctx.stroke();
 
-                    // 先頭ノーツ
                     let startPos = lanes[path[0]];
                     let hx = centerX + (startPos.x - centerX) * progress;
                     let hy = girlY + (startPos.y - girlY) * progress;
@@ -1234,28 +1205,16 @@ function gameLoop() {
                     let target = lanes[lIdx];
                     if (note.type === 'long') {
                         let endTime = note.time + note.duration;
-                        if (note.holding) {
-                            if (currentTime <= endTime) {
-                                ctx.fillStyle = "rgba(241, 196, 15, 0.7)";
-                                ctx.beginPath();
-                                ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
-                                ctx.fill();
-                                if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
-                            } else {
-                                note.hit = true;
-                                note.holding = false;
-                                laneHitEffects[lIdx] = 0;
-                            }
-                            continue;
-                        }
                         let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                         let endProgress = (currentTime - (endTime - noteSpeed)) / noteSpeed;
-                        if (progress <= 1.2 && endProgress >= -0.2) {
-                            let headX = centerX + (target.x - centerX) * progress;
-                            let headY = girlY + (target.y - girlY) * progress;
-                            let tailX = centerX + (target.x - centerX) * endProgress;
-                            let tailY = girlY + (target.y - girlY) * endProgress;
 
+                        let headX = centerX + (target.x - centerX) * progress;
+                        let headY = girlY + (target.y - girlY) * progress;
+                        let tailX = centerX + (target.x - centerX) * endProgress;
+                        let tailY = girlY + (target.y - girlY) * endProgress;
+
+                        // 棒（ロングの軌跡）を描画
+                        if (progress <= 1.2 && endProgress >= -0.2) {
                             ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                             ctx.lineWidth = 14;
                             ctx.lineCap = "round";
@@ -1264,6 +1223,42 @@ function gameLoop() {
                             ctx.lineTo(headX, headY);
                             ctx.stroke();
                         }
+
+                        // 終点（テール）の丸を描画
+                        if (endProgress <= 1.2 && endProgress >= -0.2) {
+                            ctx.fillStyle = "#f39c12";
+                            ctx.strokeStyle = "#ffffff";
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(tailX, tailY, 13, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
+
+                        // 始点（ヘッド）の丸を描画（押されている間も消えないように修正）
+                        if (!note.holding && progress >= 0 && progress <= 1.2) {
+                            ctx.fillStyle = "#f39c12";
+                            ctx.strokeStyle = "#ffffff";
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                        } else if (note.holding) {
+                            // 保持中の光るエフェクト
+                            ctx.fillStyle = "rgba(241, 196, 15, 0.8)";
+                            ctx.beginPath();
+                            ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
+                            ctx.fill();
+                            if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
+                            
+                            if (currentTime > endTime) {
+                                note.hit = true;
+                                note.holding = false;
+                                laneHitEffects[lIdx] = 0;
+                            }
+                        }
+
                     } else {
                         let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
                         if (progress >= 0 && progress <= 1.2) {
