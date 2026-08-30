@@ -736,9 +736,28 @@ function getLanePositions() {
 }
 
 let notes = [];
+let particles = []; // タップ時のエフェクト用パーティクル配列
+
+function spawnParticles(x, y, color) {
+    for (let i = 0; i < 10; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let speed = 2 + Math.random() * 4;
+        particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 3 + Math.random() * 4,
+            color: color,
+            alpha: 1.0,
+            decay: 0.04 + Math.random() * 0.04
+        });
+    }
+}
 
 function generateChart(type) {
     notes = [];
+    particles = [];
     let chartData = [];
 
     if (type === 'easy') {
@@ -924,17 +943,20 @@ window.addEventListener('pointerdown', (e) => {
                                 note.hit = true;
                                 judgeAction(diff);
                                 laneHitEffects[i] = 15;
+                                spawnParticles(lanes[i].x, lanes[i].y, note.type === 'double' ? '#e91e63' : '#1abc9c');
                                 playHitSound();
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
-                                laneHitEffects[i] = 999; // 保持中は光り続ける
+                                laneHitEffects[i] = 999; 
                                 score += 100;
                                 scoreBoardUpdate();
+                                spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
                                 playHitSound();
                             } else if (note.type === 'slidenode') {
                                 note.started = true;
                                 note.holding = true;
+                                spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
                                 playHitSound();
                             }
                             activeTouches[e.pointerId].targetNote = note;
@@ -974,6 +996,7 @@ window.addEventListener('pointermove', (e) => {
                     note.slideProgressIdx++;
                     score += 50;
                     scoreBoardUpdate();
+                    spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
                     playHitSound();
                     if (note.slideProgressIdx >= path.length) {
                         note.hit = true;
@@ -1002,8 +1025,9 @@ function handleTouchEndOrCancel(pointerId) {
     if (touchInfo.targetNote) {
         let note = touchInfo.targetNote;
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+        let lanes = getLanePositions();
 
-        // フリックノーツの判定（全方向スライドOK）
+        // フリックノーツの判定
         if (note.type === 'flick' && !note.hit) {
             let diff = Math.abs(currentTime - note.time);
             if (diff < 0.35 && history.length >= 2) {
@@ -1011,17 +1035,18 @@ function handleTouchEndOrCancel(pointerId) {
                 let endPos = history[history.length - 1];
                 let dist = Math.hypot(endPos.x - startPos.x, endPos.y - startPos.y);
 
-                if (dist > 20) { // どの方向でも一定距離スワイプされていればOK
+                if (dist > 20) {
                     note.hit = true;
                     score += 350;
                     judgeCounts.kirari++;
                     showFeedback("ｷﾗﾘ!", "#f1c40f");
+                    spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
                     playHitSound();
                 }
             }
         }
 
-        // ロングノーツの離し判定（保持中で到達または途中解除）
+        // ロングノーツの離し判定
         if (note.type === 'long' && note.holding) {
             let endTime = note.time + note.duration;
             let diff = Math.abs(currentTime - endTime);
@@ -1037,6 +1062,7 @@ function handleTouchEndOrCancel(pointerId) {
             note.hit = true;
             note.holding = false;
             laneHitEffects[note.lane] = 0;
+            spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
             scoreBoardUpdate();
         }
     }
@@ -1143,7 +1169,7 @@ function gameLoop() {
         for (let note of notes) {
             if (note.hit) continue;
 
-            // 1. フリックノーツの描画（矢印なし、全方向スライドOK）
+            // 1. フリックノーツの描画
             if (note.type === 'flick') {
                 let target = lanes[note.lane];
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
@@ -1205,16 +1231,24 @@ function gameLoop() {
                     let target = lanes[lIdx];
                     if (note.type === 'long') {
                         let endTime = note.time + note.duration;
-                        let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                        
+                        // 【修正点】未タップ時は通常通り接近、保持開始後は始点を判定位置（target）に固定し、終点（テール）だけを動かして縮ませる
+                        let headX, headY;
                         let endProgress = (currentTime - (endTime - noteSpeed)) / noteSpeed;
-
-                        let headX = centerX + (target.x - centerX) * progress;
-                        let headY = girlY + (target.y - girlY) * progress;
                         let tailX = centerX + (target.x - centerX) * endProgress;
                         let tailY = girlY + (target.y - girlY) * endProgress;
 
+                        if (!note.started) {
+                            let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                            headX = centerX + (target.x - centerX) * progress;
+                            headY = girlY + (target.y - girlY) * progress;
+                        } else {
+                            headX = target.x;
+                            headY = target.y;
+                        }
+
                         // 棒（ロングの軌跡）を描画
-                        if (progress <= 1.2 && endProgress >= -0.2) {
+                        if (endProgress <= 1.2) {
                             ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                             ctx.lineWidth = 14;
                             ctx.lineCap = "round";
@@ -1235,16 +1269,19 @@ function gameLoop() {
                             ctx.stroke();
                         }
 
-                        // 始点（ヘッド）の丸を描画（押されている間も消えないように修正）
-                        if (!note.holding && progress >= 0 && progress <= 1.2) {
-                            ctx.fillStyle = "#f39c12";
-                            ctx.strokeStyle = "#ffffff";
-                            ctx.lineWidth = 3;
-                            ctx.beginPath();
-                            ctx.arc(headX, headY, 16, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.stroke();
-                        } else if (note.holding) {
+                        // 始点（ヘッド）の丸の描画
+                        if (!note.holding) {
+                            let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                            if (progress >= 0 && progress <= 1.2) {
+                                ctx.fillStyle = "#f39c12";
+                                ctx.strokeStyle = "#ffffff";
+                                ctx.lineWidth = 3;
+                                ctx.beginPath();
+                                ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.stroke();
+                            }
+                        } else {
                             // 保持中の光るエフェクト
                             ctx.fillStyle = "rgba(241, 196, 15, 0.8)";
                             ctx.beginPath();
@@ -1256,6 +1293,7 @@ function gameLoop() {
                                 note.hit = true;
                                 note.holding = false;
                                 laneHitEffects[lIdx] = 0;
+                                spawnParticles(target.x, target.y, '#f39c12');
                             }
                         }
 
@@ -1281,6 +1319,27 @@ function gameLoop() {
                 }
             }
         }
+    }
+
+    // パーティクルの描画と更新
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
     }
 
     if (feedback.timer > 0) {
