@@ -60,9 +60,10 @@
         }
         h1 {
             color: #7c6f64;
-            font-size: 26px;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 15px;
             text-align: center;
+            letter-spacing: 1px;
         }
         .btn {
             background-color: #e3c4a8;
@@ -74,44 +75,46 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
             transition: 0.2s;
-            margin-top: 15px;
+            margin-top: 20px;
         }
         .btn:active {
             transform: scale(0.95);
         }
 
-        /* 無限スクロール対応の曲選択エリア */
+        /* 縦型無限ループ・曲一覧セレクター */
         .song-selector-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            position: relative;
         }
         .scroll-arrow {
             background: none;
             border: none;
             color: #d4a373;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
-            padding: 5px;
+            padding: 8px;
+            z-index: 5;
             transition: transform 0.1s;
         }
         .scroll-arrow:active {
-            transform: scale(1.2);
+            transform: scale(1.25);
         }
         .song-list-viewport {
-            width: 320px;
-            height: 110px;
+            width: 330px;
+            height: 260px; /* 複数枚のカードが綺麗に収まる高さ */
             overflow: hidden;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
         }
         .song-card {
             position: absolute;
-            width: 100%;
+            width: 300px;
             background: #fff;
             border: 3px solid #f0e6d2;
             padding: 12px 15px;
@@ -122,7 +125,12 @@
             cursor: pointer;
             box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease, border-color 0.3s ease;
+        }
+        .song-card.selected {
+            border-color: #d4a373;
+            background: #fffcf7;
+            box-shadow: 0 6px 15px rgba(212, 163, 115, 0.15);
         }
         .song-jacket {
             width: 50px;
@@ -144,7 +152,7 @@
         .song-title {
             font-weight: bold;
             color: #7c6f64;
-            font-size: 16px;
+            font-size: 15px;
         }
         .song-artist {
             font-size: 12px;
@@ -222,7 +230,6 @@
             box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
             border: 3px solid #fff;
         }
-        /* リザルト内の楽曲情報ヘッダー */
         .result-song-header {
             display: flex;
             align-items: center;
@@ -311,13 +318,13 @@
 <div id="game-container">
     <div id="score-board" class="hidden">スコア: 0</div>
 
-    <!-- 1. 曲選択画面（トップ / 無限ループ対応） -->
+    <!-- 1. 曲選択画面（縦スクロール一覧＆無限ループ） -->
     <div id="select-screen" class="screen">
         <h1>MUSIC SELECT</h1>
         <div class="song-selector-container">
             <button class="scroll-arrow" onclick="moveSongSelection(-1)">▲</button>
             <div class="song-list-viewport" id="song-viewport">
-                <!-- JavaScriptでカードが動的に挿入されます -->
+                <!-- JavaScriptでリストが動的に挿入されます -->
             </div>
             <button class="scroll-arrow" onclick="moveSongSelection(1)">▼</button>
         </div>
@@ -337,7 +344,6 @@
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
             
-            <!-- リザルトの楽曲情報 -->
             <div class="result-song-header">
                 <div class="result-jacket-small" id="result-jacket-icon">🏰</div>
                 <div class="result-song-meta">
@@ -388,13 +394,13 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-let gameState = 'SELECT'; // SELECT, CREDIT, PLAYING, RESULT
+let gameState = 'SELECT';
 let score = 0;
 let audioCtx = null;
 let startTime = 0;
 let songDuration = 12.0; 
 
-// 曲リストのデータ（将来的に何曲でも簡単に追加できます）
+// 曲リスト（楽曲が増えても自動で無限ループに対応します）
 const songs = [
     { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
     { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 },
@@ -412,27 +418,26 @@ let judgeCounts = {
 const targetRadius = 34; 
 const noteSpeed = 2.8;   
 
-// 曲選択の無限ループ描画を更新
+// 曲選択画面の無限ループ＆リスト描画
 function renderSongSelector() {
     const viewport = document.getElementById('song-viewport');
     viewport.innerHTML = '';
 
-    // 現在選択されている曲、その前後をループ計算で取得
-    let prevIdx = (currentSongIndex - 1 + songs.length) % songs.length;
-    let nextIdx = (currentSongIndex + 1) % songs.length;
+    // 綺麗に上下に流れ続けるように、相対インデックス (-1, 0, 1, 2...) を生成
+    // リストが何曲あっても対応できるように計算しています
+    for (let i = -2; i <= 2; i++) {
+        let targetIdx = (currentSongIndex + i + songs.length * 10) % songs.length;
+        let song = songs[targetIdx];
 
-    let indices = [prevIdx, currentSongIndex, nextIdx];
-    let positions = [-100, 0, 100]; // 上、中央、下の位置（pxオフセット）
-
-    indices.forEach((sIdx, i) => {
-        let song = songs[sIdx];
         let card = document.createElement('div');
         card.className = 'song-card';
-        
-        let offsetY = positions[i];
-        let scale = (i === 1) ? 1 : 0.85;
-        let opacity = (i === 1) ? 1 : 0.4;
-        let zIndex = (i === 1) ? 2 : 1;
+        if (i === 0) card.classList.add('selected');
+
+        // 位置と見た目の変化（中央が一番くっきり、上下は薄く縮小）
+        let offsetY = i * 75; 
+        let scale = (i === 0) ? 1 : 0.88;
+        let opacity = (i === 0) ? 1 : (Math.abs(i) === 1 ? 0.5 : 0.2);
+        let zIndex = 3 - Math.abs(i);
 
         card.style.transform = `translateY(${offsetY}px) scale(${scale})`;
         card.style.opacity = opacity;
@@ -446,14 +451,14 @@ function renderSongSelector() {
             </div>
         `;
 
-        // 上下のカードをクリックしたときもそこに移動できるようにする
+        // どのカードをクリックしてもそこにスライドして選択状態にする
         card.onclick = () => {
-            currentSongIndex = sIdx;
+            currentSongIndex = targetIdx;
             renderSongSelector();
         };
 
         viewport.appendChild(card);
-    });
+    }
 }
 
 function moveSongSelection(direction) {
@@ -508,7 +513,6 @@ function generateChart(type) {
             { time: 10.0, lane: 2, type: 'tap' }
         ];
     } else {
-        // extra用
         chartData = [
             { time: 1.0, lane: 0, type: 'tap' },
             { time: 2.0, lane: 1, type: 'tap' },
@@ -538,14 +542,12 @@ let feedback = {
     maxTime: 25
 };
 
-// 決定ボタンを押したときの処理
 function confirmSelectedSong() {
     let selectedSong = songs[currentSongIndex];
     songDuration = selectedSong.duration;
 
     document.getElementById('select-screen').classList.add('hidden');
 
-    // クレジット表示へ反映
     document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
     document.getElementById('credit-song-title').innerText = selectedSong.title;
     document.getElementById('credit-song-artist').innerText = selectedSong.artist;
@@ -579,7 +581,6 @@ function finishGame() {
     gameState = 'RESULT';
     document.getElementById('score-board').classList.add('hidden');
     
-    // リザルト画面に楽曲情報と数値を反映
     let currentSong = songs[currentSongIndex];
     document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
     document.getElementById('result-song-title').innerText = currentSong.title;
