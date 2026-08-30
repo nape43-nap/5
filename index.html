@@ -588,16 +588,16 @@ const songs = [
 ];
 let currentSongIndex = 0;
 
-// ハイスコア読み込み・保存用の関数
+// ハイスコア読み込み・保存用の関数（※ハイスコア自体も割合％で保存するように変更）
 function getSongHighScore(songId) {
     const saved = localStorage.getItem('rhythm_game_hs_' + songId);
-    return saved ? JSON.parse(saved) : { score: 0, rank: '-' };
+    return saved ? JSON.parse(saved) : { score: 0, accuracy: 0, rank: '-' };
 }
 
-function saveSongHighScore(songId, newScore, newRank) {
+function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
     let current = getSongHighScore(songId);
-    if (newScore > current.score) {
-        const data = { score: newScore, rank: newRank };
+    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore > current.score)) {
+        const data = { score: newScore, accuracy: newAccuracy, rank: newRank };
         localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
         return true;
     }
@@ -875,14 +875,21 @@ function finishGame() {
     document.getElementById('count-ii').innerText = judgeCounts.ii;
     document.getElementById('count-alara').innerText = judgeCounts.alara;
 
+    // --- ここから「ｽﾃｷ！」＆「ｷﾗﾘ！」のパーセンテージによるランク判定 ---
+    let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
+    let highAccuracyCount = judgeCounts.kirari + judgeCounts.suteki; // 最高判定の合計
+    let accuracyPercent = totalNotes > 0 ? (highAccuracyCount / totalNotes) * 100 : 0;
+
     let rank = 'D';
-    if (score >= 2500) rank = 'S';
-    else if (score >= 2000) rank = 'A';
-    else if (score >= 1400) rank = 'B';
-    else if (score >= 800) rank = 'C';
+    if (accuracyPercent >= 85) rank = 'S';
+    else if (accuracyPercent >= 70) rank = 'A';
+    else if (accuracyPercent >= 50) rank = 'B';
+    else if (accuracyPercent >= 25) rank = 'C';
+    // -----------------------------------------------------------------
+
     document.getElementById('result-rank').innerText = rank;
 
-    saveSongHighScore(currentSong.id, score, rank);
+    saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
 
     // リザルト画面を表示（CSSアニメーションが毎回発火するように一度クラスを付け直す）
     const resultScreen = document.getElementById('result-screen');
