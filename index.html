@@ -1228,7 +1228,7 @@ function gameLoop() {
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
 
-                    // 1. 始点の位置計算（判定ラインに到達した後は、targetの位置に固定）
+                    // 1. 始点の位置（判定ラインに到達した後はターゲット位置に固定）
                     if (headProg >= 1.0 || note.started) {
                         headX = target.x;
                         headY = target.y;
@@ -1238,18 +1238,18 @@ function gameLoop() {
                         headY = girlY + (target.y - girlY) * pHead;
                     }
 
-                    // 2. 終点の位置計算（出現前は始点と同じ位置にして隠す）
-                    if (tailProg < 0) {
-                        tailX = headX;
-                        tailY = headY;
+                    // 2. 終点の位置（常に始点からの一定距離を維持しつつ、流れてくるように計算）
+                    if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
+                        tailX = target.x;
+                        tailY = target.y;
                     } else {
-                        let pTail = Math.min(1.2, tailProg);
+                        let pTail = Math.max(0, tailProg);
                         tailX = centerX + (target.x - centerX) * pTail;
                         tailY = girlY + (target.y - girlY) * pTail;
                     }
 
-                    // 3. ロングノーツの帯（スライダー）の描画（出現後のみ）
-                    if (tailProg >= 0) {
+                    // 3. 帯（スライダー）の描画：始点が出現した瞬間から、始点と終点の間に常に帯を描画する
+                    if (headProg >= 0) {
                         ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                         ctx.lineWidth = 12;
                         ctx.lineCap = "round";
@@ -1259,8 +1259,8 @@ function gameLoop() {
                         ctx.stroke();
                     }
 
-                    // 4. 終点ノーツ本体の描画
-                    if (tailProg >= 0 && tailProg <= 1.0) {
+                    // 4. 終点ノーツ本体の描画（終点ノートが画面内にある間またはホールド中）
+                    if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
                         ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 3;
@@ -1286,7 +1286,7 @@ function gameLoop() {
                         ctx.fill();
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
                         
-                        if (currentTime > endTime) {
+                        if (currentTime >= endTime) {
                             note.hit = true;
                             note.holding = false;
                             activeTargetNote = null;
