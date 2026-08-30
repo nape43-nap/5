@@ -61,13 +61,7 @@
         h1 {
             color: #7c6f64;
             font-size: 26px;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-        p {
-            color: #a89f91;
-            font-size: 14px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             text-align: center;
         }
         .btn {
@@ -89,7 +83,7 @@
         /* 曲選択リスト */
         .song-list {
             width: 100%;
-            max-width: 320px;
+            max-width: 340px;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -98,9 +92,11 @@
         .song-card {
             background: #fff;
             border: 3px solid #f0e6d2;
-            padding: 15px;
+            padding: 12px 15px;
             border-radius: 15px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             cursor: pointer;
             transition: 0.2s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
@@ -110,15 +106,72 @@
             background: #fdfaf5;
             border-color: #e3c4a8;
         }
+        .song-jacket {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: #f7f2ea;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            border: 2px solid #f0e6d2;
+        }
+        .song-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
         .song-title {
             font-weight: bold;
             color: #7c6f64;
             font-size: 16px;
-            margin-bottom: 4px;
         }
-        .song-diff {
+        .song-artist {
             font-size: 12px;
             color: #b8aea1;
+        }
+
+        /* 曲開始前クレジット画面 */
+        #credit-screen {
+            background: rgba(253, 251, 247, 0.99);
+            text-align: center;
+        }
+        .credit-jacket-large {
+            width: 130px;
+            height: 130px;
+            border-radius: 25px;
+            background: #fff;
+            border: 4px solid #f0e6d2;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: pulseJacket 1.5s infinite alternate;
+        }
+        @keyframes pulseJacket {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.04); }
+        }
+        .credit-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #7c6f64;
+            margin-bottom: 8px;
+        }
+        .credit-artist {
+            font-size: 14px;
+            color: #b8aea1;
+            margin-bottom: 30px;
+        }
+        .ready-text {
+            font-size: 18px;
+            color: #d4a373;
+            font-weight: bold;
+            letter-spacing: 2px;
         }
 
         /* リザルト画面専用デザイン */
@@ -132,6 +185,7 @@
             box-sizing: border-box;
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             position: relative;
+            margin-top: 15px;
         }
         .rank-badge {
             position: absolute;
@@ -165,7 +219,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
         .judge-row {
             display: flex;
@@ -203,29 +257,38 @@
     <div id="score-board" class="hidden">スコア: 0</div>
 
     <div id="select-screen" class="screen">
-        <h1>おひめさまの音楽会</h1>
-        <p>曲を選んでね♪</p>
+        <h1>MUSIC SELECT</h1>
         <div class="song-list">
-            <div class="song-card" onclick="selectSong('easy')">
-                <div class="song-title">🏰 お城のメヌエット</div>
-                <div class="song-diff">かんたん / ほすう少なめ</div>
+            <div class="song-card" onclick="prepareSong('easy')">
+                <div class="song-jacket">🏰</div>
+                <div class="song-info">
+                    <div class="song-title">お城のメヌエット</div>
+                    <div class="song-artist">Royal Orchestra</div>
+                </div>
             </div>
-            <div class="song-card" onclick="selectSong('normal')">
-                <div class="song-title">✨ 星降る森の舞踏会</div>
-                <div class="song-diff">ふつう / ホールド・同時押しあり</div>
+            <div class="song-card" onclick="prepareSong('normal')">
+                <div class="song-jacket">✨</div>
+                <div class="song-info">
+                    <div class="song-title">星降る森の舞踏会</div>
+                    <div class="song-artist">Silky Night</div>
+                </div>
             </div>
         </div>
     </div>
 
+    <div id="credit-screen" class="screen hidden">
+        <div class="credit-jacket-large" id="credit-jacket-icon">🏰</div>
+        <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
+        <div class="credit-artist" id="credit-song-artist">Royal Orchestra</div>
+        <div class="ready-text">READY...♪</div>
+    </div>
+
     <div id="result-screen" class="screen hidden">
-        <h1>演奏おしまい！</h1>
-        <p>すてきな音楽会でした♪</p>
-        
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
             
             <div class="result-score-container">
-                <div style="font-size: 12px; color: #a89f91;">とくてん</div>
+                <div style="font-size: 12px; color: #a89f91;">SCORE</div>
                 <div class="result-score-val" id="final-score">0</div>
             </div>
 
@@ -249,7 +312,7 @@
             </div>
         </div>
 
-        <button class="btn" onclick="backToSelect()">曲えらびへもどる</button>
+        <button class="btn" onclick="backToSelect()">曲選択へ</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -266,13 +329,13 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-let gameState = 'SELECT'; // SELECT, PLAYING, RESULT
+let gameState = 'SELECT'; // SELECT, CREDIT, PLAYING, RESULT
 let score = 0;
 let audioCtx = null;
 let startTime = 0;
 let songDuration = 12.0; 
+let currentSelectedType = 'easy';
 
-// 判定ごとのカウント記録用
 let judgeCounts = {
     kirari: 0,
     suteki: 0,
@@ -349,20 +412,45 @@ let feedback = {
     maxTime: 25
 };
 
-function selectSong(type) {
+// 曲選択時の処理（3秒のクレジット表示に移行）
+function prepareSong(type) {
+    currentSelectedType = type;
     document.getElementById('select-screen').classList.add('hidden');
+
+    // クレジット表示用の情報を設定
+    if (type === 'easy') {
+        document.getElementById('credit-jacket-icon').innerText = '🏰';
+        document.getElementById('credit-song-title').innerText = 'お城のメヌエット';
+        document.getElementById('credit-song-artist').innerText = 'Royal Orchestra';
+    } else {
+        document.getElementById('credit-jacket-icon').innerText = '✨';
+        document.getElementById('credit-song-title').innerText = '星降る森の舞踏会';
+        document.getElementById('credit-song-artist').innerText = 'Silky Night';
+    }
+
+    document.getElementById('credit-screen').classList.remove('hidden');
+    gameState = 'CREDIT';
+
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // 3秒後にゲームスタート
+    setTimeout(() => {
+        startActualGame(type);
+    }, 3000);
+}
+
+function startActualGame(type) {
+    document.getElementById('credit-screen').classList.add('hidden');
     document.getElementById('score-board').classList.remove('hidden');
     
     score = 0;
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    
     generateChart(type);
-    startTime = audioCtx.currentTime + 1.0;
+    startTime = audioCtx.currentTime; // クレジット直後に開始
     gameState = 'PLAYING';
 }
 
@@ -370,14 +458,12 @@ function finishGame() {
     gameState = 'RESULT';
     document.getElementById('score-board').classList.add('hidden');
     
-    // リザルト画面に数値を反映
     document.getElementById('final-score').innerText = score;
     document.getElementById('count-kirari').innerText = judgeCounts.kirari;
     document.getElementById('count-suteki').innerText = judgeCounts.suteki;
     document.getElementById('count-ii').innerText = judgeCounts.ii;
     document.getElementById('count-alara').innerText = judgeCounts.alara;
 
-    // ランク判定（スコアに応じてS〜D）
     let rank = 'D';
     if (score >= 2500) rank = 'S';
     else if (score >= 2000) rank = 'A';
