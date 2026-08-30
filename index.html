@@ -767,8 +767,7 @@ function generateChart(type) {
         ...n,
         hit: false,       
         holding: false,   
-        started: false,
-        slideProgressIdx: (n.direction === 'right') ? 0 : (n.path ? n.path.length - 1 : 0)
+        started: false
     }));
 }
 
@@ -955,30 +954,19 @@ canvas.addEventListener('pointermove', (e) => {
         let note = activeTargetNote;
         if (note.type === 'slidenode') {
             let lanes = getLanePositions();
-            let path = note.path;
-            let currentIdx = note.slideProgressIdx;
-            let stepDir = (note.direction === 'right') ? 1 : -1;
-            let nextIdx = currentIdx + stepDir;
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
 
-            if (nextIdx >= 0 && nextIdx < path.length) {
-                let targetLanePos = lanes[path[nextIdx]];
-                if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.2) {
-                    note.slideProgressIdx = nextIdx;
-                    score += 50;
-                    scoreBoardUpdate();
-                    spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
-                    playHitSound();
-
-                    if ((note.direction === 'right' && note.slideProgressIdx >= path.length - 1) ||
-                        (note.direction === 'left' && note.slideProgressIdx <= 0)) {
-                        note.hit = true;
-                        note.holding = false;
-                        activeTargetNote = null;
-                        judgeCounts.kirari++;
-                        showFeedback("ｷﾗﾘ!", "#f1c40f");
-                        playHitSound();
-                    }
-                }
+            if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                note.holding = false;
+                activeTargetNote = null;
+                score += 300;
+                scoreBoardUpdate();
+                judgeCounts.kirari++;
+                showFeedback("ｷﾗﾘ!", "#f1c40f");
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+                playHitSound();
             }
         }
     }
@@ -1016,6 +1004,22 @@ function handleTouchEndOrCancel(e) {
             laneHitEffects[note.lane] = 0;
             spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
             playHitSound();
+            scoreBoardUpdate();
+        } else if (note.type === 'slidenode' && note.holding) {
+            // スライド途中で指を離した場合、終点付近に近ければOK、遠ければアララ判定
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
+            if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                score += 200;
+                judgeCounts.suteki++;
+                showFeedback("ｽﾃｷ!", "#e67e22");
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+            } else {
+                note.hit = true;
+                judgeCounts.alara++;
+                showFeedback("ｱﾗﾗ", "#95a5a6");
+            }
             scoreBoardUpdate();
         }
         activeTargetNote = null;
@@ -1150,7 +1154,6 @@ function gameLoop() {
                     ctx.fill();
                     ctx.stroke();
 
-                    // ◆の白文字をフリックノーツに適用
                     ctx.fillStyle = "#ffffff";
                     ctx.font = "bold 13px sans-serif";
                     ctx.textAlign = "center";
@@ -1175,13 +1178,16 @@ function gameLoop() {
                     let endX = centerX + (endPos.x - centerX) * progress;
                     let endY = girlY + (endPos.y - girlY) * progress;
 
-                    // 軌道ラインの描画
-                    ctx.strokeStyle = "rgba(241, 196, 15, 0.6)";
-                    ctx.lineWidth = 6;
+                    // 以前のような曲がった帯（曲線）を描画
+                    let controlX = centerX + ((startPos.x + endPos.x) / 2 - centerX) * progress;
+                    let controlY = (girlY + (startPos.y + endPos.y) / 2) * progress / 2 + 100; // アーチ状の曲がり
+
+                    ctx.strokeStyle = "rgba(241, 196, 15, 0.65)";
+                    ctx.lineWidth = 14;
                     ctx.lineCap = "round";
                     ctx.beginPath();
                     ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
+                    ctx.quadraticCurveTo(controlX, controlY, endX, endY);
                     ctx.stroke();
 
                     // 終点ノーツ
@@ -1189,7 +1195,7 @@ function gameLoop() {
                     ctx.strokeStyle = "#fff";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
-                    ctx.arc(endX, endY, 16, 0, Math.PI * 2);
+                    ctx.arc(endX, endY, 15, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
 
