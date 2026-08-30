@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>絵本風リズムゲーム</title>
-    <!-- Google Fonts から RocknRoll One を読み込み -->
-    <link href="https://fonts.googleapis.com/css2?family=RocknRoll+One&display=swap" rel="stylesheet">
-    <!-- だるまどろっぷフォントを読み込み -->
-    <link href="https://fonts.googleapis.com/earlyaccess/darumadropone.css" rel="stylesheet" />
+    <!-- Google Fonts から RocknRoll One と Darumadrop One を読み込み -->
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -26,10 +24,10 @@
             -webkit-touch-callout: none;
         }
 
-        /* 英語表記専用のフォントクラス */
+        /* 英語表記専用のフォントクラス（だるまどろっぷ） */
         .en-font {
-            font-family: 'Daruma Drop One', cursive, sans-serif;
-            letter-spacing: 2px;
+            font-family: 'Darumadrop One', cursive, sans-serif;
+            letter-spacing: 1px;
         }
 
         #game-container {
@@ -198,10 +196,9 @@
             margin-bottom: 30px;
         }
         .ready-text {
-            font-size: 20px;
+            font-size: 22px;
             color: #d4a373;
             font-weight: bold;
-            letter-spacing: 2px;
         }
 
         /* リザルト画面専用デザイン */
@@ -359,7 +356,7 @@
             <div class="result-score-container">
                 <!-- 英語表記部分に en-font クラスを適用 -->
                 <div style="font-size: 11px; color: #a89f91;" class="en-font">SCORE</div>
-                <div class="result-score-val" id="final-score">0</div>
+                <div class="result-score-val en-font" id="final-score">0</div>
             </div>
 
             <div class="judge-stats">
