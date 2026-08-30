@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>絵本風リズムゲーム</title>
+    <!-- Google Fonts から RocknRoll One を読み込み -->
+    <link href="https://fonts.googleapis.com/css2?family=RocknRoll+One&display=swap" rel="stylesheet">
+    <!-- だるまどろっぷフォントを読み込み -->
+    <link href="https://fonts.googleapis.com/earlyaccess/darumadropone.css" rel="stylesheet" />
     <style>
         body {
             margin: 0;
             padding: 0;
             background: #fdfbf7;
-            font-family: sans-serif;
+            /* 基本（日本語など）をロックンロールOneに指定 */
+            font-family: 'RocknRoll One', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,6 +25,13 @@
             -webkit-user-select: none;
             -webkit-touch-callout: none;
         }
+
+        /* 英語表記専用のフォントクラス */
+        .en-font {
+            font-family: 'Daruma Drop One', cursive, sans-serif;
+            letter-spacing: 2px;
+        }
+
         #game-container {
             position: relative;
             width: 100vw;
@@ -60,10 +72,9 @@
         }
         h1 {
             color: #7c6f64;
-            font-size: 24px;
+            font-size: 26px;
             margin-bottom: 20px;
             text-align: center;
-            letter-spacing: 1px;
         }
         .btn {
             background-color: #e3c4a8;
@@ -76,6 +87,7 @@
             box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
             transition: 0.2s;
             margin-top: 25px;
+            font-family: 'RocknRoll One', sans-serif;
         }
         .btn:active {
             transform: scale(0.95);
@@ -186,7 +198,7 @@
             margin-bottom: 30px;
         }
         .ready-text {
-            font-size: 18px;
+            font-size: 20px;
             color: #d4a373;
             font-weight: bold;
             letter-spacing: 2px;
@@ -213,7 +225,7 @@
             height: 55px;
             background: #e3c4a8;
             color: #fff;
-            font-size: 30px;
+            font-size: 28px;
             font-weight: bold;
             display: flex;
             justify-content: center;
@@ -308,11 +320,12 @@
 <body>
 
 <div id="game-container">
-    <div id="score-board" class="hidden">スコア: 0</div>
+    <div id="score-board">スコア: <span id="score-num">0</span></div>
 
-    <!-- 1. 曲選択画面（上下スワイプ対応） -->
+    <!-- 1. 曲選択画面 -->
     <div id="select-screen" class="screen">
-        <h1>MUSIC SELECT</h1>
+        <!-- 英語表記部分に en-font クラスを適用 -->
+        <h1 class="en-font">MUSIC SELECT</h1>
         <div class="song-selector-container">
             <div class="song-list-viewport" id="song-viewport">
                 <!-- JavaScriptでリストが動的に挿入されます -->
@@ -321,18 +334,19 @@
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
 
-    <!-- 2. クレジット画面（3秒間の演出） -->
+    <!-- 2. クレジット画面 -->
     <div id="credit-screen" class="screen hidden">
         <div class="credit-jacket-large" id="credit-jacket-icon">🏰</div>
         <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
         <div class="credit-artist" id="credit-song-artist">Royal Orchestra</div>
-        <div class="ready-text">READY...♪</div>
+        <!-- 英語表記部分に en-font クラスを適用 -->
+        <div class="ready-text en-font">READY...♪</div>
     </div>
 
     <!-- 3. リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
-            <div class="rank-badge" id="result-rank">S</div>
+            <div class="rank-badge en-font" id="result-rank">S</div>
             
             <div class="result-song-header">
                 <div class="result-jacket-small" id="result-jacket-icon">🏰</div>
@@ -343,7 +357,8 @@
             </div>
 
             <div class="result-score-container">
-                <div style="font-size: 11px; color: #a89f91;">SCORE</div>
+                <!-- 英語表記部分に en-font クラスを適用 -->
+                <div style="font-size: 11px; color: #a89f91;" class="en-font">SCORE</div>
                 <div class="result-score-val" id="final-score">0</div>
             </div>
 
@@ -457,7 +472,7 @@ function renderSongSelector(animating = false) {
     }
 }
 
-// スワイプイベントの登録（viewport要素に対して確実に紐付け）
+// スワイプイベントの登録
 const viewportEl = document.getElementById('song-viewport');
 
 viewportEl.addEventListener('pointerdown', (e) => {
@@ -474,7 +489,6 @@ viewportEl.addEventListener('pointermove', (e) => {
     let diffY = e.clientY - dragStartY;
     dragCurrentOffset = diffY;
     
-    // 一定以上動いたらインデックスを切り替えてスムーズにループ
     while (Math.abs(dragCurrentOffset) >= itemHeight) {
         if (dragCurrentOffset > 0) {
             currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
@@ -508,7 +522,6 @@ function handleDragEnd(e) {
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
 
-// 初回描画
 renderSongSelector(false);
 
 function getLanePositions() {
@@ -608,7 +621,6 @@ function confirmSelectedSong() {
 
 function startActualGame(song) {
     document.getElementById('credit-screen').classList.add('hidden');
-    document.getElementById('score-board').classList.remove('hidden');
     
     score = 0;
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
@@ -621,7 +633,6 @@ function startActualGame(song) {
 
 function finishGame() {
     gameState = 'RESULT';
-    document.getElementById('score-board').classList.add('hidden');
     
     let currentSong = songs[currentSongIndex];
     document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
@@ -732,7 +743,7 @@ function handleLaneEnd(laneIndex) {
 }
 
 function scoreBoardUpdate() {
-    document.getElementById('score-board').innerText = `スコア: ${score}`;
+    document.getElementById('score-num').innerText = score;
 }
 
 window.addEventListener('pointerdown', (e) => {
@@ -999,7 +1010,7 @@ function gameLoop() {
         ctx.scale(scale, scale);
 
         ctx.fillStyle = feedback.color;
-        ctx.font = "bold 24px sans-serif";
+        ctx.font = "bold 24px 'RocknRoll One', sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         
