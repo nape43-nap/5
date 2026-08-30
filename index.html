@@ -90,7 +90,7 @@
         }
         .song-list-viewport {
             width: 330px;
-            height: 280px;
+            height: 300px;
             overflow: hidden;
             position: relative;
             display: flex;
@@ -98,8 +98,8 @@
             align-items: center;
             cursor: grab;
             touch-action: none;
-            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
         }
         .song-list-viewport:active {
             cursor: grabbing;
@@ -116,7 +116,7 @@
             gap: 15px;
             box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            pointer-events: none; /* ドラッグ操作を競合させないため */
+            pointer-events: none;
             transition: border-color 0.3s ease, background 0.3s ease;
         }
         .song-card.selected {
@@ -149,12 +149,6 @@
         .song-artist {
             font-size: 12px;
             color: #b8aea1;
-        }
-        .swipe-hint {
-            font-size: 12px;
-            color: #b8aea1;
-            margin-top: 8px;
-            letter-spacing: 1px;
         }
 
         /* 曲開始前クレジット画面 */
@@ -323,7 +317,6 @@
             <div class="song-list-viewport" id="song-viewport">
                 <!-- JavaScriptでリストが動的に挿入されます -->
             </div>
-            <div class="swipe-hint">▲ 上下にスワイプして選択 ▼</div>
         </div>
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
@@ -409,7 +402,7 @@ let currentSongIndex = 0;
 let dragStartY = 0;
 let dragCurrentOffset = 0;
 let isDragging = false;
-const itemHeight = 75; // 1カードあたりの移動距離(px)
+const itemHeight = 75;
 
 let judgeCounts = {
     kirari: 0,
@@ -421,7 +414,7 @@ let judgeCounts = {
 const targetRadius = 34; 
 const noteSpeed = 2.8;   
 
-// 曲選択画面のリスト描画（スワイプオフセットを反映）
+// 曲選択画面のリスト描画
 function renderSongSelector(animating = false) {
     const viewport = document.getElementById('song-viewport');
     viewport.innerHTML = '';
@@ -434,11 +427,9 @@ function renderSongSelector(animating = false) {
         card.className = 'song-card';
         if (i === 0 && dragCurrentOffset === 0) card.classList.add('selected');
 
-        // 基本位置 + ドラッグ中のオフセット量
         let baseY = i * itemHeight;
         let totalY = baseY + dragCurrentOffset;
 
-        // 中央に近づくほど大きく、離れると小さく・透明になる動的エフェクト
         let normY = totalY / itemHeight; 
         let scale = Math.max(0.75, 1 - Math.abs(normY) * 0.15);
         let opacity = Math.max(0.15, 1 - Math.abs(normY) * 0.35);
@@ -466,7 +457,7 @@ function renderSongSelector(animating = false) {
     }
 }
 
-// スワイプイベントの登録
+// スワイプイベントの登録（viewport要素に対して確実に紐付け）
 const viewportEl = document.getElementById('song-viewport');
 
 viewportEl.addEventListener('pointerdown', (e) => {
@@ -483,12 +474,17 @@ viewportEl.addEventListener('pointermove', (e) => {
     let diffY = e.clientY - dragStartY;
     dragCurrentOffset = diffY;
     
-    // ドラッグ中にインデックスが切り替わる境界を超えたら、スムーズにローテーションさせる
-    if (Math.abs(dragCurrentOffset) >= itemHeight / 2) {
-        let steps = Math.trunc(dragCurrentOffset / itemHeight);
-        currentSongIndex = (currentSongIndex - steps + songs.length * 10) % songs.length;
-        dragStartY = e.clientY;
-        dragCurrentOffset = (dragCurrentOffset % itemHeight);
+    // 一定以上動いたらインデックスを切り替えてスムーズにループ
+    while (Math.abs(dragCurrentOffset) >= itemHeight) {
+        if (dragCurrentOffset > 0) {
+            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+            dragStartY += itemHeight;
+            dragCurrentOffset -= itemHeight;
+        } else {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            dragStartY -= itemHeight;
+            dragCurrentOffset += itemHeight;
+        }
     }
     
     renderSongSelector(false);
@@ -498,12 +494,15 @@ function handleDragEnd(e) {
     if (!isDragging || gameState !== 'SELECT') return;
     isDragging = false;
     
-    // 指を離したとき一番近いカード位置へスナップ（吸着）させる
     let snapSteps = Math.round(dragCurrentOffset / itemHeight);
     currentSongIndex = (currentSongIndex - snapSteps + songs.length * 10) % songs.length;
     
     dragCurrentOffset = 0;
     renderSongSelector(true);
+    
+    try {
+        viewportEl.releasePointerCapture(e.pointerId);
+    } catch(err) {}
 }
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
