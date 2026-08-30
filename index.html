@@ -1177,11 +1177,10 @@ function gameLoop() {
                     let endX = centerX + (endPos.x - centerX) * progress;
                     let endY = girlY + (endPos.y - girlY) * progress;
 
-                    // 常に綺麗に下向きに凸（U字）になるように修正
                     let midX = (startX + endX) / 2;
                     let midY = (startY + endY) / 2;
                     let controlX = midX;
-                    let controlY = midY + 35 * progress; // 下向き（プラス方向）に膨らませることで自然なU字の弧を維持
+                    let controlY = midY + 35 * progress;
 
                     ctx.strokeStyle = "rgba(241, 196, 15, 0.65)";
                     ctx.lineWidth = 14;
@@ -1191,7 +1190,6 @@ function gameLoop() {
                     ctx.quadraticCurveTo(controlX, controlY, endX, endY);
                     ctx.stroke();
 
-                    // 終点ノーツ
                     ctx.fillStyle = "#f1c40f";
                     ctx.strokeStyle = "#fff";
                     ctx.lineWidth = 3;
@@ -1200,7 +1198,6 @@ function gameLoop() {
                     ctx.fill();
                     ctx.stroke();
 
-                    // 始点ノーツ
                     ctx.fillStyle = "#f1c40f";
                     ctx.strokeStyle = "#fff";
                     ctx.lineWidth = 3;
@@ -1209,7 +1206,6 @@ function gameLoop() {
                     ctx.fill();
                     ctx.stroke();
 
-                    // 始点に ▶︎ / ◀︎ の白文字を表示
                     ctx.fillStyle = "#ffffff";
                     ctx.font = "bold 12px sans-serif";
                     ctx.textAlign = "center";
@@ -1230,12 +1226,27 @@ function gameLoop() {
                 let tailProg = (currentTime - (endTime - noteSpeed)) / noteSpeed;
 
                 if (headProg >= 0 && tailProg <= 1.2) {
-                    let pHead = Math.max(0, headProg);
-                    let pTail = Math.max(0, tailProg);
-                    let headX = note.started ? target.x : (centerX + (target.x - centerX) * pHead);
-                    let headY = note.started ? target.y : (girlY + (target.y - girlY) * pHead);
-                    let tailX = centerX + (target.x - centerX) * pTail;
-                    let tailY = girlY + (target.y - girlY) * pTail;
+                    let headX, headY, tailX, tailY;
+
+                    if (note.started) {
+                        headX = target.x;
+                        headY = target.y;
+                    } else {
+                        let pHead = Math.max(0, headProg);
+                        headX = centerX + (target.x - centerX) * pHead;
+                        headY = girlY + (target.y - girlY) * pHead;
+                    }
+
+                    if (tailProg < 0) {
+                        // 終点がまだ出てきていない（または画面上を移動中）場合の計算
+                        let pTail = Math.max(0, tailProg);
+                        tailX = centerX + (target.x - centerX) * pTail;
+                        tailY = girlY + (target.y - girlY) * pTail;
+                    } else {
+                        // 終点もすでに判定ラインに到達している場合
+                        tailX = target.x;
+                        tailY = target.y;
+                    }
 
                     ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                     ctx.lineWidth = 12;
