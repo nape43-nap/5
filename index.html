@@ -86,6 +86,7 @@
             transition: 0.2s;
             margin-top: 25px;
             font-family: 'RocknRoll One', sans-serif;
+            z-index: 5;
         }
         .btn:active {
             transform: scale(0.95);
@@ -97,10 +98,11 @@
             flex-direction: column;
             align-items: center;
             position: relative;
+            width: 100%;
         }
         .song-list-viewport {
             width: 330px;
-            height: 300px;
+            height: 280px;
             overflow: hidden;
             position: relative;
             display: flex;
@@ -159,6 +161,56 @@
         .song-artist {
             font-size: 12px;
             color: #b8aea1;
+        }
+
+        /* 雲のハイスコアボード（ふわふわアニメーション付き） */
+        .cloud-highscore {
+            position: absolute;
+            right: 15px;
+            bottom: 95px;
+            background: #ffffff;
+            border: 3px solid #f0e6d2;
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: floatCloud 3s ease-in-out infinite alternate;
+            z-index: 5;
+            box-sizing: border-box;
+        }
+        @keyframes floatCloud {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-6px); }
+        }
+        .cloud-rank-box {
+            width: 32px;
+            height: 32px;
+            background: #fdfbf7;
+            border: 2px solid #e3c4a8;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #d4a373;
+        }
+        .cloud-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .cloud-label {
+            font-size: 9px;
+            color: #b8aea1;
+            letter-spacing: 1px;
+        }
+        .cloud-score-val {
+            font-size: 16px;
+            font-weight: bold;
+            color: #7c6f64;
         }
 
         /* 曲開始前クレジット画面 */
@@ -230,6 +282,8 @@
             border-radius: 50%;
             box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
             border: 3px solid #fff;
+            /* ランク文字だけ初期の標準フォント（RocknRoll One）に戻す */
+            font-family: 'RocknRoll One', sans-serif;
         }
         .result-song-header {
             display: flex;
@@ -321,11 +375,18 @@
 
     <!-- 1. 曲選択画面 -->
     <div id="select-screen" class="screen">
-        <!-- 英語表記部分に en-font クラスを適用 -->
         <h1 class="en-font">MUSIC SELECT</h1>
         <div class="song-selector-container">
             <div class="song-list-viewport" id="song-viewport">
                 <!-- JavaScriptでリストが動的に挿入されます -->
+            </div>
+            <!-- 右下のふわふわ雲ハイスコア表示 -->
+            <div class="cloud-highscore">
+                <div class="cloud-rank-box" id="selector-rank">-</div>
+                <div class="cloud-info">
+                    <div class="cloud-label en-font">HIGH SCORE</div>
+                    <div class="cloud-score-val" id="selector-highscore">0</div>
+                </div>
             </div>
         </div>
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
@@ -336,14 +397,14 @@
         <div class="credit-jacket-large" id="credit-jacket-icon">🏰</div>
         <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
         <div class="credit-artist" id="credit-song-artist">Royal Orchestra</div>
-        <!-- 英語表記部分に en-font クラスを適用 -->
         <div class="ready-text en-font">READY...♪</div>
     </div>
 
     <!-- 3. リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
-            <div class="rank-badge en-font" id="result-rank">S</div>
+            <!-- ランク文字のみ初期の標準フォント（RocknRoll One） -->
+            <div class="rank-badge" id="result-rank">S</div>
             
             <div class="result-song-header">
                 <div class="result-jacket-small" id="result-jacket-icon">🏰</div>
@@ -354,7 +415,6 @@
             </div>
 
             <div class="result-score-container">
-                <!-- 英語表記部分に en-font クラスを適用 -->
                 <div style="font-size: 11px; color: #a89f91;" class="en-font">SCORE</div>
                 <div class="result-score-val en-font" id="final-score">0</div>
             </div>
@@ -409,6 +469,30 @@ const songs = [
     { id: 'extra', title: 'おひめさまのパレード', artist: 'Dreamy Kingdom', jacket: '🎠', duration: 13.0 }
 ];
 let currentSongIndex = 0;
+
+// ハイスコア読み込み・保存用の関数
+function getSongHighScore(songId) {
+    const saved = localStorage.getItem('rhythm_game_hs_' + songId);
+    return saved ? JSON.parse(saved) : { score: 0, rank: '-' };
+}
+
+function saveSongHighScore(songId, newScore, newRank) {
+    let current = getSongHighScore(songId);
+    if (newScore > current.score) {
+        const data = { score: newScore, rank: newRank };
+        localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
+        return true;
+    }
+    return false;
+}
+
+// 選択中の曲のハイスコア表示を更新
+function updateSelectorHighScoreDisplay() {
+    let song = songs[currentSongIndex];
+    let hsData = getSongHighScore(song.id);
+    document.getElementById('selector-highscore').innerText = hsData.score;
+    document.getElementById('selector-rank').innerText = hsData.rank;
+}
 
 // スワイプ操作用の変数
 let dragStartY = 0;
@@ -467,6 +551,7 @@ function renderSongSelector(animating = false) {
 
         viewport.appendChild(card);
     }
+    updateSelectorHighScoreDisplay();
 }
 
 // スワイプイベントの登録
@@ -648,6 +733,9 @@ function finishGame() {
     else if (score >= 1400) rank = 'B';
     else if (score >= 800) rank = 'C';
     document.getElementById('result-rank').innerText = rank;
+
+    // ハイスコアを保存して更新確認
+    saveSongHighScore(currentSong.id, score, rank);
 
     document.getElementById('result-screen').classList.remove('hidden');
 }
