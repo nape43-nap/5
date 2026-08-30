@@ -163,36 +163,37 @@
             color: #b8aea1;
         }
 
-        /* 雲のハイスコアボード（下にずらし、ふわふわの動きを大きく） */
+        /* 雲のハイスコアボード（指定の赤枠位置へ移動し、少しコンパクトに調整） */
         .cloud-highscore {
-            position: relative;
-            margin: 10px 0 0 130px;
+            position: absolute;
+            top: 152px;
+            right: 42px;
             background: #ffffff;
-            border: 3px solid #f0e6d2;
-            padding: 8px 14px;
-            border-radius: 20px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+            border: 2.5px solid #f0e6d2;
+            padding: 5px 10px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             animation: floatCloud 2.2s ease-in-out infinite alternate;
-            z-index: 5;
+            z-index: 15;
             box-sizing: border-box;
         }
         @keyframes floatCloud {
             0% { transform: translateY(0px); }
-            100% { transform: translateY(-10px); }
+            100% { transform: translateY(-8px); }
         }
         .cloud-rank-box {
-            width: 32px;
-            height: 32px;
+            width: 26px;
+            height: 26px;
             background: #fdfbf7;
             border: 2px solid #e3c4a8;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #d4a373;
         }
@@ -202,12 +203,12 @@
             text-align: left;
         }
         .cloud-label {
-            font-size: 9px;
+            font-size: 8px;
             color: #b8aea1;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         .cloud-score-val {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #7c6f64;
         }
@@ -378,7 +379,7 @@
             <div class="song-list-viewport" id="song-viewport">
                 <!-- JavaScriptでリストが動的に挿入されます -->
             </div>
-            <!-- 下へずらし、ふわふわ感を大きくした雲ハイスコア表示 -->
+            <!-- 指定の位置へ移動した雲ハイスコア表示 -->
             <div class="cloud-highscore">
                 <div class="cloud-rank-box" id="selector-rank">-</div>
                 <div class="cloud-info">
