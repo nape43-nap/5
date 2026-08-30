@@ -1228,6 +1228,7 @@ function gameLoop() {
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
 
+                    // 1. 始点の位置計算
                     if (note.started) {
                         headX = target.x;
                         headY = target.y;
@@ -1237,26 +1238,29 @@ function gameLoop() {
                         headY = girlY + (target.y - girlY) * pHead;
                     }
 
+                    // 2. 終点の位置計算（出現前は始点と同じ位置にして隠す）
                     if (tailProg < 0) {
-                        // 終点がまだ出てきていない（または画面上を移動中）場合の計算
-                        let pTail = Math.max(0, tailProg);
+                        tailX = headX;
+                        tailY = headY;
+                    } else {
+                        let pTail = Math.min(1.2, tailProg);
                         tailX = centerX + (target.x - centerX) * pTail;
                         tailY = girlY + (target.y - girlY) * pTail;
-                    } else {
-                        // 終点もすでに判定ラインに到達している場合
-                        tailX = target.x;
-                        tailY = target.y;
                     }
 
-                    ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
-                    ctx.lineWidth = 12;
-                    ctx.lineCap = "round";
-                    ctx.beginPath();
-                    ctx.moveTo(tailX, tailY);
-                    ctx.lineTo(headX, headY);
-                    ctx.stroke();
+                    // 3. ロングノーツの帯（スライダー）の描画（出現後のみ）
+                    if (tailProg >= 0) {
+                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
+                        ctx.lineWidth = 12;
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.moveTo(tailX, tailY);
+                        ctx.lineTo(headX, headY);
+                        ctx.stroke();
+                    }
 
-                    if (tailProg <= 1.0) {
+                    // 4. 終点ノーツ本体の描画
+                    if (tailProg >= 0 && tailProg <= 1.0) {
                         ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 3;
@@ -1266,6 +1270,7 @@ function gameLoop() {
                         ctx.stroke();
                     }
 
+                    // 5. 始点ノーツの描画およびホールド判定処理
                     if (!note.holding && headProg <= 1.2) {
                         ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
