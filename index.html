@@ -84,7 +84,7 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
             transition: 0.2s;
-            margin-top: 25px;
+            margin-top: 15px;
             font-family: 'RocknRoll One', sans-serif;
             z-index: 5;
         }
@@ -163,26 +163,25 @@
             color: #b8aea1;
         }
 
-        /* 雲のハイスコアボード（ふわふわアニメーション付き） */
+        /* 雲のハイスコアボード（下にずらし、ふわふわの動きを大きく） */
         .cloud-highscore {
-            position: absolute;
-            right: 15px;
-            bottom: 95px;
+            position: relative;
+            margin: 10px 0 0 130px;
             background: #ffffff;
             border: 3px solid #f0e6d2;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 20px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.04);
             display: flex;
             align-items: center;
             gap: 10px;
-            animation: floatCloud 3s ease-in-out infinite alternate;
+            animation: floatCloud 2.2s ease-in-out infinite alternate;
             z-index: 5;
             box-sizing: border-box;
         }
         @keyframes floatCloud {
             0% { transform: translateY(0px); }
-            100% { transform: translateY(-6px); }
+            100% { transform: translateY(-10px); }
         }
         .cloud-rank-box {
             width: 32px;
@@ -282,7 +281,6 @@
             border-radius: 50%;
             box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
             border: 3px solid #fff;
-            /* ランク文字だけ初期の標準フォント（RocknRoll One）に戻す */
             font-family: 'RocknRoll One', sans-serif;
         }
         .result-song-header {
@@ -380,7 +378,7 @@
             <div class="song-list-viewport" id="song-viewport">
                 <!-- JavaScriptでリストが動的に挿入されます -->
             </div>
-            <!-- 右下のふわふわ雲ハイスコア表示 -->
+            <!-- 下へずらし、ふわふわ感を大きくした雲ハイスコア表示 -->
             <div class="cloud-highscore">
                 <div class="cloud-rank-box" id="selector-rank">-</div>
                 <div class="cloud-info">
@@ -403,7 +401,6 @@
     <!-- 3. リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
-            <!-- ランク文字のみ初期の標準フォント（RocknRoll One） -->
             <div class="rank-badge" id="result-rank">S</div>
             
             <div class="result-song-header">
@@ -734,7 +731,6 @@ function finishGame() {
     else if (score >= 800) rank = 'C';
     document.getElementById('result-rank').innerText = rank;
 
-    // ハイスコアを保存して更新確認
     saveSongHighScore(currentSong.id, score, rank);
 
     document.getElementById('result-screen').classList.remove('hidden');
