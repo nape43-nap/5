@@ -987,6 +987,7 @@ window.addEventListener('pointermove', (e) => {
                         note.holding = false;
                         judgeCounts.kirari++;
                         showFeedback("ｷﾗﾘ!", "#f1c40f");
+                        playHitSound(); // 軌道ノーツの終点SE
                     }
                 }
             }
@@ -1045,6 +1046,7 @@ function handleTouchEndOrCancel(pointerId) {
             note.holding = false;
             laneHitEffects[note.lane] = 0;
             spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
+            playHitSound(); // ホールドノーツの終点SE
             scoreBoardUpdate();
         }
     }
@@ -1189,6 +1191,7 @@ function gameLoop() {
                     }
                     ctx.stroke();
 
+                    // 始点のマーカー
                     let startPos = lanes[path[0]];
                     let hx = centerX + (startPos.x - centerX) * progress;
                     let hy = girlY + (startPos.y - girlY) * progress;
@@ -1197,6 +1200,18 @@ function gameLoop() {
                     ctx.lineWidth = 3;
                     ctx.beginPath();
                     ctx.arc(hx, hy, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 終点のマーカー
+                    let endPos = lanes[path[path.length - 1]];
+                    let ex = centerX + (endPos.x - centerX) * progress;
+                    let ey = girlY + (endPos.y - girlY) * progress;
+                    ctx.fillStyle = "#f1c40f";
+                    ctx.strokeStyle = "#fff";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(ex, ey, 16, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
                 }
@@ -1272,6 +1287,7 @@ function gameLoop() {
                                 note.holding = false;
                                 laneHitEffects[lIdx] = 0;
                                 spawnParticles(target.x, target.y, '#f39c12');
+                                playHitSound(); // ホールドノーツ自動終了時SE
                             }
                         }
 
