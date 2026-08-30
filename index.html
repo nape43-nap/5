@@ -11,7 +11,6 @@
             margin: 0;
             padding: 0;
             background: #fdfbf7;
-            /* 基本（日本語など）をロックンロールOneに指定 */
             font-family: 'RocknRoll One', sans-serif;
             display: flex;
             justify-content: center;
@@ -24,7 +23,6 @@
             -webkit-touch-callout: none;
         }
 
-        /* 英語表記専用のフォントクラス（だるまどろっぷ） */
         .en-font {
             font-family: 'Darumadrop One', cursive, sans-serif;
             letter-spacing: 1px;
@@ -49,7 +47,6 @@
             height: 100%;
         }
         
-        /* 共通画面スタイル */
         .screen {
             position: absolute;
             top: 0;
@@ -92,7 +89,6 @@
             transform: scale(0.95);
         }
 
-        /* スワイプ・無限ループ対応の曲一覧セレクター */
         .song-selector-container {
             display: flex;
             flex-direction: column;
@@ -163,7 +159,6 @@
             color: #b8aea1;
         }
 
-        /* 雲のハイスコアボード（3ミリほど下へ微調整済み） */
         .cloud-highscore {
             position: absolute;
             top: 162px;
@@ -213,7 +208,6 @@
             color: #7c6f64;
         }
 
-        /* 曲開始前クレジット画面 */
         #credit-screen {
             background: rgba(253, 251, 247, 0.99);
             text-align: center;
@@ -253,7 +247,6 @@
             font-weight: bold;
         }
 
-        /* リザルト画面専用デザイン ＆ フェードインアニメーション */
         #result-screen {
             animation: screenFadeIn 0.4s ease-out forwards;
         }
@@ -374,7 +367,6 @@
             font-size: 15px;
         }
 
-        /* リザルト画面のボタン群レイアウト */
         .result-btn-container {
             display: flex;
             gap: 10px;
@@ -419,7 +411,6 @@
             pointer-events: none;
         }
 
-        /* プレイ画面右上メニューボタン＆ポーズ画面 */
         #menu-btn {
             position: absolute;
             top: 15px;
@@ -492,10 +483,8 @@
 <div id="game-container">
     <div id="score-board">スコア: <span id="score-num">0</span></div>
 
-    <!-- プレイ中メニューボタン -->
     <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
 
-    <!-- 1. 曲選択画面 -->
     <div id="select-screen" class="screen">
         <h1 class="en-font">MUSIC SELECT</h1>
         <div class="song-selector-container">
@@ -511,7 +500,6 @@
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
 
-    <!-- 2. クレジット画面 -->
     <div id="credit-screen" class="screen hidden">
         <div class="credit-jacket-large" id="credit-jacket-icon">🏰</div>
         <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
@@ -519,7 +507,6 @@
         <div class="ready-text en-font">READY...♪</div>
     </div>
 
-    <!-- ポーズ画面 -->
     <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
         <div class="pause-panel">
             <div class="pause-title en-font">PAUSE</div>
@@ -529,7 +516,6 @@
         </div>
     </div>
 
-    <!-- 3. リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
@@ -916,7 +902,6 @@ function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
-// タッチ開始時の処理
 window.addEventListener('pointerdown', (e) => {
     if(e.target.tagName === 'BUTTON' || e.target.closest('.song-list-viewport')) return;
     if(gameState !== 'PLAYING') return;
@@ -969,7 +954,6 @@ window.addEventListener('pointerdown', (e) => {
     }
 });
 
-// タッチ移動時
 window.addEventListener('pointermove', (e) => {
     if (!activeTouches[e.pointerId]) return;
     const rect = canvas.getBoundingClientRect();
@@ -1027,7 +1011,6 @@ function handleTouchEndOrCancel(pointerId) {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let lanes = getLanePositions();
 
-        // フリックノーツの判定
         if (note.type === 'flick' && !note.hit) {
             let diff = Math.abs(currentTime - note.time);
             if (diff < 0.35 && history.length >= 2) {
@@ -1046,7 +1029,6 @@ function handleTouchEndOrCancel(pointerId) {
             }
         }
 
-        // ロングノーツの離し判定
         if (note.type === 'long' && note.holding) {
             let endTime = note.time + note.duration;
             let diff = Math.abs(currentTime - endTime);
@@ -1169,7 +1151,6 @@ function gameLoop() {
         for (let note of notes) {
             if (note.hit) continue;
 
-            // 1. フリックノーツの描画
             if (note.type === 'flick') {
                 let target = lanes[note.lane];
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
@@ -1191,7 +1172,6 @@ function gameLoop() {
                     showFeedback("ｱﾗﾗ", "#95a5a6");
                 }
             }
-            // 2. 軌跡なぞりノーツ（slidenode）の描画
             else if (note.type === 'slidenode') {
                 let path = note.path;
                 let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
@@ -1221,7 +1201,6 @@ function gameLoop() {
                     ctx.stroke();
                 }
             }
-            // 3. 通常・ロング・ダブルノーツ
             else {
                 let targetLanes = [note.lane];
                 let isDouble = (note.type === 'double' && note.lane2 !== undefined);
@@ -1232,26 +1211,26 @@ function gameLoop() {
                     if (note.type === 'long') {
                         let endTime = note.time + note.duration;
                         
-                        let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
-                        let endProgress = (currentTime - (endTime - noteSpeed)) / noteSpeed;
+                        let headProg = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                        let tailProg = (currentTime - (endTime - noteSpeed)) / noteSpeed;
 
-                        // 【修正】まだ出現タイミング（note.time - noteSpeed）になっていない場合は描画をスキップ
-                        if (progress < -0.2) continue;
+                        if (headProg < 0) continue;
 
                         let headX, headY;
-                        let tailX = centerX + (target.x - centerX) * endProgress;
-                        let tailY = girlY + (target.y - girlY) * endProgress;
+                        let pTail = Math.max(0, tailProg);
+                        let tailX = centerX + (target.x - centerX) * pTail;
+                        let tailY = girlY + (target.y - girlY) * pTail;
 
                         if (!note.started) {
-                            headX = centerX + (target.x - centerX) * progress;
-                            headY = girlY + (target.y - girlY) * progress;
+                            let pHead = Math.max(0, headProg);
+                            headX = centerX + (target.x - centerX) * pHead;
+                            headY = girlY + (target.y - girlY) * pHead;
                         } else {
                             headX = target.x;
                             headY = target.y;
                         }
 
-                        // 棒（ロングの軌跡）を描画
-                        if (endProgress <= 1.2) {
+                        if (tailProg <= 1.2) {
                             ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                             ctx.lineWidth = 14;
                             ctx.lineCap = "round";
@@ -1261,8 +1240,7 @@ function gameLoop() {
                             ctx.stroke();
                         }
 
-                        // 終点（テール）の丸を描画
-                        if (endProgress <= 1.2 && endProgress >= -0.2) {
+                        if (tailProg >= 0 && tailProg <= 1.2) {
                             ctx.fillStyle = "#f39c12";
                             ctx.strokeStyle = "#ffffff";
                             ctx.lineWidth = 3;
@@ -1272,9 +1250,8 @@ function gameLoop() {
                             ctx.stroke();
                         }
 
-                        // 始点（ヘッド）の丸の描画
                         if (!note.holding) {
-                            if (progress >= 0 && progress <= 1.2) {
+                            if (headProg >= 0 && headProg <= 1.2) {
                                 ctx.fillStyle = "#f39c12";
                                 ctx.strokeStyle = "#ffffff";
                                 ctx.lineWidth = 3;
@@ -1284,7 +1261,6 @@ function gameLoop() {
                                 ctx.stroke();
                             }
                         } else {
-                            // 保持中の光るエフェクト
                             ctx.fillStyle = "rgba(241, 196, 15, 0.8)";
                             ctx.beginPath();
                             ctx.arc(target.x, target.y, targetRadius + 6, 0, Math.PI * 2);
@@ -1323,7 +1299,6 @@ function gameLoop() {
         }
     }
 
-    // パーティクルの描画と更新
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
         p.x += p.vx;
