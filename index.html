@@ -28,7 +28,7 @@
         .en-font {
             font-family: 'Darumadrop One', cursive, sans-serif;
             letter-spacing: 1px;
-    }
+        }
 
         #game-container {
             position: relative;
@@ -253,7 +253,19 @@
             font-weight: bold;
         }
 
-        /* リザルト画面専用デザイン */
+        /* リザルト画面専用デザイン ＆ フェードインアニメーション */
+        #result-screen {
+            animation: screenFadeIn 0.4s ease-out forwards;
+        }
+        @keyframes screenFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
         .result-panel {
             background: #fff;
             border: 3px solid #f0e6d2;
@@ -265,7 +277,19 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             position: relative;
             margin-top: 10px;
+            animation: panelPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+        @keyframes panelPopup {
+            0% {
+                transform: scale(0.85) translateY(20px);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
         .rank-badge {
             position: absolute;
             top: -20px;
@@ -283,7 +307,19 @@
             box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
             border: 3px solid #fff;
             font-family: 'RocknRoll One', sans-serif;
+            animation: badgePop 0.4s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.4) both;
         }
+        @keyframes badgePop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
         .result-song-header {
             display: flex;
             align-items: center;
@@ -785,7 +821,7 @@ function confirmSelectedSong() {
 
 function startActualGame(song) {
     document.getElementById('credit-screen').classList.add('hidden');
-    document.getElementById('menu-btn').classList.remove('hidden'); // メニューボタンを表示
+    document.getElementById('menu-btn').classList.remove('hidden');
     
     score = 0;
     totalPausedTime = 0;
@@ -797,7 +833,6 @@ function startActualGame(song) {
     gameState = 'PLAYING';
 }
 
-// ポーズメニューを開く
 function openPauseMenu() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSE';
@@ -805,21 +840,18 @@ function openPauseMenu() {
     document.getElementById('pause-screen').classList.remove('hidden');
 }
 
-// ゲームを再開する（つづける）
 function resumeGame() {
     document.getElementById('pause-screen').classList.add('hidden');
     totalPausedTime += (audioCtx.currentTime - pauseStartTime);
     gameState = 'PLAYING';
 }
 
-// 曲の頭から再スタート（やりなおす）
 function retryGame() {
     document.getElementById('pause-screen').classList.add('hidden');
     let selectedSong = songs[currentSongIndex];
     startActualGame(selectedSong);
 }
 
-// 曲選択画面へ戻る
 function returnToSelectFromPause() {
     document.getElementById('pause-screen').classList.add('hidden');
     document.getElementById('menu-btn').classList.add('hidden');
@@ -830,7 +862,7 @@ function returnToSelectFromPause() {
 
 function finishGame() {
     gameState = 'RESULT';
-    document.getElementById('menu-btn').classList.add('hidden'); // メニューボタンを非表示
+    document.getElementById('menu-btn').classList.add('hidden');
     
     let currentSong = songs[currentSongIndex];
     document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
@@ -852,7 +884,12 @@ function finishGame() {
 
     saveSongHighScore(currentSong.id, score, rank);
 
-    document.getElementById('result-screen').classList.remove('hidden');
+    // リザルト画面を表示（CSSアニメーションが毎回発火するように一度クラスを付け直す）
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.classList.remove('hidden');
+    resultScreen.style.animation = 'none';
+    resultScreen.offsetHeight; // リフロウ強制
+    resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
 }
 
 function backToSelect() {
