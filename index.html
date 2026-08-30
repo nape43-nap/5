@@ -805,6 +805,7 @@ function renderSongSelector(animating = false) {
         `;
         viewport.appendChild(card);
     }
+    // 描画が更新されるタイミングで必ずハイスコアも更新
     updateSelectorHighScoreDisplay();
 }
 
@@ -833,6 +834,8 @@ viewportEl.addEventListener('pointermove', (e) => {
             dragStartY -= itemHeight;
             dragCurrentOffset += itemHeight;
         }
+        // ドラッグ中につまみが切り替わったときにもスコア表示を即時更新
+        updateSelectorHighScoreDisplay();
     }
     renderSongSelector(false);
 });
