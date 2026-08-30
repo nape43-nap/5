@@ -911,7 +911,7 @@ function finishGame() {
     document.getElementById('count-ii').innerText = judgeCounts.ii;
     document.getElementById('count-alara').innerText = judgeCounts.alara;
 
-    // --- 「ｷﾗﾘ！」単体のパーセンテージによるランク判定 ---
+    // --- タップも含めた「ｷﾗﾘ！」単体のパーセンテージによるランク判定 ---
     let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
     let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
 
@@ -920,7 +920,7 @@ function finishGame() {
     else if (accuracyPercent >= 60) rank = 'A';
     else if (accuracyPercent >= 40) rank = 'B';
     else if (accuracyPercent >= 20) rank = 'C';
-    // ----------------------------------------------------
+    // -----------------------------------------------------------------
 
     document.getElementById('result-rank').innerText = rank;
 
@@ -942,6 +942,7 @@ function retryFromResult() {
 
 function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
+    document.getElementById('select-screen').classList.add('hidden'); // 安全のため追加
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -981,8 +982,13 @@ function handleLaneStart(laneIndex) {
             playHitSound();
         } else {
             closestNote.hit = true;
-            if (minDiff < 0.12) {
+            // タップでも最高判定「ｷﾗﾘ！」が出るようにタイミング閾値を調整
+            if (minDiff < 0.08) {
                 score += 300;
+                judgeCounts.kirari++;
+                showFeedback("ｷﾗﾘ!", "#f1c40f");
+            } else if (minDiff < 0.20) {
+                score += 200;
                 judgeCounts.suteki++;
                 showFeedback("ｽﾃｷ!", "#e67e22");
             } else {
