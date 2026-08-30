@@ -28,7 +28,7 @@
         .en-font {
             font-family: 'Darumadrop One', cursive, sans-serif;
             letter-spacing: 1px;
-        }
+    }
 
         #game-container {
             position: relative;
@@ -163,7 +163,7 @@
             color: #b8aea1;
         }
 
-        /* 雲のハイスコアボード（さらに3ミリほど下へ微調整） */
+        /* 雲のハイスコアボード（3ミリほど下へ微調整済み） */
         .cloud-highscore {
             position: absolute;
             top: 162px;
@@ -365,12 +365,82 @@
             font-weight: bold;
             pointer-events: none;
         }
+
+        /* プレイ画面右上メニューボタン＆ポーズ画面 */
+        #menu-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #fff;
+            border: 2.5px solid #f0e6d2;
+            color: #7c6f64;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+            z-index: 20;
+            transition: 0.15s;
+        }
+        #menu-btn:active {
+            transform: scale(0.92);
+        }
+        .pause-panel {
+            background: #fff;
+            border: 3px solid #f0e6d2;
+            width: 100%;
+            max-width: 300px;
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .pause-title {
+            font-size: 20px;
+            color: #7c6f64;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .pause-btn {
+            background-color: #f7f2ea;
+            color: #7c6f64;
+            border: 2px solid #f0e6d2;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'RocknRoll One', sans-serif;
+            transition: 0.2s;
+            width: 100%;
+            font-weight: bold;
+        }
+        .pause-btn:active {
+            transform: scale(0.96);
+            background-color: #eee5d3;
+        }
+        .pause-btn.primary {
+            background-color: #e3c4a8;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
+        }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div id="score-board">スコア: <span id="score-num">0</span></div>
+
+    <!-- プレイ中メニューボタン -->
+    <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
 
     <!-- 1. 曲選択画面 -->
     <div id="select-screen" class="screen">
@@ -397,6 +467,16 @@
         <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
         <div class="credit-artist" id="credit-song-artist">Royal Orchestra</div>
         <div class="ready-text en-font">READY...♪</div>
+    </div>
+
+    <!-- ポーズメニュー画面（一時停止） -->
+    <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
+        <div class="pause-panel">
+            <div class="pause-title en-font">PAUSE</div>
+            <button class="pause-btn primary" onclick="resumeGame()">つづける</button>
+            <button class="pause-btn" onclick="retryGame()">やりなおす</button>
+            <button class="pause-btn" onclick="returnToSelectFromPause()">曲選択へもどる</button>
+        </div>
     </div>
 
     <!-- 3. リザルト画面 -->
@@ -459,6 +539,10 @@ let score = 0;
 let audioCtx = null;
 let startTime = 0;
 let songDuration = 12.0; 
+
+// ポーズ機能用の変数
+let pauseStartTime = 0;
+let totalPausedTime = 0;
 
 // 曲リスト
 const songs = [
@@ -701,8 +785,10 @@ function confirmSelectedSong() {
 
 function startActualGame(song) {
     document.getElementById('credit-screen').classList.add('hidden');
+    document.getElementById('menu-btn').classList.remove('hidden'); // メニューボタンを表示
     
     score = 0;
+    totalPausedTime = 0;
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
@@ -711,8 +797,40 @@ function startActualGame(song) {
     gameState = 'PLAYING';
 }
 
+// ポーズメニューを開く
+function openPauseMenu() {
+    if (gameState !== 'PLAYING') return;
+    gameState = 'PAUSE';
+    pauseStartTime = audioCtx.currentTime;
+    document.getElementById('pause-screen').classList.remove('hidden');
+}
+
+// ゲームを再開する（つづける）
+function resumeGame() {
+    document.getElementById('pause-screen').classList.add('hidden');
+    totalPausedTime += (audioCtx.currentTime - pauseStartTime);
+    gameState = 'PLAYING';
+}
+
+// 曲の頭から再スタート（やりなおす）
+function retryGame() {
+    document.getElementById('pause-screen').classList.add('hidden');
+    let selectedSong = songs[currentSongIndex];
+    startActualGame(selectedSong);
+}
+
+// 曲選択画面へ戻る
+function returnToSelectFromPause() {
+    document.getElementById('pause-screen').classList.add('hidden');
+    document.getElementById('menu-btn').classList.add('hidden');
+    document.getElementById('select-screen').classList.remove('hidden');
+    gameState = 'SELECT';
+    renderSongSelector(false);
+}
+
 function finishGame() {
     gameState = 'RESULT';
+    document.getElementById('menu-btn').classList.add('hidden'); // メニューボタンを非表示
     
     let currentSong = songs[currentSongIndex];
     document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
@@ -747,7 +865,7 @@ function backToSelect() {
 function handleLaneStart(laneIndex) {
     if (gameState !== 'PLAYING') return;
     
-    let currentTime = audioCtx.currentTime - startTime;
+    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
     let closestNote = null;
     let minDiff = 999;
 
@@ -795,13 +913,14 @@ function handleLaneStart(laneIndex) {
 }
 
 function handleLaneEnd(laneIndex) {
+    if (gameState !== 'PLAYING') return;
     for (let note of notes) {
         if (note.type === 'long' && note.holding) {
             let targetLanes = [note.lane];
             if (note.lane2 !== undefined) targetLanes.push(note.lane2);
 
             if (targetLanes.includes(laneIndex)) {
-                let currentTime = audioCtx.currentTime - startTime;
+                let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
                 let endTime = note.time + note.duration;
                 let diff = Math.abs(currentTime - endTime);
 
@@ -906,7 +1025,7 @@ function gameLoop() {
     let lanes = getLanePositions();
 
     if (gameState === 'PLAYING') {
-        let currentTime = audioCtx.currentTime - startTime;
+        let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
 
         if (currentTime >= songDuration) {
             finishGame();
