@@ -781,7 +781,8 @@ function generateChart(type) {
         hit: false,       
         holding: false,   
         started: false,
-        slideProgressIdx: 0 
+        slideProgressIdx: 0,
+        slideDirection: 1 // 1: 正順, -1: 逆順
     }));
 }
 
@@ -939,17 +940,29 @@ window.addEventListener('pointerdown', (e) => {
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
                                 playHitSound();
                             } else if (note.type === 'slidenode') {
-                                note.started = true;
-                                note.holding = true;
-                                spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
-                                playHitSound();
+                                let startLane = note.path[0];
+                                let endLane = note.path[note.path.length - 1];
+                                if (i === startLane) {
+                                    note.started = true;
+                                    note.holding = true;
+                                    note.slideDirection = 1;
+                                    note.slideProgressIdx = 0;
+                                    spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
+                                    playHitSound();
+                                } else if (i === endLane) {
+                                    note.started = true;
+                                    note.holding = true;
+                                    note.slideDirection = -1;
+                                    note.slideProgressIdx = note.path.length - 1;
+                                    spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
+                                    playHitSound();
+                                }
                             }
-                            activeTouches[e.pointerId].targetNote = note;
+                            // 複数ノーツの同時押しに対応するためbreakを削除
                         }
                     }
                 }
             }
-            break;
         }
     }
 });
@@ -973,16 +986,19 @@ window.addEventListener('pointermove', (e) => {
         if (note.type === 'slidenode' && note.holding) {
             let lanes = getLanePositions();
             let path = note.path;
+            let dir = note.slideDirection;
             let currentIdx = note.slideProgressIdx;
-            if (currentIdx < path.length) {
-                let targetLanePos = lanes[path[currentIdx]];
+
+            let nextIdx = currentIdx + dir;
+            if (nextIdx >= 0 && nextIdx < path.length) {
+                let targetLanePos = lanes[path[nextIdx]];
                 if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 1.5) {
-                    note.slideProgressIdx++;
+                    note.slideProgressIdx = nextIdx;
                     score += 50;
                     scoreBoardUpdate();
                     spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
                     playHitSound();
-                    if (note.slideProgressIdx >= path.length) {
+                    if ((dir === 1 && note.slideProgressIdx >= path.length - 1) || (dir === -1 && note.slideProgressIdx <= 0)) {
                         note.hit = true;
                         note.holding = false;
                         judgeCounts.kirari++;
