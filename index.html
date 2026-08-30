@@ -710,7 +710,6 @@ let songDuration = 18.0;
 let pauseStartTime = 0;
 let totalPausedTime = 0;
 
-// ノーツスピードの設定管理 (localStorageから読み込み、デフォルト1.0)
 let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
 
 const songs = [
@@ -742,7 +741,6 @@ function updateSelectorHighScoreDisplay() {
     document.getElementById('selector-rank').innerText = hsData.rank;
 }
 
-// 設定モーダルの開閉・速度変更処理
 function openConfigModal() {
     document.getElementById('speed-range').value = noteSpeedMultiplier;
     document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
@@ -1048,9 +1046,9 @@ function finishGame() {
 
     let rank = 'D';
     if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) {
-        rank = 'SSS'; // オールｷﾗﾘ!
+        rank = 'SSS';
     } else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) {
-        rank = 'SS';  // ノーｱﾗﾗ、ノーイイ、かつｷﾗﾘ!90%以上
+        rank = 'SS';
     } else if (accuracyPercent >= 80) {
         rank = 'S';
     } else if (accuracyPercent >= 60) {
@@ -1304,7 +1302,8 @@ function gameLoop() {
     animTimer += 0.05;
 
     let centerX = canvas.width / 2;
-    let girlY = canvas.height * 0.3; 
+    // 女の子の位置を従来(0.3)より35px（約1cm）上に変更
+    let girlY = canvas.height * 0.3 - 35; 
     let lanes = getLanePositions();
 
     if (gameState === 'PLAYING') {
