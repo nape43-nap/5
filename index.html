@@ -1302,8 +1302,8 @@ function gameLoop() {
     animTimer += 0.05;
 
     let centerX = canvas.width / 2;
-    // 女の子の位置を従来(0.3)より35px（約1cm）上に変更
-    let girlY = canvas.height * 0.3 - 35; 
+    // 女の子の位置をさらに約35px（合計約2cm）上に変更
+    let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
 
     if (gameState === 'PLAYING') {
