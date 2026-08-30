@@ -749,15 +749,15 @@ function generateChart(type) {
         chartData = [
             { time: 1.0, lane: 0, type: 'tap' },
             { time: 2.0, lane: 4, type: 'flick' },
-            { time: 3.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, // 左から右 (▶︎)
-            { time: 6.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  // 右から左 (◀︎)
+            { time: 3.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
+            { time: 6.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
             { time: 9.5, lane: 2, type: 'long', duration: 2.0 }
         ];
     } else {
         chartData = [
             { time: 1.0, lane: 0, type: 'flick' },
-            { time: 2.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  // 右から左 (◀︎)
-            { time: 5.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, // 左から右 (▶︎)
+            { time: 2.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
+            { time: 5.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
             { time: 8.5, lane: 2, type: 'long', duration: 2.0 },
             { time: 11.0, lane: 4, type: 'flick' }
         ];
@@ -1006,7 +1006,6 @@ function handleTouchEndOrCancel(e) {
             playHitSound();
             scoreBoardUpdate();
         } else if (note.type === 'slidenode' && note.holding) {
-            // スライド途中で指を離した場合、終点付近に近ければOK、遠ければアララ判定
             let endLaneIdx = note.path[note.path.length - 1];
             let targetLanePos = lanes[endLaneIdx];
             if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
@@ -1178,9 +1177,11 @@ function gameLoop() {
                     let endX = centerX + (endPos.x - centerX) * progress;
                     let endY = girlY + (endPos.y - girlY) * progress;
 
-                    // 以前のような曲がった帯（曲線）を描画
-                    let controlX = centerX + ((startPos.x + endPos.x) / 2 - centerX) * progress;
-                    let controlY = (girlY + (startPos.y + endPos.y) / 2) * progress / 2 + 100; // アーチ状の曲がり
+                    // 常に綺麗に下向きに凸（U字）になるように修正
+                    let midX = (startX + endX) / 2;
+                    let midY = (startY + endY) / 2;
+                    let controlX = midX;
+                    let controlY = midY + 35 * progress; // 下向き（プラス方向）に膨らませることで自然なU字の弧を維持
 
                     ctx.strokeStyle = "rgba(241, 196, 15, 0.65)";
                     ctx.lineWidth = 14;
