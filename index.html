@@ -1127,11 +1127,19 @@ function gameLoop() {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             }
 
+            // 外側の丸を描画
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
+
+            // 内側の二重円（アクセント）を描画
+            ctx.strokeStyle = "#e8dfd1";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
             ctx.stroke();
         }
 
@@ -1228,7 +1236,6 @@ function gameLoop() {
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
 
-                    // 1. 始点の位置（判定ラインに到達した後はターゲット位置に固定）
                     if (headProg >= 1.0 || note.started) {
                         headX = target.x;
                         headY = target.y;
@@ -1238,7 +1245,6 @@ function gameLoop() {
                         headY = girlY + (target.y - girlY) * pHead;
                     }
 
-                    // 2. 終点の位置（常に始点からの一定距離を維持しつつ、流れてくるように計算）
                     if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
                         tailX = target.x;
                         tailY = target.y;
@@ -1248,7 +1254,6 @@ function gameLoop() {
                         tailY = girlY + (target.y - girlY) * pTail;
                     }
 
-                    // 3. 帯（スライダー）の描画：始点が出現した瞬間から、始点と終点の間に常に帯を描画する
                     if (headProg >= 0) {
                         ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                         ctx.lineWidth = 12;
@@ -1259,7 +1264,6 @@ function gameLoop() {
                         ctx.stroke();
                     }
 
-                    // 4. 終点ノーツ本体の描画（終点ノートが画面内にある間またはホールド中）
                     if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
                         ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
@@ -1270,7 +1274,6 @@ function gameLoop() {
                         ctx.stroke();
                     }
 
-                    // 5. 始点ノーツの描画およびホールド判定処理
                     if (!note.holding && headProg <= 1.2) {
                         ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
