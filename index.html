@@ -726,7 +726,7 @@ function getSongHighScore(songId) {
 
 function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
     let current = getSongHighScore(songId);
-    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore > current.score)) {
+    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore >= current.score)) {
         const data = { score: newScore, accuracy: newAccuracy, rank: newRank };
         localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
         return true;
@@ -849,6 +849,8 @@ function handleDragEnd(e) {
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
+
+// 初期読み込み時にスコアを反映
 renderSongSelector(false);
 
 function getLanePositions() {
@@ -1078,7 +1080,7 @@ function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
-    renderSongSelector(false);
+    renderSongSelector(false); // 曲選択に戻る際に最新のハイスコアを反映
 }
 
 function scoreBoardUpdate() {
@@ -1305,7 +1307,6 @@ function gameLoop() {
     let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
 
-    // ノーツの始点を2cm（約75px）下に下げるためのオフセット座標
     let spawnOffsetY = 75;
 
     if (gameState === 'PLAYING') {
