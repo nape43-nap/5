@@ -96,12 +96,17 @@
     </div>
 
     <div class="form-group">
-        <label>4. ジャケット (絵文字 または 1.jpg など)</label>
+        <label>4. ジャケット画像 (例: 1.jpg または 絵文字)</label>
         <input type="text" id="input-jacket" value="⭐" placeholder="例: ⭐ または 1.jpg">
     </div>
 
     <div class="form-group">
-        <label>5. MIDIファイル (.mid)</label>
+        <label>5. 音源ファイル (例: 1.mp3)</label>
+        <input type="text" id="input-audio" value="1.mp3" placeholder="例: 1.mp3">
+    </div>
+
+    <div class="form-group">
+        <label>6. MIDIファイル (.mid)</label>
         <input type="file" id="midiFileInput" accept=".mid,.midi">
     </div>
 
@@ -146,13 +151,17 @@
             }
 
             let defaultName = file.name.replace(/\.[^/.]+$/, "");
-            document.getElementById('input-id').value = defaultName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            let safeId = defaultName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            
+            document.getElementById('input-id').value = safeId;
             document.getElementById('input-title').value = defaultName;
+            document.getElementById('input-jacket').value = safeId + '.jpg';
+            document.getElementById('input-audio').value = safeId + '.mp3';
 
             updateOutputCode();
         });
 
-        ['input-id', 'input-title', 'input-artist', 'input-jacket'].forEach(id => {
+        ['input-id', 'input-title', 'input-artist', 'input-jacket', 'input-audio'].forEach(id => {
             document.getElementById(id).addEventListener('input', updateOutputCode);
         });
 
@@ -161,21 +170,24 @@
             const title = document.getElementById('input-title').value || '';
             const artist = document.getElementById('input-artist').value || '';
             
+            // ジャケットのパス補完
             let jacketInput = document.getElementById('input-jacket').value.trim() || '🎵';
-            let jacketValue = '';
+            let jacketValue = jacketInput.includes('.') && !jacketInput.startsWith('assets/') && !jacketInput.startsWith('http')
+                ? `assets/images/${jacketInput}`
+                : jacketInput;
 
-            // ドットを含み、パスやURLから始まっていない場合は自動で assets/images/ を補完
-            if (jacketInput.includes('.') && !jacketInput.startsWith('assets/') && !jacketInput.startsWith('http')) {
-                jacketValue = `assets/images/${jacketInput}`;
-            } else {
-                jacketValue = jacketInput;
-            }
+            // 音源のパス補完
+            let audioInput = document.getElementById('input-audio').value.trim() || '1.mp3';
+            let audioValue = audioInput.includes('.') && !audioInput.startsWith('assets/') && !audioInput.startsWith('http')
+                ? `assets/audio/${audioInput}`
+                : audioInput;
 
             const codeOutput = `window.songData_${songId} = {\n` +
                 `    id: '${songId}',\n` +
                 `    title: '${title}',\n` +
                 `    artist: '${artist}',\n` +
                 `    jacket: '${jacketValue}',\n` +
+                `    audioSrc: '${audioValue}',\n` +
                 `    duration: ${songDuration.toFixed(1)},\n` +
                 `    chart: ${JSON.stringify(parsedNotes, null, 4).replace(/^/gm, '    ')}\n` +
                 `};`;
