@@ -161,6 +161,12 @@
             font-size: 24px;
             flex-shrink: 0;
             border: 2px solid #f0e6d2;
+            overflow: hidden;
+        }
+        .song-jacket img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .song-info {
             display: flex;
@@ -243,6 +249,12 @@
             font-size: 60px;
             margin-bottom: 20px;
             animation: pulseJacket 1.5s infinite alternate;
+            overflow: hidden;
+        }
+        .credit-jacket-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         @keyframes pulseJacket {
             0% { transform: scale(1); }
@@ -329,6 +341,12 @@
             font-size: 22px;
             border: 2px solid #f0e6d2;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+        .result-jacket-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .result-song-meta {
             display: flex;
@@ -622,7 +640,7 @@
                 <p><strong>📖 遊び方</strong></p>
                 <ul>
                     <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
-                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
+                    <li><strong>◆ (フリック)</strong>：指で素早くスワイプ・弾く</li>
                     <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
                 </ul>
                 <br>
@@ -679,12 +697,17 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
+    
+    <!-- 音楽再生用の隠しaudio要素 -->
+    <audio id="bgm-audio" preload="auto"></audio>
 </div>
 
 <!-- ① 個別の曲データをすべて読み込む -->
 <script src="assets/charts/1.js"></script>
 <script src="assets/charts/2.js"></script>
 <script src="assets/charts/3.js"></script>
+<script src="assets/charts/sample.js"></script>
+<script src="assets/charts/sample2.js"></script>
 
 <!-- ② 曲ファイルのリストを読み込む -->
 <script src="song-list.js"></script>
@@ -693,6 +716,7 @@
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const bgmAudio = document.getElementById('bgm-audio');
 
 function resizeCanvas() {
     canvas.width = canvas.parentElement.clientWidth;
@@ -701,16 +725,41 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+// ジャケットが画像ファイルパスか絵文字かを判定して美しく表示するヘルパー
+function setJacketContent(element, jacketStr) {
+    element.innerHTML = '';
+    if (jacketStr && (jacketStr.includes('.') || jacketStr.startsWith('assets/') || jacketStr.startsWith('http'))) {
+        let img = document.createElement('img');
+        img.src = jacketStr;
+        img.onerror = function() {
+            element.innerHTML = '🎵'; // 万が一画像読み込みに失敗したときのフォールバック
+        };
+        element.appendChild(img);
+    } else {
+        element.innerText = jacketStr || '🎵';
+    }
+}
+
 // song-list.js で定義されたパスから、ウィンドウに展開された曲データを自動収集する
 const songs = [];
 if (window.allSongFiles) {
-    // 1.js なら window.songData_1、2.js なら window.songData_2 がグローバルにある前提で読み込む
     window.allSongFiles.forEach((path, index) => {
         let songDataKey = 'songData_' + (index + 1);
+        // sampleなどの文字列IDにも対応できるように走査
         if (window[songDataKey]) {
             songs.push(window[songDataKey]);
         }
     });
+}
+
+// 念のためグローバルに window.songData_XXX が直接あるものも自動で拾う
+for (let key in window) {
+    if (key.startsWith('songData_')) {
+        let songObj = window[key];
+        if (songObj && !songs.some(s => s.id === songObj.id)) {
+            songs.push(songObj);
+        }
+    }
 }
 
 let gameState = 'SELECT';
@@ -804,13 +853,19 @@ function renderSongSelector(animating = false) {
         card.style.opacity = opacity;
         card.style.zIndex = zIndex;
 
-        card.innerHTML = `
-            <div class="song-jacket">${song.jacket}</div>
-            <div class="song-info">
-                <div class="song-title">${song.title}</div>
-                <div class="song-artist">${song.artist}</div>
-            </div>
+        let jacketDiv = document.createElement('div');
+        jacketDiv.className = 'song-jacket';
+        setJacketContent(jacketDiv, song.jacket);
+
+        let infoDiv = document.createElement('div');
+        infoDiv.className = 'song-info';
+        infoDiv.innerHTML = `
+            <div class="song-title">${song.title}</div>
+            <div class="song-artist">${song.artist}</div>
         `;
+
+        card.appendChild(jacketDiv);
+        card.appendChild(infoDiv);
         viewport.appendChild(card);
     }
     updateSelectorHighScoreDisplay();
@@ -935,7 +990,10 @@ function confirmSelectedSong() {
     let selectedSong = songs[currentSongIndex];
 
     document.getElementById('select-screen').classList.add('hidden');
-    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
+    
+    let creditJacketEl = document.getElementById('credit-jacket-icon');
+    setJacketContent(creditJacketEl, selectedSong.jacket);
+
     document.getElementById('credit-song-title').innerText = selectedSong.title;
     document.getElementById('credit-song-artist').innerText = selectedSong.artist;
     document.getElementById('credit-screen').classList.remove('hidden');
@@ -944,6 +1002,10 @@ function confirmSelectedSong() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
+
+    // 音楽ファイルのプリロード準備
+    bgmAudio.src = selectedSong.audioSrc || '';
+    bgmAudio.load();
 
     setTimeout(() => {
         startActualGame(selectedSong);
@@ -961,6 +1023,11 @@ function startActualGame(song) {
     scoreBoardUpdate();
     
     generateChart(song);
+    
+    // BGM再生と同期用タイマーのセット
+    bgmAudio.currentTime = 0;
+    bgmAudio.play().catch(e => console.log("BGM再生エラー:", e));
+
     startTime = audioCtx.currentTime;
     gameState = 'PLAYING';
 }
@@ -968,24 +1035,29 @@ function startActualGame(song) {
 function openPauseMenu() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSE';
+    bgmAudio.pause(); // 音楽を一時停止
     pauseStartTime = audioCtx.currentTime;
     document.getElementById('pause-screen').classList.remove('hidden');
 }
 
 function resumeGame() {
     document.getElementById('pause-screen').classList.add('hidden');
+    bgmAudio.play().catch(e => console.log("BGM再開エラー:", e)); // 音楽を再開
     totalPausedTime += (audioCtx.currentTime - pauseStartTime);
     gameState = 'PLAYING';
 }
 
 function retryGame() {
     document.getElementById('pause-screen').classList.add('hidden');
+    bgmAudio.pause();
     startActualGame(songs[currentSongIndex]);
 }
 
 function returnToSelectFromPause() {
     document.getElementById('pause-screen').classList.add('hidden');
     document.getElementById('menu-btn').classList.add('hidden');
+    bgmAudio.pause();
+    bgmAudio.currentTime = 0;
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -993,10 +1065,13 @@ function returnToSelectFromPause() {
 
 function finishGame() {
     gameState = 'RESULT';
+    bgmAudio.pause();
     document.getElementById('menu-btn').classList.add('hidden');
     
     let currentSong = songs[currentSongIndex];
-    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
+    let resultJacketEl = document.getElementById('result-jacket-icon');
+    setJacketContent(resultJacketEl, currentSong.jacket);
+
     document.getElementById('result-song-title').innerText = currentSong.title;
     document.getElementById('result-song-artist').innerText = currentSong.artist;
 
@@ -1036,11 +1111,14 @@ function finishGame() {
 
 function retryFromResult() {
     document.getElementById('result-screen').classList.add('hidden');
+    bgmAudio.currentTime = 0;
     startActualGame(songs[currentSongIndex]);
 }
 
 function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
+    bgmAudio.pause();
+    bgmAudio.currentTime = 0;
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
