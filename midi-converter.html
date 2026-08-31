@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>MIDI 譜面コンバーター</title>
+    <!-- 音楽データを解析するためのライブラリをネット経由で読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #fdfbf7;
+            color: #7c6f64;
+            padding: 30px;
+            max-width: 600px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        .drop-zone {
+            border: 3px dashed #e3c4a8;
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 250px;
+            font-family: monospace;
+            padding: 10px;
+            border: 2px solid #f0e6d2;
+            border-radius: 10px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>MIDI ➔ 譜面データ変換ツール</h2>
+    <p>お手持ちのMIDIファイル（.mid）を選んでください</p>
+
+    <div class="drop-zone">
+        <input type="file" id="midiFileInput" accept=".mid,.midi">
+    </div>
+
+    <h3>変換されたコード（コピーして使う）</h3>
+    <textarea id="output" placeholder="ここに変換結果が自動で表示されます..."></textarea>
+
+    <script>
+        document.getElementById('midiFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const arrayBuffer = await file.arrayBuffer();
+            const midi = new Midi(arrayBuffer);
+
+            let notes = [];
+            if (midi.tracks.length > 0) {
+                // トラック内の音符情報を自動でゲーム用に変換
+                notes = midi.tracks[0].notes.map(note => {
+                    const lane = note.midi % 5; // 音の高さから 0〜4 のレーンを自動割り振り
+                    const type = note.duration > 0.4 ? 'long' : 'tap'; // 長ければロング、短ければタップ
+                    
+                    let noteObj = {
+                        time: Number(note.time.toFixed(2)),
+                        lane: lane,
+                        type: type
+                    };
+
+                    if (type === 'long') {
+                        noteObj.duration = Number(note.duration.toFixed(2));
+                    }
+                    if (note.name) {
+                        noteObj.noteName = note.name;
+                    }
+
+                    return noteObj;
+                });
+            }
+
+            // 綺麗なJavaScript形式にしてテキストエリアに出力
+            const codeOutput = `window.songData_New = {\n` +
+                `    id: 'song_new',\n` +
+                `    title: '${file.name.replace(/\.[^/.]+$/, "")}',\n` +
+                `    artist: 'アーティスト名',\n` +
+                `    jacket: '🎵',\n` +
+                `    duration: ${midi.duration.toFixed(1)},\n` +
+                `    chart: ${JSON.stringify(notes, null, 4).replace(/^/gm, '    ')}\n` +
+                `};`;
+
+            document.getElementById('output').value = codeOutput;
+        });
+    </script>
+
+</body>
+</html>
