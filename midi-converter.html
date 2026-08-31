@@ -3,216 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIDI 譜面コンバーター</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.js"></script>
+    <title>絵本風リズムゲーム - MIDI譜面コンバーター</title>
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
+    <!-- Tone.js と @tonejs/midi の読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://unpkg.com/@tonejs/midi@2.0.28/build/Midi.js"></script>
     <style>
         body {
-            font-family: sans-serif;
-            background: #fdfbf7;
-            color: #7c6f64;
+            margin: 0;
             padding: 20px;
+            background: #fdfbf7;
+            font-family: 'RocknRoll One', sans-serif;
+            color: #7c6f64;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
             max-width: 600px;
-            margin: 0 auto;
+            background: #fff;
+            border: 4px solid #f0e6d2;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.04);
             box-sizing: border-box;
         }
-        h2, h3 {
-            text-align: center;
-        }
+        h1 { font-size: 22px; text-align: center; margin-bottom: 20px; color: #7c6f64; }
         .form-group {
-            background: #fff;
-            border: 2px solid #f0e6d2;
-            padding: 15px;
-            border-radius: 12px;
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            gap: 6px;
         }
-        label {
-            font-size: 14px;
-            font-weight: bold;
-            color: #7c6f64;
-        }
+        label { font-size: 14px; font-weight: bold; }
         input[type="text"], input[type="file"] {
             padding: 10px;
-            border: 2px solid #f5efe6;
-            border-radius: 8px;
-            font-size: 16px;
-            background: #fffcf7;
-            outline: none;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        input[type="text"]:focus {
-            border-color: #d4a373;
-        }
-        textarea {
-            width: 100%;
-            height: 220px;
-            font-family: monospace;
-            padding: 12px;
             border: 2px solid #f0e6d2;
-            border-radius: 12px;
-            box-sizing: border-box;
-            background: #fff;
-            font-size: 13px;
+            border-radius: 10px;
+            font-family: 'RocknRoll One', sans-serif;
+            font-size: 14px;
+            outline: none;
+            background: #fffcf7;
         }
-        .copy-btn {
+        .btn {
             background-color: #e3c4a8;
             color: #fff;
             border: none;
-            padding: 12px;
+            padding: 14px;
             font-size: 16px;
             border-radius: 25px;
             cursor: pointer;
+            font-family: 'RocknRoll One', sans-serif;
             width: 100%;
             margin-top: 10px;
-            font-weight: bold;
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
+            transition: 0.2s;
         }
-        .copy-btn:active {
-            transform: scale(0.98);
+        .btn:active { transform: scale(0.97); }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 15px;
+            border: 2px solid #f0e6d2;
+            border-radius: 10px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            background: #fffcf7;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .note-rule {
+            font-size: 12px;
+            background: #fffcf7;
+            border: 2px solid #f5efe6;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-    <h2>🎵 MIDI 譜面コンバーター (音程自動判別版)</h2>
-
-    <div class="form-group">
-        <label>1. 曲ID (半角英数字)</label>
-        <input type="text" id="input-id" value="new_song" placeholder="例: twinkle">
+<div class="container">
+    <h1>MIDI 譜面コンバーター</h1>
+    
+    <div class="note-rule">
+        <strong>📌 MIDI音程の割り当てルール:</strong><br>
+        ・ <strong>C3 (ド) 〜 G3</strong>：通常のタップノーツ<br>
+        ・ <strong>C3の長さがある音</strong>：ロングノーツ<br>
+        ・ <strong>C4 (上のド) 〜 G4</strong>：フリックノーツ (◆)<br>
+        ・ <strong>C5 (さらに上のド) 〜</strong>：黄色の弧を描くロング/スライドノーツ
     </div>
 
     <div class="form-group">
-        <label>2. 曲名</label>
-        <input type="text" id="input-title" value="きらきら星" placeholder="例: きらきら星">
+        <label>曲ID (例: song_4)</label>
+        <input type="text" id="songId" value="song_4">
     </div>
-
     <div class="form-group">
-        <label>3. アーティスト名</label>
-        <input type="text" id="input-artist" value="フランス民謡" placeholder="例: フランス民謡">
+        <label>曲名</label>
+        <input type="text" id="songTitle" value="新しい曲">
     </div>
-
     <div class="form-group">
-        <label>4. ジャケット画像 (例: 1.jpg または 絵文字)</label>
-        <input type="text" id="input-jacket" value="⭐" placeholder="例: ⭐ または 1.jpg">
+        <label>アーティスト名</label>
+        <input type="text" id="songArtist" value="作者名">
     </div>
-
     <div class="form-group">
-        <label>5. 音源ファイル (例: 1.mp3)</label>
-        <input type="text" id="input-audio" value="1.mp3" placeholder="例: 1.mp3">
+        <label>ジャケット画像パス (例: assets/images/4.jpg または 🎵)</label>
+        <input type="text" id="songJacket" value="🎵">
     </div>
-
     <div class="form-group">
-        <label>6. MIDIファイル (.mid)</label>
-        <input type="file" id="midiFileInput" accept=".mid,.midi">
+        <label>音声ファイルパス (例: assets/audio/4.mp3)</label>
+        <input type="text" id="songAudio" value="assets/audio/4.mp3">
+    </div>
+    <div class="form-group">
+        <label>MIDIファイルを選択</label>
+        <input type="file" id="midiFile" accept=".mid">
     </div>
 
-    <h3>出力されたコード</h3>
-    <textarea id="output" placeholder="MIDIを選ぶとここにコードが自動生成されます..."></textarea>
-    <button class="copy-btn" onclick="copyCode()">コードをコピーする</button>
+    <button class="btn" onclick="convertMidi()">譜面データ(.js)を生成する</button>
 
-    <script>
-        let parsedNotes = [];
-        let songDuration = 15.0;
+    <textarea id="outputResult" placeholder="ここに生成されたコードが表示されます..." readonly></textarea>
+</div>
 
-        document.getElementById('midiFileInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+<script>
+async function convertMidi() {
+    const fileInput = document.getElementById('midiFile');
+    if (fileInput.files.length === 0) {
+        alert('MIDIファイルを選択してください。');
+        return;
+    }
 
-            const arrayBuffer = await file.arrayBuffer();
-            const midi = new Midi(arrayBuffer);
+    const file = fileInput.files[0];
+    const arrayBuffer = await file.arrayBuffer();
+    const midi = new Midi(arrayBuffer);
 
-            songDuration = midi.duration;
-            parsedNotes = [];
+    let chartNotes = [];
+    let maxTime = 15; // デフォルト秒数
 
-            if (midi.tracks.length > 0) {
-                parsedNotes = midi.tracks[0].notes.map(note => {
-                    const lane = note.midi % 5;
-                    let type = 'tap';
+    midi.tracks.forEach(track => {
+        track.notes.forEach(note => {
+            let midiNote = note.midi; // 60 = C4, 48 = C3, 72 = C5
+            let time = note.time;
+            let duration = note.duration;
 
-                    // --- 音の高さ（MIDIノート番号）による自動振り分けルール ---
-                    // C3 = 48, C4 = 60, C5 = 72
-                    if (note.midi >= 72) {
-                        // C5以上（高い音）＝ 軌道を描くフリックノーツ
-                        type = 'flick';
-                    } else if (note.midi >= 60 && note.midi < 72) {
-                        // C4台（中くらいの音）＝ スライドノーツ
-                        type = 'slide';
-                    } else {
-                        // C3以下（低い音）＝ 長さによって タップ か ロング を自動判定
-                        type = note.duration > 0.4 ? 'long' : 'tap';
-                    }
-                    
-                    let noteObj = {
-                        time: Number(note.time.toFixed(2)),
-                        lane: lane,
-                        type: type
-                    };
-
-                    if (type === 'long') {
-                        noteObj.duration = Number(note.duration.toFixed(2));
-                    }
-                    if (note.name) {
-                        noteObj.noteName = note.name;
-                    }
-
-                    return noteObj;
-                });
+            if (time + duration > maxTime) {
+                maxTime = Math.ceil(time + duration + 2);
             }
 
-            let defaultName = file.name.replace(/\.[^/.]+$/, "");
-            let safeId = defaultName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-            
-            document.getElementById('input-id').value = safeId;
-            document.getElementById('input-title').value = defaultName;
-            document.getElementById('input-jacket').value = safeId + '.jpg';
-            document.getElementById('input-audio').value = safeId + '.mp3';
+            // レーンの割り振り (0〜4の5レーン)
+            let lane = Math.floor(((midiNote % 12) / 12) * 5);
+            if (lane > 4) lane = 4;
 
-            updateOutputCode();
+            let type = 'tap';
+            if (midiNote >= 72) {
+                // C5以上：黄色の弧を描くロングノーツ
+                type = 'long';
+            } else if (midiNote >= 60 && midiNote < 72) {
+                // C4以上：フリック
+                type = 'flick';
+            } else if (duration > 0.25) {
+                // C3付近で長い音：ロングノーツ
+                type = 'long';
+            }
+
+            chartNotes.push({
+                time: parseFloat(time.toFixed(3)),
+                lane: lane,
+                type: type,
+                duration: type === 'long' ? parseFloat(duration.toFixed(3)) : 0,
+                noteName: note.name
+            });
         });
+    });
 
-        ['input-id', 'input-title', 'input-artist', 'input-jacket', 'input-audio'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updateOutputCode);
-        });
+    // 時間順にソート
+    chartNotes.sort((a, b) => a.time - b.time);
 
-        function updateOutputCode() {
-            const songId = document.getElementById('input-id').value || 'song';
-            const title = document.getElementById('input-title').value || '';
-            const artist = document.getElementById('input-artist').value || '';
-            
-            let jacketInput = document.getElementById('input-jacket').value.trim() || '🎵';
-            let jacketValue = jacketInput.includes('.') && !jacketInput.startsWith('assets/') && !jacketInput.startsWith('http')
-                ? `assets/images/${jacketInput}`
-                : jacketInput;
+    const songData = {
+        id: document.getElementById('songId').value,
+        title: document.getElementById('songTitle').value,
+        artist: document.getElementById('songArtist').value,
+        jacket: document.getElementById('songJacket').value,
+        audioSrc: document.getElementById('songAudio').value,
+        duration: maxTime,
+        chart: chartNotes
+    };
 
-            let audioInput = document.getElementById('input-audio').value.trim() || '1.mp3';
-            let audioValue = audioInput.includes('.') && !audioInput.startsWith('assets/') && !audioInput.startsWith('http')
-                ? `assets/audio/${audioInput}`
-                : audioInput;
-
-            const codeOutput = `window.songData_${songId} = {\n` +
-                `    id: '${songId}',\n` +
-                `    title: '${title}',\n` +
-                `    artist: '${artist}',\n` +
-                `    jacket: '${jacketValue}',\n` +
-                `    audioSrc: '${audioValue}',\n` +
-                `    duration: ${songDuration.toFixed(1)},\n` +
-                `    chart: ${JSON.stringify(parsedNotes, null, 4).replace(/^/gm, '    ')}\n` +
-                `};`;
-
-            document.getElementById('output').value = codeOutput;
-        }
-
-        function copyCode() {
-            const textarea = document.getElementById('output');
-            textarea.select();
-            document.execCommand('copy');
-            alert('コードをコピーしました！');
-        }
-    </script>
+    const outputCode = `window.${songData.id} = ${JSON.stringify(songData, null, 2)};`;
+    document.getElementById('outputResult').value = outputCode;
+    alert('譜面データの生成が完了しました！下部のボックスからコピーして保存してください。');
+}
+</script>
 
 </body>
 </html>
