@@ -1,4 +1,3 @@
-現在これです、完全版ください
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -682,15 +681,10 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- ① 個別の曲データをすべて読み込む -->
-<script src="assets/charts/1.js"></script>
-<script src="assets/charts/2.js"></script>
-<script src="assets/charts/3.js"></script>
-
-<!-- ② 曲ファイルのリストを読み込む -->
+<!-- ① 曲リストの定義ファイルを読み込む -->
 <script src="song-list.js"></script>
 
-<!-- ③ メインのゲームシステム処理 -->
+<!-- ② 曲データを動的に読み込み、ゲームシステムを初期化する -->
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -702,17 +696,33 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// song-list.js で定義されたパスから、ウィンドウに展開された曲データを自動収集する
 const songs = [];
-if (window.allSongFiles) {
-    // 1.js なら window.songData_1、2.js なら window.songData_2 がグローバルにある前提で読み込む
-    window.allSongFiles.forEach((path, index) => {
-        let songDataKey = 'songData_' + (index + 1);
-        if (window[songDataKey]) {
-            songs.push(window[songDataKey]);
+
+// song-list.js の定義を元に曲スクリプトを動的に読み込む
+async function loadSongScripts() {
+    if (!window.allSongFiles) return;
+
+    for (const songFile of window.allSongFiles) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = songFile.path;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // 読み込み完了後に songs 配列を構築
+    window.allSongFiles.forEach((songFile) => {
+        if (window[songFile.dataKey]) {
+            songs.push(window[songFile.dataKey]);
         }
     });
+
+    renderSongSelector(false);
 }
+
+loadSongScripts();
 
 let gameState = 'SELECT';
 let score = 0;
@@ -859,8 +869,6 @@ function handleDragEnd(e) {
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
-
-renderSongSelector(false);
 
 function getLanePositions() {
     let positions = [];
