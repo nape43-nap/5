@@ -681,15 +681,10 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- ① 個別の曲データを読み込む -->
-<script src="assets/charts/1.js"></script>
-<script src="assets/charts/2.js"></script>
-<script src="assets/charts/3.js"></script>
-
-<!-- ② 曲リスト定義ファイルを読み込む（ここで songs 配列が完成する） -->
+<!-- 曲の管理と自動読み込みはすべて song-list.js に集約しました -->
 <script src="song-list.js"></script>
 
-<!-- ③ メインのゲームシステム処理 -->
+<!-- メインのゲームシステム処理 -->
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -701,8 +696,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// song-list.js で定義された `songs` をそのまま使用
-// （もし song-list.js がまだ読み込まれていない場合は空配列にフォールバック）
+// song-list.js 側で songs が未定義の場合のフォールバック
 if (typeof songs === 'undefined') {
     var songs = [];
 }
@@ -737,6 +731,7 @@ function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
 function updateSelectorHighScoreDisplay() {
     if (songs.length === 0) return;
     let song = songs[currentSongIndex];
+    if (!song) return;
     let hsData = getSongHighScore(song.id);
     document.getElementById('selector-highscore').innerText = hsData.score;
     document.getElementById('selector-rank').innerText = hsData.rank;
@@ -776,6 +771,7 @@ function renderSongSelector(animating = false) {
     for (let i = -2; i <= 2; i++) {
         let targetIdx = (currentSongIndex + i + songs.length * 10) % songs.length;
         let song = songs[targetIdx];
+        if (!song) continue;
 
         let card = document.createElement('div');
         card.className = 'song-card';
@@ -853,7 +849,7 @@ function handleDragEnd(e) {
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
 
-// 初期描画
+// 初期描画（非同期読み込み完了時に song-list.js からも再描画される）
 renderSongSelector(false);
 
 function getLanePositions() {
@@ -928,6 +924,7 @@ let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
 function confirmSelectedSong() {
     if (songs.length === 0) return;
     let selectedSong = songs[currentSongIndex];
+    if (!selectedSong) return;
 
     document.getElementById('select-screen').classList.add('hidden');
     document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
@@ -1227,7 +1224,7 @@ function gameLoop() {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
 
-        if (songs.length > 0 && songs[currentSongIndex].id === 'song_1') {
+        if (songs.length > 0 && songs[currentSongIndex] && songs[currentSongIndex].id === 'song_1') {
             for (let m of scheduledMelodyNotes) {
                 if (!m.played && currentTime >= m.time) {
                     playMelodyTone(m.freq);
