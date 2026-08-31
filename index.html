@@ -1,1461 +1,1316 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>絵本風リズムゲーム</title>
-    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #fdfbf7;
-            font-family: 'RocknRoll One', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
-
-        .en-font {
-            font-family: 'Darumadrop One', cursive, sans-serif;
-            letter-spacing: 1px;
-        }
-
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            max-width: 450px;
-            max-height: 800px;
-            background: #fffdf9;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border-radius: 20px;
-            overflow: hidden;
-            border: 8px solid #f0e6d2;
-            -webkit-touch-callout: none;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(253, 251, 247, 0.98);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .hidden {
-            display: none !important;
-        }
-        h1 {
-            color: #7c6f64;
-            font-size: 26px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .btn {
-            background-color: #e3c4a8;
-            color: #fff;
-            border: none;
-            padding: 14px 35px;
-            font-size: 18px;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
-            transition: 0.2s;
-            margin-top: 15px;
-            font-family: 'RocknRoll One', sans-serif;
-            z-index: 5;
-        }
-        .btn:active {
-            transform: scale(0.95);
-        }
-
-        #selector-config-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #fff;
-            border: 2.5px solid #f0e6d2;
-            color: #7c6f64;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
-            z-index: 25;
-            transition: 0.15s;
-        }
-        #selector-config-btn:active {
-            transform: scale(0.92);
-        }
-
-        .song-selector-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            width: 100%;
-        }
-        .song-list-viewport {
-            width: 330px;
-            height: 280px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: grab;
-            touch-action: none;
-            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-        }
-        .song-card {
-            position: absolute;
-            width: 300px;
-            background: #fff;
-            border: 3px solid #f0e6d2;
-            padding: 12px 15px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-sizing: border-box;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            pointer-events: none;
-        }
-        .song-card.selected {
-            border-color: #d4a373;
-            background: #fffcf7;
-            box-shadow: 0 6px 15px rgba(212, 163, 115, 0.15);
-        }
-        .song-jacket {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background: #f7f2ea;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            flex-shrink: 0;
-            border: 2px solid #f0e6d2;
-        }
-        .song-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .song-title {
-            font-weight: bold;
-            color: #7c6f64;
-            font-size: 15px;
-        }
-        .song-artist {
-            font-size: 12px;
-            color: #b8aea1;
-        }
-
-        .cloud-highscore {
-            position: absolute;
-            top: 162px;
-            right: 18px;
-            background: #ffffff;
-            border: 2.5px solid #f0e6d2;
-            padding: 4px 8px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            animation: floatCloud 2.2s ease-in-out infinite alternate;
-            z-index: 15;
-            box-sizing: border-box;
-        }
-        @keyframes floatCloud {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-8px); }
-        }
-        .cloud-rank-box {
-            width: 24px;
-            height: 24px;
-            background: #fdfbf7;
-            border: 2px solid #e3c4a8;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 13px;
-            font-weight: bold;
-            color: #d4a373;
-        }
-        .cloud-info {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-        }
-        .cloud-label {
-            font-size: 7px;
-            color: #b8aea1;
-            letter-spacing: 0.5px;
-        }
-        .cloud-score-val {
-            font-size: 13px;
-            font-weight: bold;
-            color: #7c6f64;
-        }
-
-        #credit-screen {
-            background: rgba(253, 251, 247, 0.99);
-            text-align: center;
-        }
-        .credit-jacket-large {
-            width: 130px;
-            height: 130px;
-            border-radius: 25px;
-            background: #fff;
-            border: 4px solid #f0e6d2;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 60px;
-            margin-bottom: 20px;
-            animation: pulseJacket 1.5s infinite alternate;
-        }
-        @keyframes pulseJacket {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.04); }
-        }
-        .credit-title {
-            font-size: 22px;
-            font-weight: bold;
-            color: #7c6f64;
-            margin-bottom: 8px;
-        }
-        .credit-artist {
-            font-size: 14px;
-            color: #b8aea1;
-            margin-bottom: 30px;
-        }
-        .ready-text {
-            font-size: 22px;
-            color: #d4a373;
-            font-weight: bold;
-        }
-
-        #result-screen {
-            animation: screenFadeIn 0.4s ease-out forwards;
-        }
-        @keyframes screenFadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        .result-panel {
-            background: #fff;
-            border: 3px solid #f0e6d2;
-            width: 100%;
-            max-width: 330px;
-            padding: 16px;
-            border-radius: 20px;
-            box-sizing: border-box;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-            position: relative;
-            margin-top: 5px;
-            animation: panelPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes panelPopup {
-            0% { transform: scale(0.85) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .rank-badge {
-            position: absolute;
-            top: -20px;
-            right: 20px;
-            width: 55px;
-            height: 55px;
-            background: #e3c4a8;
-            color: #fff;
-            font-size: 26px;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
-            border: 3px solid #fff;
-            font-family: 'RocknRoll One', sans-serif;
-        }
-
-        .result-song-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
-            border-bottom: 2px dashed #f5efe6;
-            padding-bottom: 10px;
-        }
-        .result-jacket-small {
-            width: 45px;
-            height: 45px;
-            border-radius: 10px;
-            background: #f7f2ea;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 22px;
-            border: 2px solid #f0e6d2;
-            flex-shrink: 0;
-        }
-        .result-song-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            text-align: left;
-        }
-        .result-title-text {
-            font-weight: bold;
-            color: #7c6f64;
-            font-size: 15px;
-        }
-        .result-artist-text {
-            font-size: 11px;
-            color: #b8aea1;
-        }
-
-        .result-score-container {
-            text-align: center;
-            margin-bottom: 10px;
-            border-bottom: 2px dashed #f5efe6;
-            padding-bottom: 8px;
-        }
-        .result-score-val {
-            font-size: 28px;
-            font-weight: bold;
-            color: #d4a373;
-        }
-        .judge-stats {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 2px;
-        }
-        .judge-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            font-weight: bold;
-            padding: 0 10px;
-        }
-        .stat-label-suteki { color: #e67e22; }
-        .stat-label-kirari { color: #f1c40f; }
-        .stat-label-ii { color: #3498db; }
-        .stat-label-alara { color: #95a5a6; }
-        .stat-value {
-            color: #7c6f64;
-            font-size: 15px;
-        }
-
-        .result-btn-container {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 330px;
-            justify-content: center;
-        }
-        .result-btn {
-            background-color: #e3c4a8;
-            color: #fff;
-            border: none;
-            padding: 12px 0;
-            font-size: 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
-            transition: 0.2s;
-            margin-top: 12px;
-            font-family: 'RocknRoll One', sans-serif;
-            flex: 1;
-            z-index: 5;
-        }
-        .result-btn.sub {
-            background-color: #f7f2ea;
-            color: #7c6f64;
-            border: 2px solid #f0e6d2;
-            box-shadow: none;
-        }
-        .result-btn:active {
-            transform: scale(0.95);
-        }
-
-        #score-board {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: #7c6f64;
-            font-size: 20px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-
-        #menu-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #fff;
-            border: 2.5px solid #f0e6d2;
-            color: #7c6f64;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
-            z-index: 20;
-            transition: 0.15s;
-        }
-        #menu-btn:active {
-            transform: scale(0.92);
-        }
-        .pause-panel {
-            background: #fff;
-            border: 3px solid #f0e6d2;
-            width: 100%;
-            max-width: 300px;
-            padding: 25px 20px;
-            border-radius: 20px;
-            box-sizing: border-box;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .pause-title {
-            font-size: 20px;
-            color: #7c6f64;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .pause-btn {
-            background-color: #f7f2ea;
-            color: #7c6f64;
-            border: 2px solid #f0e6d2;
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-family: 'RocknRoll One', sans-serif;
-            transition: 0.2s;
-            width: 100%;
-            font-weight: bold;
-        }
-        .pause-btn:active {
-            transform: scale(0.96);
-            background-color: #eee5d3;
-        }
-        .pause-btn.primary {
-            background-color: #e3c4a8;
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
-        }
-
-        .modal-panel {
-            background: #fff;
-            border: 3px solid #f0e6d2;
-            width: 90%;
-            max-width: 340px;
-            max-height: 85vh;
-            padding: 22px 18px;
-            border-radius: 20px;
-            box-sizing: border-box;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            overflow-y: auto;
-        }
-        .modal-title {
-            font-size: 19px;
-            color: #7c6f64;
-            text-align: center;
-            font-weight: bold;
-            border-bottom: 2px dashed #f5efe6;
-            padding-bottom: 8px;
-        }
-        .modal-body {
-            font-size: 13px;
-            color: #7c6f64;
-            line-height: 1.6;
-            text-align: left;
-        }
-        .modal-body p {
-            margin: 6px 0;
-        }
-        .modal-body ul {
-            margin: 6px 0;
-            padding-left: 20px;
-        }
-        .setting-item {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            background: #fffcf7;
-            border: 2px solid #f5efe6;
-            padding: 12px;
-            border-radius: 12px;
-        }
-        .setting-label {
-            font-size: 14px;
-            font-weight: bold;
-            color: #7c6f64;
-            display: flex;
-            justify-content: space-between;
-        }
-        .setting-range-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        input[type="range"] {
-            flex: 1;
-            accent-color: #d4a373;
-            cursor: pointer;
-        }
-        .x-link {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .x-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>絵本風リズムゲーム</title>
+<link href="[https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap](https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap)" rel="stylesheet">
+<style>
+body {
+margin: 0;
+padding: 0;
+background: #fdfbf7;
+font-family: 'RocknRoll One', sans-serif;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+overflow: hidden;
+touch-action: none;
+user-select: none;
+-webkit-user-select: none;
+-webkit-touch-callout: none;
+}
+.en-font {
+font-family: 'Darumadrop One', cursive, sans-serif;
+letter-spacing: 1px;
+}
+#game-container {
+position: relative;
+width: 100vw;
+height: 100vh;
+max-width: 450px;
+max-height: 800px;
+background: #fffdf9;
+box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+border-radius: 20px;
+overflow: hidden;
+border: 8px solid #f0e6d2;
+-webkit-touch-callout: none;
+}
+canvas {
+display: block;
+width: 100%;
+height: 100%;
+}
+.screen {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(253, 251, 247, 0.98);
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+z-index: 10;
+padding: 20px;
+box-sizing: border-box;
+}
+.hidden {
+display: none !important;
+}
+h1 {
+color: #7c6f64;
+font-size: 26px;
+margin-bottom: 20px;
+text-align: center;
+}
+.btn {
+background-color: #e3c4a8;
+color: #fff;
+border: none;
+padding: 14px 35px;
+font-size: 18px;
+border-radius: 30px;
+cursor: pointer;
+box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
+transition: 0.2s;
+margin-top: 15px;
+font-family: 'RocknRoll One', sans-serif;
+z-index: 5;
+}
+.btn:active {
+transform: scale(0.95);
+}
+#selector-config-btn {
+position: absolute;
+top: 15px;
+right: 15px;
+background: #fff;
+border: 2.5px solid #f0e6d2;
+color: #7c6f64;
+width: 38px;
+height: 38px;
+border-radius: 50%;
+font-size: 16px;
+display: flex;
+justify-content: center;
+align-items: center;
+cursor: pointer;
+box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+z-index: 25;
+transition: 0.15s;
+}
+#selector-config-btn:active {
+transform: scale(0.92);
+}
+.song-selector-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+position: relative;
+width: 100%;
+}
+.song-list-viewport {
+width: 330px;
+height: 280px;
+overflow: hidden;
+position: relative;
+display: flex;
+justify-content: center;
+align-items: center;
+cursor: grab;
+touch-action: none;
+mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+-webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+}
+.song-card {
+position: absolute;
+width: 300px;
+background: #fff;
+border: 3px solid #f0e6d2;
+padding: 12px 15px;
+border-radius: 15px;
+display: flex;
+align-items: center;
+gap: 15px;
+box-sizing: border-box;
+box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+pointer-events: none;
+}
+.song-card.selected {
+border-color: #d4a373;
+background: #fffcf7;
+box-shadow: 0 6px 15px rgba(212, 163, 115, 0.15);
+}
+.song-jacket {
+width: 50px;
+height: 50px;
+border-radius: 10px;
+background: #f7f2ea;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 24px;
+flex-shrink: 0;
+border: 2px solid #f0e6d2;
+}
+.song-info {
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+.song-title {
+font-weight: bold;
+color: #7c6f64;
+font-size: 15px;
+}
+.song-artist {
+font-size: 12px;
+color: #b8aea1;
+}
+.cloud-highscore {
+position: absolute;
+top: 162px;
+right: 18px;
+background: #ffffff;
+border: 2.5px solid #f0e6d2;
+padding: 4px 8px;
+border-radius: 15px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+display: flex;
+align-items: center;
+gap: 6px;
+animation: floatCloud 2.2s ease-in-out infinite alternate;
+z-index: 15;
+box-sizing: border-box;
+}
+@keyframes floatCloud {
+0% { transform: translateY(0px); }
+100% { transform: translateY(-8px); }
+}
+.cloud-rank-box {
+width: 24px;
+height: 24px;
+background: #fdfbf7;
+border: 2px solid #e3c4a8;
+border-radius: 50%;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 13px;
+font-weight: bold;
+color: #d4a373;
+}
+.cloud-info {
+display: flex;
+flex-direction: column;
+text-align: left;
+}
+.cloud-label {
+font-size: 7px;
+color: #b8aea1;
+letter-spacing: 0.5px;
+}
+.cloud-score-val {
+font-size: 13px;
+font-weight: bold;
+color: #7c6f64;
+}
+#credit-screen {
+background: rgba(253, 251, 247, 0.99);
+text-align: center;
+}
+.credit-jacket-large {
+width: 130px;
+height: 130px;
+border-radius: 25px;
+background: #fff;
+border: 4px solid #f0e6d2;
+box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 60px;
+margin-bottom: 20px;
+animation: pulseJacket 1.5s infinite alternate;
+}
+@keyframes pulseJacket {
+0% { transform: scale(1); }
+100% { transform: scale(1.04); }
+}
+.credit-title {
+font-size: 22px;
+font-weight: bold;
+color: #7c6f64;
+margin-bottom: 8px;
+}
+.credit-artist {
+font-size: 14px;
+color: #b8aea1;
+margin-bottom: 30px;
+}
+.ready-text {
+font-size: 22px;
+color: #d4a373;
+font-weight: bold;
+}
+#result-screen {
+animation: screenFadeIn 0.4s ease-out forwards;
+}
+@keyframes screenFadeIn {
+0% { opacity: 0; }
+100% { opacity: 1; }
+}
+.result-panel {
+background: #fff;
+border: 3px solid #f0e6d2;
+width: 100%;
+max-width: 330px;
+padding: 16px;
+border-radius: 20px;
+box-sizing: border-box;
+box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+position: relative;
+margin-top: 5px;
+animation: panelPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+@keyframes panelPopup {
+0% { transform: scale(0.85) translateY(20px); opacity: 0; }
+100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.rank-badge {
+position: absolute;
+top: -20px;
+right: 20px;
+width: 55px;
+height: 55px;
+background: #e3c4a8;
+color: #fff;
+font-size: 26px;
+font-weight: bold;
+display: flex;
+justify-content: center;
+align-items: center;
+border-radius: 50%;
+box-shadow: 0 4px 10px rgba(227, 196, 168, 0.5);
+border: 3px solid #fff;
+font-family: 'RocknRoll One', sans-serif;
+}
+.result-song-header {
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 10px;
+border-bottom: 2px dashed #f5efe6;
+padding-bottom: 10px;
+}
+.result-jacket-small {
+width: 45px;
+height: 45px;
+border-radius: 10px;
+background: #f7f2ea;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 22px;
+border: 2px solid #f0e6d2;
+flex-shrink: 0;
+}
+.result-song-meta {
+display: flex;
+flex-direction: column;
+gap: 3px;
+text-align: left;
+}
+.result-title-text {
+font-weight: bold;
+color: #7c6f64;
+font-size: 15px;
+}
+.result-artist-text {
+font-size: 11px;
+color: #b8aea1;
+}
+.result-score-container {
+text-align: center;
+margin-bottom: 10px;
+border-bottom: 2px dashed #f5efe6;
+padding-bottom: 8px;
+}
+.result-score-val {
+font-size: 28px;
+font-weight: bold;
+color: #d4a373;
+}
+.judge-stats {
+display: flex;
+flex-direction: column;
+gap: 4px;
+margin-bottom: 2px;
+}
+.judge-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 13px;
+font-weight: bold;
+padding: 0 10px;
+}
+.stat-label-suteki { color: #e67e22; }
+.stat-label-kirari { color: #f1c40f; }
+.stat-label-ii { color: #3498db; }
+.stat-label-alara { color: #95a5a6; }
+.stat-value {
+color: #7c6f64;
+font-size: 15px;
+}
+.result-btn-container {
+display: flex;
+gap: 10px;
+width: 100%;
+max-width: 330px;
+justify-content: center;
+}
+.result-btn {
+background-color: #e3c4a8;
+color: #fff;
+border: none;
+padding: 12px 0;
+font-size: 16px;
+border-radius: 30px;
+cursor: pointer;
+box-shadow: 0 4px 15px rgba(227, 196, 168, 0.4);
+transition: 0.2s;
+margin-top: 12px;
+font-family: 'RocknRoll One', sans-serif;
+flex: 1;
+z-index: 5;
+}
+.result-btn.sub {
+background-color: #f7f2ea;
+color: #7c6f64;
+border: 2px solid #f0e6d2;
+box-shadow: none;
+}
+.result-btn:active {
+transform: scale(0.95);
+}
+#score-board {
+position: absolute;
+top: 20px;
+left: 0;
+width: 100%;
+text-align: center;
+color: #7c6f64;
+font-size: 20px;
+font-weight: bold;
+pointer-events: none;
+}
+#menu-btn {
+position: absolute;
+top: 15px;
+right: 15px;
+background: #fff;
+border: 2.5px solid #f0e6d2;
+color: #7c6f64;
+width: 38px;
+height: 38px;
+border-radius: 50%;
+font-size: 16px;
+display: flex;
+justify-content: center;
+align-items: center;
+cursor: pointer;
+box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+z-index: 20;
+transition: 0.15s;
+}
+#menu-btn:active {
+transform: scale(0.92);
+}
+.pause-panel {
+background: #fff;
+border: 3px solid #f0e6d2;
+width: 100%;
+max-width: 300px;
+padding: 25px 20px;
+border-radius: 20px;
+box-sizing: border-box;
+box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+text-align: center;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+.pause-title {
+font-size: 20px;
+color: #7c6f64;
+margin-bottom: 5px;
+font-weight: bold;
+}
+.pause-btn {
+background-color: #f7f2ea;
+color: #7c6f64;
+border: 2px solid #f0e6d2;
+padding: 12px;
+font-size: 16px;
+border-radius: 25px;
+cursor: pointer;
+font-family: 'RocknRoll One', sans-serif;
+transition: 0.2s;
+width: 100%;
+font-weight: bold;
+}
+.pause-btn:active {
+transform: scale(0.96);
+background-color: #eee5d3;
+}
+.pause-btn.primary {
+background-color: #e3c4a8;
+color: #fff;
+border: none;
+box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
+}
+.modal-panel {
+background: #fff;
+border: 3px solid #f0e6d2;
+width: 90%;
+max-width: 340px;
+max-height: 85vh;
+padding: 22px 18px;
+border-radius: 20px;
+box-sizing: border-box;
+box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+display: flex;
+flex-direction: column;
+gap: 14px;
+overflow-y: auto;
+}
+.modal-title {
+font-size: 19px;
+color: #7c6f64;
+text-align: center;
+font-weight: bold;
+border-bottom: 2px dashed #f5efe6;
+padding-bottom: 8px;
+}
+.modal-body {
+font-size: 13px;
+color: #7c6f64;
+line-height: 1.6;
+text-align: left;
+}
+.modal-body p {
+margin: 6px 0;
+}
+.modal-body ul {
+margin: 6px 0;
+padding-left: 20px;
+}
+.setting-item {
+display: flex;
+flex-direction: column;
+gap: 6px;
+background: #fffcf7;
+border: 2px solid #f5efe6;
+padding: 12px;
+border-radius: 12px;
+}
+.setting-label {
+font-size: 14px;
+font-weight: bold;
+color: #7c6f64;
+display: flex;
+justify-content: space-between;
+}
+.setting-range-container {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+input[type="range"] {
+flex: 1;
+accent-color: #d4a373;
+cursor: pointer;
+}
+.x-link {
+color: #3498db;
+text-decoration: none;
+font-weight: bold;
+}
+.x-link:hover {
+text-decoration: underline;
+}
+</style>
 </head>
 <body>
-
 <div id="game-container">
-    <div id="score-board">スコア: <span id="score-num">0</span></div>
-
-    <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
-
-    <div id="select-screen" class="screen">
-        <button id="selector-config-btn" onclick="openConfigModal()">⚙️</button>
-
-        <h1 class="en-font">MUSIC SELECT</h1>
-        <div class="song-selector-container">
-            <div class="song-list-viewport" id="song-viewport"></div>
-            <div class="cloud-highscore">
-                <div class="cloud-rank-box" id="selector-rank">-</div>
-                <div class="cloud-info">
-                    <div class="cloud-label en-font">HIGH SCORE</div>
-                    <div class="cloud-score-val" id="selector-highscore">0</div>
-                </div>
-            </div>
-        </div>
-        <button class="btn" onclick="confirmSelectedSong()">決定</button>
-    </div>
-
-    <div id="credit-screen" class="screen hidden">
-        <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
-        <div class="credit-title" id="credit-song-title">どんぐりころころ</div>
-        <div class="credit-artist" id="credit-song-artist">文部省唱歌 / 童謡</div>
-        <div class="ready-text en-font">READY...♪</div>
-    </div>
-
-    <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
-        <div class="pause-panel">
-            <div class="pause-title en-font">PAUSE</div>
-            <button class="pause-btn primary" onclick="resumeGame()">つづける</button>
-            <button class="pause-btn" onclick="retryGame()">やりなおす</button>
-            <button class="pause-btn" onclick="returnToSelectFromPause()">曲選択へもどる</button>
-        </div>
-    </div>
-
-    <div id="config-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.92); z-index: 40;">
-        <div class="modal-panel">
-            <div class="modal-title en-font">CONFIG / INFO</div>
-            
-            <div class="setting-item">
-                <div class="setting-label">
-                    <span>ノーツの速さ (速度)</span>
-                    <span id="speed-val-text" style="color: #d4a373;">1.0倍</span>
-                </div>
-                <div class="setting-range-container">
-                    <span style="font-size: 11px; color: #b8aea1;">0.5x</span>
-                    <input type="range" id="speed-range" min="0.5" max="10.0" step="0.5" value="1.0" oninput="onSpeedChange(this.value)">
-                    <span style="font-size: 11px; color: #b8aea1;">10.0x</span>
-                </div>
-            </div>
-
-            <div class="modal-body">
-                <p><strong>📖 遊び方</strong></p>
-                <ul>
-                    <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
-                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
-                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
-                </ul>
-                <br>
-                <p><strong>🎨 クレジット</strong></p>
-                <p>開発・制作：あなたのお名前</p>
-                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
-            </div>
-
-            <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
-        </div>
-    </div>
-
-    <div id="result-screen" class="screen hidden">
-        <div class="result-panel">
-            <div class="rank-badge" id="result-rank">S</div>
-            
-            <div class="result-song-header">
-                <div class="result-jacket-small" id="result-jacket-icon">🌰</div>
-                <div class="result-song-meta">
-                    <div class="result-title-text" id="result-song-title">どんぐりころころ</div>
-                    <div class="result-artist-text" id="result-song-artist">文部省唱歌 / 童謡</div>
-                </div>
-            </div>
-
-            <div class="result-score-container">
-                <div style="font-size: 11px; color: #a89f91;" class="en-font">SCORE</div>
-                <div class="result-score-val en-font" id="final-score">0</div>
-            </div>
-
-            <div class="judge-stats">
-                <div class="judge-row">
-                    <span class="stat-label-kirari">ｷﾗﾘ!</span>
-                    <span class="stat-value" id="count-kirari">0</span>
-                </div>
-                <div class="judge-row">
-                    <span class="stat-label-suteki">ｽﾃｷ!</span>
-                    <span class="stat-value" id="count-suteki">0</span>
-                </div>
-                <div class="judge-row">
-                    <span class="stat-label-ii">ｲｲ!</span>
-                    <span class="stat-value" id="count-ii">0</span>
-                </div>
-                <div class="judge-row">
-                    <span class="stat-label-alara">ｱﾗﾗ</span>
-                    <span class="stat-value" id="count-alara">0</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="result-btn-container">
-            <button class="result-btn sub" onclick="retryFromResult()">もう一度</button>
-            <button class="result-btn" onclick="backToSelect()">曲選択へ</button>
-        </div>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
+<div id="score-board">スコア: <span id="score-num">0</span></div>
+<button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
+<div id="select-screen" class="screen">
+<button id="selector-config-btn" onclick="openConfigModal()">⚙️</button>
+<h1 class="en-font">MUSIC SELECT</h1>
+<div class="song-selector-container">
+<div class="song-list-viewport" id="song-viewport"></div>
+<div class="cloud-highscore">
+<div class="cloud-rank-box" id="selector-rank">-</div>
+<div class="cloud-info">
+<div class="cloud-label en-font">HIGH SCORE</div>
+<div class="cloud-score-val" id="selector-highscore">0</div>
 </div>
+</div>
+</div>
+<button class="btn" onclick="confirmSelectedSong()">決定</button>
+</div>
+<div id="credit-screen" class="screen hidden">
+<div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
+<div class="credit-title" id="credit-song-title">どんぐりころころ</div>
+<div class="credit-artist" id="credit-song-artist">文部省唱歌 / 童謡</div>
+<div class="ready-text en-font">READY...♪</div>
+</div>
+<div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
+<div class="pause-panel">
+<div class="pause-title en-font">PAUSE</div>
+<button class="pause-btn primary" onclick="resumeGame()">つづける</button>
+<button class="pause-btn" onclick="retryGame()">やりなおす</button>
+<button class="pause-btn" onclick="returnToSelectFromPause()">曲選択へもどる</button>
+</div>
+</div>
+<div id="config-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.92); z-index: 40;">
+<div class="modal-panel">
+<div class="modal-title en-font">CONFIG / INFO</div>
+<div class="setting-item">
+<div class="setting-label">
+<span>ノーツの速さ (速度)</span>
+<span id="speed-val-text" style="color: #d4a373;">1.0倍</span>
+</div>
+<div class="setting-range-container">
+<span style="font-size: 11px; color: #b8aea1;">0.5x</span>
+<input type="range" id="speed-range" min="0.5" max="10.0" step="0.5" value="1.0" oninput="onSpeedChange(this.value)">
+<span style="font-size: 11px; color: #b8aea1;">10.0x</span>
+</div>
+</div>
+<div class="modal-body">
+<p><strong>📖 遊び方</strong></p>
+<ul>
+<li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
+<li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
+<li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
+</ul>
 
+
+<p><strong>🎨 クレジット</strong></p>
+<p>開発・制作：あなたのお名前</p>
+<p>公式X（旧Twitter）：<a href="[https://twitter.com/](https://twitter.com/)" target="_blank" class="x-link">@YourXAccount</a></p>
+</div>
+<button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
+</div>
+</div>
+<div id="result-screen" class="screen hidden">
+<div class="result-panel">
+<div class="rank-badge" id="result-rank">S</div>
+<div class="result-song-header">
+<div class="result-jacket-small" id="result-jacket-icon">🌰</div>
+<div class="result-song-meta">
+<div class="result-title-text" id="result-song-title">どんぐりころころ</div>
+<div class="result-artist-text" id="result-song-artist">文部省唱歌 / 童謡</div>
+</div>
+</div>
+<div class="result-score-container">
+<div style="font-size: 11px; color: #a89f91;" class="en-font">SCORE</div>
+<div class="result-score-val en-font" id="final-score">0</div>
+</div>
+<div class="judge-stats">
+<div class="judge-row">
+<span class="stat-label-kirari">ｷﾗﾘ!</span>
+<span class="stat-value" id="count-kirari">0</span>
+</div>
+<div class="judge-row">
+<span class="stat-label-suteki">ｽﾃｷ!</span>
+<span class="stat-value" id="count-suteki">0</span>
+</div>
+<div class="judge-row">
+<span class="stat-label-ii">ｲｲ!</span>
+<span class="stat-value" id="count-ii">0</span>
+</div>
+<div class="judge-row">
+<span class="stat-label-alara">ｱﾗﾗ</span>
+<span class="stat-value" id="count-alara">0</span>
+</div>
+</div>
+</div>
+<div class="result-btn-container">
+<button class="result-btn sub" onclick="retryFromResult()">もう一度</button>
+<button class="result-btn" onclick="backToSelect()">曲選択へ</button>
+</div>
+</div>
+<canvas id="gameCanvas"></canvas>
+</div>
 <!-- ① 個別の曲データをすべて読み込む -->
 <script src="assets/charts/1.js"></script>
 <script src="assets/charts/2.js"></script>
 <script src="assets/charts/3.js"></script>
-
+<script src="assets/charts/sample.js"></script>
 <!-- ② 曲ファイルのリストを読み込む -->
 <script src="song-list.js"></script>
-
 <!-- ③ メインのゲームシステム処理 -->
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
 function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
+canvas.width = canvas.parentElement.clientWidth;
+canvas.height = canvas.parentElement.clientHeight;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-
-// song-list.js で定義されたパスから、ウィンドウに展開された曲データを自動収集する
+// ファイル名や変数名に縛られず、window全体から songData_ で始まるデータを自動収集する仕様
 const songs = [];
 if (window.allSongFiles) {
-    // 1.js なら window.songData_1、2.js なら window.songData_2 がグローバルにある前提で読み込む
-    window.allSongFiles.forEach((path, index) => {
-        let songDataKey = 'songData_' + (index + 1);
-        if (window[songDataKey]) {
-            songs.push(window[songDataKey]);
-        }
-    });
+for (let key in window) {
+if (key.startsWith('songData_')) {
+songs.push(window[key]);
 }
-
+}
+}
 let gameState = 'SELECT';
 let score = 0;
 let audioCtx = null;
 let startTime = 0;
-let songDuration = 18.0; 
-
+let songDuration = 18.0;
 let pauseStartTime = 0;
 let totalPausedTime = 0;
-
 let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
 let currentSongIndex = 0;
-
 function getSongHighScore(songId) {
-    const saved = localStorage.getItem('rhythm_game_hs_' + songId);
-    return saved ? JSON.parse(saved) : { score: 0, accuracy: 0, rank: '-' };
+const saved = localStorage.getItem('rhythm_game_hs_' + songId);
+return saved ? JSON.parse(saved) : { score: 0, accuracy: 0, rank: '-' };
 }
-
 function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
-    let current = getSongHighScore(songId);
-    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore >= current.score)) {
-        const data = { score: newScore, accuracy: newAccuracy, rank: newRank };
-        localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
-        return true;
-    }
-    return false;
+let current = getSongHighScore(songId);
+if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore >= current.score)) {
+const data = { score: newScore, accuracy: newAccuracy, rank: newRank };
+localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
+return true;
 }
-
+return false;
+}
 function updateSelectorHighScoreDisplay() {
-    if (songs.length === 0) return;
-    let song = songs[currentSongIndex];
-    let hsData = getSongHighScore(song.id);
-    document.getElementById('selector-highscore').innerText = hsData.score;
-    document.getElementById('selector-rank').innerText = hsData.rank;
+if (songs.length === 0) return;
+let song = songs[currentSongIndex];
+let hsData = getSongHighScore(song.id);
+document.getElementById('selector-highscore').innerText = hsData.score;
+document.getElementById('selector-rank').innerText = hsData.rank;
 }
-
 function openConfigModal() {
-    document.getElementById('speed-range').value = noteSpeedMultiplier;
-    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
-    document.getElementById('config-screen').classList.remove('hidden');
+document.getElementById('speed-range').value = noteSpeedMultiplier;
+document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
+document.getElementById('config-screen').classList.remove('hidden');
 }
-
 function closeConfigModal() {
-    document.getElementById('config-screen').classList.add('hidden');
+document.getElementById('config-screen').classList.add('hidden');
 }
-
 function onSpeedChange(val) {
-    noteSpeedMultiplier = parseFloat(val);
-    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
-    localStorage.setItem('rhythm_game_speed', noteSpeedMultiplier);
+noteSpeedMultiplier = parseFloat(val);
+document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
+localStorage.setItem('rhythm_game_speed', noteSpeedMultiplier);
 }
-
 let dragStartY = 0;
 let dragCurrentOffset = 0;
 let isDragging = false;
 const itemHeight = 75;
-
 let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
-
-const targetRadius = 32; 
-const baseNoteSpeed = 2.8;   
-
+const targetRadius = 32;
+const baseNoteSpeed = 2.8;
 function renderSongSelector(animating = false) {
-    const viewport = document.getElementById('song-viewport');
-    viewport.innerHTML = '';
-    if (songs.length === 0) return;
-
-    for (let i = -2; i <= 2; i++) {
-        let targetIdx = (currentSongIndex + i + songs.length * 10) % songs.length;
-        let song = songs[targetIdx];
-
-        let card = document.createElement('div');
-        card.className = 'song-card';
-        if (i === 0 && dragCurrentOffset === 0) card.classList.add('selected');
-
-        let baseY = i * itemHeight;
-        let totalY = baseY + dragCurrentOffset;
-        let normY = totalY / itemHeight; 
-        let scale = Math.max(0.75, 1 - Math.abs(normY) * 0.15);
-        let opacity = Math.max(0.15, 1 - Math.abs(normY) * 0.35);
-        let zIndex = 3 - Math.abs(i);
-
-        if (animating) {
-            card.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
-        } else {
-            card.style.transition = 'none';
-        }
-
-        card.style.transform = `translateY(${totalY}px) scale(${scale})`;
-        card.style.opacity = opacity;
-        card.style.zIndex = zIndex;
-
-        card.innerHTML = `
-            <div class="song-jacket">${song.jacket}</div>
-            <div class="song-info">
-                <div class="song-title">${song.title}</div>
-                <div class="song-artist">${song.artist}</div>
-            </div>
-        `;
-        viewport.appendChild(card);
-    }
-    updateSelectorHighScoreDisplay();
+const viewport = document.getElementById('song-viewport');
+viewport.innerHTML = '';
+if (songs.length === 0) return;
+for (let i = -2; i <= 2; i++) {
+let targetIdx = (currentSongIndex + i + songs.length * 10) % songs.length;
+let song = songs[targetIdx];
+let card = document.createElement('div');
+card.className = 'song-card';
+if (i === 0 && dragCurrentOffset === 0) card.classList.add('selected');
+let baseY = i * itemHeight;
+let totalY = baseY + dragCurrentOffset;
+let normY = totalY / itemHeight;
+let scale = Math.max(0.75, 1 - Math.abs(normY) * 0.15);
+let opacity = Math.max(0.15, 1 - Math.abs(normY) * 0.35);
+let zIndex = 3 - Math.abs(i);
+if (animating) {
+card.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
+} else {
+card.style.transition = 'none';
 }
-
+card.style.transform = translateY(${totalY}px) scale(${scale});
+card.style.opacity = opacity;
+card.style.zIndex = zIndex;
+card.innerHTML = <div class="song-jacket">${song.jacket}</div> <div class="song-info"> <div class="song-title">${song.title}</div> <div class="song-artist">${song.artist}</div> </div>;
+viewport.appendChild(card);
+}
+updateSelectorHighScoreDisplay();
+}
 const viewportEl = document.getElementById('song-viewport');
 viewportEl.addEventListener('pointerdown', (e) => {
-    if (gameState !== 'SELECT' || songs.length === 0) return;
-    isDragging = true;
-    dragStartY = e.clientY;
-    dragCurrentOffset = 0;
-    renderSongSelector(false);
-    viewportEl.setPointerCapture(e.pointerId);
+if (gameState !== 'SELECT' || songs.length === 0) return;
+isDragging = true;
+dragStartY = e.clientY;
+dragCurrentOffset = 0;
+renderSongSelector(false);
+viewportEl.setPointerCapture(e.pointerId);
 });
-
 viewportEl.addEventListener('pointermove', (e) => {
-    if (!isDragging || gameState !== 'SELECT') return;
-    let diffY = e.clientY - dragStartY;
-    dragCurrentOffset = diffY;
-    
-    while (Math.abs(dragCurrentOffset) >= itemHeight) {
-        if (dragCurrentOffset > 0) {
-            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-            dragStartY += itemHeight;
-            dragCurrentOffset -= itemHeight;
-        } else {
-            currentSongIndex = (currentSongIndex + 1) % songs.length;
-            dragStartY -= itemHeight;
-            dragCurrentOffset += itemHeight;
-        }
-        updateSelectorHighScoreDisplay();
-    }
-    renderSongSelector(false);
-});
-
-function handleDragEnd(e) {
-    if (!isDragging || gameState !== 'SELECT') return;
-    isDragging = false;
-    let snapSteps = Math.round(dragCurrentOffset / itemHeight);
-    currentSongIndex = (currentSongIndex - snapSteps + songs.length * 10) % songs.length;
-    dragCurrentOffset = 0;
-    renderSongSelector(true);
-    try { viewportEl.releasePointerCapture(e.pointerId); } catch(err) {}
+if (!isDragging || gameState !== 'SELECT') return;
+let diffY = e.clientY - dragStartY;
+dragCurrentOffset = diffY;
+while (Math.abs(dragCurrentOffset) >= itemHeight) {
+if (dragCurrentOffset > 0) {
+currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+dragStartY += itemHeight;
+dragCurrentOffset -= itemHeight;
+} else {
+currentSongIndex = (currentSongIndex + 1) % songs.length;
+dragStartY -= itemHeight;
+dragCurrentOffset += itemHeight;
 }
-
+updateSelectorHighScoreDisplay();
+}
+renderSongSelector(false);
+});
+function handleDragEnd(e) {
+if (!isDragging || gameState !== 'SELECT') return;
+isDragging = false;
+let snapSteps = Math.round(dragCurrentOffset / itemHeight);
+currentSongIndex = (currentSongIndex - snapSteps + songs.length * 10) % songs.length;
+dragCurrentOffset = 0;
+renderSongSelector(true);
+try { viewportEl.releasePointerCapture(e.pointerId); } catch(err) {}
+}
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
-
 renderSongSelector(false);
-
 function getLanePositions() {
-    let positions = [];
-    let centerX = canvas.width / 2;
-    let baseY = canvas.height * 0.62; 
-    let totalWidth = canvas.width * 0.76; 
-    let spacing = totalWidth / 4;
-
-    for (let i = 0; i < 5; i++) {
-        let x = centerX - (totalWidth / 2) + (spacing * i);
-        let offsetY = -Math.pow((i - 2), 2) * 12 + 25; 
-        let y = baseY + offsetY;
-        positions.push({ x: x, y: y });
-    }
-    return positions;
+let positions = [];
+let centerX = canvas.width / 2;
+let baseY = canvas.height * 0.62;
+let totalWidth = canvas.width * 0.76;
+let spacing = totalWidth / 4;
+for (let i = 0; i < 5; i++) {
+let x = centerX - (totalWidth / 2) + (spacing * i);
+let offsetY = -Math.pow((i - 2), 2) * 12 + 25;
+let y = baseY + offsetY;
+positions.push({ x: x, y: y });
 }
-
+return positions;
+}
 let notes = [];
 let particles = [];
 let scheduledMelodyNotes = [];
-
 function spawnParticles(x, y, color) {
-    for (let i = 0; i < 10; i++) {
-        let angle = Math.random() * Math.PI * 2;
-        let speed = 2 + Math.random() * 4;
-        particles.push({
-            x: x,
-            y: y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            radius: 3 + Math.random() * 4,
-            color: color,
-            alpha: 1.0,
-            decay: 0.04 + Math.random() * 0.04
-        });
-    }
+for (let i = 0; i < 10; i++) {
+let angle = Math.random() * Math.PI * 2;
+let speed = 2 + Math.random() * 4;
+particles.push({
+x: x,
+y: y,
+vx: Math.cos(angle) * speed,
+vy: Math.sin(angle) * speed,
+radius: 3 + Math.random() * 4,
+color: color,
+alpha: 1.0,
+decay: 0.04 + Math.random() * 0.04
+});
 }
-
+}
 const NOTE_FREQS = {
-    'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
-    'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
+'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
 };
-
 function generateChart(song) {
-    notes = [];
-    particles = [];
-    scheduledMelodyNotes = [];
-    songDuration = song.duration;
-
-    let chartData = song.chart || [];
-
-    if (song.id === 'song_1') {
-        scheduledMelodyNotes = chartData
-            .filter(n => n.noteName && NOTE_FREQS[n.noteName])
-            .map(n => ({ time: n.time, freq: NOTE_FREQS[n.noteName], played: false }));
-    }
-
-    notes = chartData.map(n => ({
-        ...n,
-        hit: false,       
-        holding: false,   
-        started: false,
-        activePointerId: null
-    }));
+notes = [];
+particles = [];
+scheduledMelodyNotes = [];
+songDuration = song.duration;
+let chartData = song.chart || [];
+if (song.id === 'song_1') {
+scheduledMelodyNotes = chartData
+.filter(n => n.noteName && NOTE_FREQS[n.noteName])
+.map(n => ({ time: n.time, freq: NOTE_FREQS[n.noteName], played: false }));
 }
-
+notes = chartData.map(n => ({
+...n,
+hit: false,
+holding: false,
+started: false,
+activePointerId: null
+}));
+}
 let animTimer = 0;
 let activeTouches = new Map();
 let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
-
 function confirmSelectedSong() {
-    if (songs.length === 0) return;
-    let selectedSong = songs[currentSongIndex];
-
-    document.getElementById('select-screen').classList.add('hidden');
-    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
-    document.getElementById('credit-song-title').innerText = selectedSong.title;
-    document.getElementById('credit-song-artist').innerText = selectedSong.artist;
-    document.getElementById('credit-screen').classList.remove('hidden');
-    gameState = 'CREDIT';
-
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    setTimeout(() => {
-        startActualGame(selectedSong);
-    }, 3000);
+if (songs.length === 0) return;
+let selectedSong = songs[currentSongIndex];
+document.getElementById('select-screen').classList.add('hidden');
+document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
+document.getElementById('credit-song-title').innerText = selectedSong.title;
+document.getElementById('credit-song-artist').innerText = selectedSong.artist;
+document.getElementById('credit-screen').classList.remove('hidden');
+gameState = 'CREDIT';
+if (!audioCtx) {
+audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
-
+setTimeout(() => {
+startActualGame(selectedSong);
+}, 3000);
+}
 function startActualGame(song) {
-    document.getElementById('credit-screen').classList.add('hidden');
-    document.getElementById('menu-btn').classList.remove('hidden');
-    
-    score = 0;
-    totalPausedTime = 0;
-    activeTouches.clear();
-    judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
-    scoreBoardUpdate();
-    
-    generateChart(song);
-    startTime = audioCtx.currentTime;
-    gameState = 'PLAYING';
+document.getElementById('credit-screen').classList.add('hidden');
+document.getElementById('menu-btn').classList.remove('hidden');
+score = 0;
+totalPausedTime = 0;
+activeTouches.clear();
+judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
+scoreBoardUpdate();
+generateChart(song);
+startTime = audioCtx.currentTime;
+gameState = 'PLAYING';
 }
-
 function openPauseMenu() {
-    if (gameState !== 'PLAYING') return;
-    gameState = 'PAUSE';
-    pauseStartTime = audioCtx.currentTime;
-    document.getElementById('pause-screen').classList.remove('hidden');
+if (gameState !== 'PLAYING') return;
+gameState = 'PAUSE';
+pauseStartTime = audioCtx.currentTime;
+document.getElementById('pause-screen').classList.remove('hidden');
 }
-
 function resumeGame() {
-    document.getElementById('pause-screen').classList.add('hidden');
-    totalPausedTime += (audioCtx.currentTime - pauseStartTime);
-    gameState = 'PLAYING';
+document.getElementById('pause-screen').classList.add('hidden');
+totalPausedTime += (audioCtx.currentTime - pauseStartTime);
+gameState = 'PLAYING';
 }
-
 function retryGame() {
-    document.getElementById('pause-screen').classList.add('hidden');
-    startActualGame(songs[currentSongIndex]);
+document.getElementById('pause-screen').classList.add('hidden');
+startActualGame(songs[currentSongIndex]);
 }
-
 function returnToSelectFromPause() {
-    document.getElementById('pause-screen').classList.add('hidden');
-    document.getElementById('menu-btn').classList.add('hidden');
-    document.getElementById('select-screen').classList.remove('hidden');
-    gameState = 'SELECT';
-    renderSongSelector(false);
+document.getElementById('pause-screen').classList.add('hidden');
+document.getElementById('menu-btn').classList.add('hidden');
+document.getElementById('select-screen').classList.remove('hidden');
+gameState = 'SELECT';
+renderSongSelector(false);
 }
-
 function finishGame() {
-    gameState = 'RESULT';
-    document.getElementById('menu-btn').classList.add('hidden');
-    
-    let currentSong = songs[currentSongIndex];
-    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
-    document.getElementById('result-song-title').innerText = currentSong.title;
-    document.getElementById('result-song-artist').innerText = currentSong.artist;
-
-    document.getElementById('final-score').innerText = score;
-    document.getElementById('count-kirari').innerText = judgeCounts.kirari;
-    document.getElementById('count-suteki').innerText = judgeCounts.suteki;
-    document.getElementById('count-ii').innerText = judgeCounts.ii;
-    document.getElementById('count-alara').innerText = judgeCounts.alara;
-
-    let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
-    let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
-
-    let rank = 'D';
-    if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) {
-        rank = 'SSS';
-    } else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) {
-        rank = 'SS';
-    } else if (accuracyPercent >= 80) {
-        rank = 'S';
-    } else if (accuracyPercent >= 60) {
-        rank = 'A';
-    } else if (accuracyPercent >= 40) {
-        rank = 'B';
-    } else if (accuracyPercent >= 20) {
-        rank = 'C';
-    }
-
-    document.getElementById('result-rank').innerText = rank;
-    saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
-
-    const resultScreen = document.getElementById('result-screen');
-    resultScreen.classList.remove('hidden');
-    resultScreen.style.animation = 'none';
-    resultScreen.offsetHeight; 
-    resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
+gameState = 'RESULT';
+document.getElementById('menu-btn').classList.add('hidden');
+let currentSong = songs[currentSongIndex];
+document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
+document.getElementById('result-song-title').innerText = currentSong.title;
+document.getElementById('result-song-artist').innerText = currentSong.artist;
+document.getElementById('final-score').innerText = score;
+document.getElementById('count-kirari').innerText = judgeCounts.kirari;
+document.getElementById('count-suteki').innerText = judgeCounts.suteki;
+document.getElementById('count-ii').innerText = judgeCounts.ii;
+document.getElementById('count-alara').innerText = judgeCounts.alara;
+let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
+let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
+let rank = 'D';
+if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) {
+rank = 'SSS';
+} else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) {
+rank = 'SS';
+} else if (accuracyPercent >= 80) {
+rank = 'S';
+} else if (accuracyPercent >= 60) {
+rank = 'A';
+} else if (accuracyPercent >= 40) {
+rank = 'B';
+} else if (accuracyPercent >= 20) {
+rank = 'C';
 }
-
+document.getElementById('result-rank').innerText = rank;
+saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
+const resultScreen = document.getElementById('result-screen');
+resultScreen.classList.remove('hidden');
+resultScreen.style.animation = 'none';
+resultScreen.offsetHeight;
+resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
+}
 function retryFromResult() {
-    document.getElementById('result-screen').classList.add('hidden');
-    startActualGame(songs[currentSongIndex]);
+document.getElementById('result-screen').classList.add('hidden');
+startActualGame(songs[currentSongIndex]);
 }
-
 function backToSelect() {
-    document.getElementById('result-screen').classList.add('hidden');
-    document.getElementById('select-screen').classList.remove('hidden');
-    gameState = 'SELECT';
-    renderSongSelector(false);
+document.getElementById('result-screen').classList.add('hidden');
+document.getElementById('select-screen').classList.remove('hidden');
+gameState = 'SELECT';
+renderSongSelector(false);
 }
-
 function scoreBoardUpdate() {
-    document.getElementById('score-num').innerText = score;
+document.getElementById('score-num').innerText = score;
 }
-
 canvas.addEventListener('pointerdown', (e) => {
-    if(gameState !== 'PLAYING') return;
-
-    const rect = canvas.getBoundingClientRect();
-    const touchX = e.clientX - rect.left;
-    const touchY = e.clientY - rect.top;
-
-    activeTouches.set(e.pointerId, {
-        id: e.pointerId,
-        startX: touchX,
-        startY: touchY,
-        currentX: touchX,
-        currentY: touchY,
-        assignedNote: null
-    });
-    canvas.setPointerCapture(e.pointerId);
-
-    let lanes = getLanePositions();
-    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
-
-    for (let i = 0; i < lanes.length; i++) {
-        let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
-        if (distance < targetRadius * 2.0) {
-            for (let note of notes) {
-                if (!note.hit && !note.started) {
-                    if (note.lane === i) {
-                        let diff = Math.abs(currentTime - note.time);
-                        if (diff < 0.4) {
-                            if (note.type === 'tap') {
-                                note.hit = true;
-                                judgeAction(diff);
-                                spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
-                                playHitSound();
-                            } else if (note.type === 'long') {
-                                note.started = true;
-                                note.holding = true;
-                                note.activePointerId = e.pointerId;
-                                activeTouches.get(e.pointerId).assignedNote = note;
-                                score += 100;
-                                scoreBoardUpdate();
-                                spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
-                                playHitSound();
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
+if(gameState !== 'PLAYING') return;
+const rect = canvas.getBoundingClientRect();
+const touchX = e.clientX - rect.left;
+const touchY = e.clientY - rect.top;
+activeTouches.set(e.pointerId, {
+id: e.pointerId,
+startX: touchX,
+startY: touchY,
+currentX: touchX,
+currentY: touchY,
+assignedNote: null
 });
-
+canvas.setPointerCapture(e.pointerId);
+let lanes = getLanePositions();
+let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+for (let i = 0; i < lanes.length; i++) {
+let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
+if (distance < targetRadius * 2.0) {
+for (let note of notes) {
+if (!note.hit && !note.started) {
+if (note.lane === i) {
+let diff = Math.abs(currentTime - note.time);
+if (diff < 0.4) {
+if (note.type === 'tap') {
+note.hit = true;
+judgeAction(diff);
+spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
+playHitSound();
+} else if (note.type === 'long') {
+note.started = true;
+note.holding = true;
+note.activePointerId = e.pointerId;
+activeTouches.get(e.pointerId).assignedNote = note;
+score += 100;
+scoreBoardUpdate();
+spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
+playHitSound();
+}
+break;
+}
+}
+}
+}
+}
+}
+});
 canvas.addEventListener('pointermove', (e) => {
-    if (!activeTouches.has(e.pointerId)) return;
-    const rect = canvas.getBoundingClientRect();
-    const touchX = e.clientX - rect.left;
-    const touchY = e.clientY - rect.top;
-
-    let touchInfo = activeTouches.get(e.pointerId);
-    touchInfo.currentX = touchX;
-    touchInfo.currentY = touchY;
+if (!activeTouches.has(e.pointerId)) return;
+const rect = canvas.getBoundingClientRect();
+const touchX = e.clientX - rect.left;
+const touchY = e.clientY - rect.top;
+let touchInfo = activeTouches.get(e.pointerId);
+touchInfo.currentX = touchX;
+touchInfo.currentY = touchY;
 });
-
 canvas.addEventListener('pointerup', (e) => { handleTouchEndOrCancel(e); });
 canvas.addEventListener('pointercancel', (e) => { handleTouchEndOrCancel(e); });
-
 function handleTouchEndOrCancel(e) {
-    if (!activeTouches.has(e.pointerId)) return;
-    let touchInfo = activeTouches.get(e.pointerId);
-    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
-    let lanes = getLanePositions();
-
-    if (touchInfo.assignedNote) {
-        let note = touchInfo.assignedNote;
-        if (note.type === 'long' && note.holding) {
-            let endTime = note.time + note.duration;
-            let diff = Math.abs(currentTime - endTime);
-            if (diff < 0.35) {
-                score += 400;
-                judgeCounts.kirari++;
-                showFeedback("ｷﾗﾘ!", "#f1c40f");
-            } else {
-                score += 100;
-                judgeCounts.ii++;
-                showFeedback("ｲｲ!", "#3498db");
-            }
-            note.hit = true;
-            note.holding = false;
-            spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
-            playHitSound();
-            scoreBoardUpdate();
-        }
-    } else {
-        for (let note of notes) {
-            if (!note.hit && note.type === 'flick') {
-                let diff = Math.abs(currentTime - note.time);
-                if (diff < 0.4) {
-                    let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
-                    if (dist > 15) {
-                        note.hit = true;
-                        score += 350;
-                        judgeCounts.kirari++;
-                        showFeedback("ｷﾗﾘ!", "#f1c40f");
-                        spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
-                        playHitSound();
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
-    activeTouches.delete(e.pointerId);
+if (!activeTouches.has(e.pointerId)) return;
+let touchInfo = activeTouches.get(e.pointerId);
+let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+let lanes = getLanePositions();
+if (touchInfo.assignedNote) {
+let note = touchInfo.assignedNote;
+if (note.type === 'long' && note.holding) {
+let endTime = note.time + note.duration;
+let diff = Math.abs(currentTime - endTime);
+if (diff < 0.35) {
+score += 400;
+judgeCounts.kirari++;
+showFeedback("ｷﾗﾘ!", "#f1c40f");
+} else {
+score += 100;
+judgeCounts.ii++;
+showFeedback("ｲｲ!", "#3498db");
 }
-
+note.hit = true;
+note.holding = false;
+spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
+playHitSound();
+scoreBoardUpdate();
+}
+} else {
+for (let note of notes) {
+if (!note.hit && note.type === 'flick') {
+let diff = Math.abs(currentTime - note.time);
+if (diff < 0.4) {
+let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
+if (dist > 15) {
+note.hit = true;
+score += 350;
+judgeCounts.kirari++;
+showFeedback("ｷﾗﾘ!", "#f1c40f");
+spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
+playHitSound();
+break;
+}
+}
+}
+}
+}
+try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+activeTouches.delete(e.pointerId);
+}
 function judgeAction(diff) {
-    if (diff < 0.09) {
-        score += 300;
-        judgeCounts.kirari++;
-        showFeedback("ｷﾗﾘ!", "#f1c40f");
-    } else if (diff < 0.22) {
-        score += 200;
-        judgeCounts.suteki++;
-        showFeedback("ｽﾃｷ!", "#e67e22");
-    } else {
-        score += 100;
-        judgeCounts.ii++;
-        showFeedback("ｲｲ!", "#3498db");
-    }
-    scoreBoardUpdate();
+if (diff < 0.09) {
+score += 300;
+judgeCounts.kirari++;
+showFeedback("ｷﾗﾘ!", "#f1c40f");
+} else if (diff < 0.22) {
+score += 200;
+judgeCounts.suteki++;
+showFeedback("ｽﾃｷ!", "#e67e22");
+} else {
+score += 100;
+judgeCounts.ii++;
+showFeedback("ｲｲ!", "#3498db");
 }
-
+scoreBoardUpdate();
+}
 window.addEventListener('contextmenu', (e) => e.preventDefault());
-
 function playMelodyTone(freq) {
-    if (!audioCtx) return;
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.35);
+if (!audioCtx) return;
+let osc = audioCtx.createOscillator();
+let gain = audioCtx.createGain();
+osc.type = 'triangle';
+osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start();
+osc.stop(audioCtx.currentTime + 0.35);
 }
-
 function playHitSound() {
-    if (!audioCtx) return;
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+if (!audioCtx) return;
+let osc = audioCtx.createOscillator();
+let gain = audioCtx.createGain();
+osc.type = 'sine';
+osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+osc.start();
+osc.stop(audioCtx.currentTime + 0.1);
 }
-
 function showFeedback(text, color) {
-    feedback.text = text;
-    feedback.color = color;
-    feedback.timer = feedback.maxTime;
+feedback.text = text;
+feedback.color = color;
+feedback.timer = feedback.maxTime;
 }
-
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    animTimer += 0.05;
-
-    let centerX = canvas.width / 2;
-    let girlY = canvas.height * 0.3 - 70; 
-    let lanes = getLanePositions();
-    let spawnOffsetY = 75;
-
-    if (gameState === 'PLAYING') {
-        let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
-        let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
-
-        if (songs.length > 0 && songs[currentSongIndex].id === 'song_1') {
-            for (let m of scheduledMelodyNotes) {
-                if (!m.played && currentTime >= m.time) {
-                    playMelodyTone(m.freq);
-                    m.played = true;
-                }
-            }
-        }
-
-        if (currentTime >= songDuration) {
-            finishGame();
-        }
-
-        let girlFloatY = Math.sin(animTimer * 2) * 4;
-        ctx.fillStyle = "#f5d0c5";
-        ctx.beginPath();
-        ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#e8dfd1";
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        ctx.fillStyle = "#e6beae";
-        ctx.beginPath();
-        ctx.arc(centerX, girlY + girlFloatY - 15, 30, 0, Math.PI * 2);
-        ctx.fill();
-
-        for (let i = 0; i < lanes.length; i++) {
-            let x = lanes[i].x;
-            let y = lanes[i].y;
-            let currentRadius = targetRadius;
-
-            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-            ctx.strokeStyle = "#d4c5b9";
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.strokeStyle = "#e8dfd1";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-
-        for (let note of notes) {
-            if (note.hit) continue;
-
-            if (note.type === 'flick') {
-                let target = lanes[note.lane];
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let progress = (currentTime - (note.time - travelTime)) / travelTime;
-                if (progress >= 0 && progress <= 1.2) {
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
-                    let x = startSpawnX + (target.x - startSpawnX) * progress;
-                    let y = startSpawnY + (target.y - startSpawnY) * progress;
-
-                    ctx.fillStyle = "#9b59b6";
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText("◆", x, y);
-                }
-                if (progress > 1.2 && !note.hit) {
-                    note.hit = true;
-                    judgeCounts.alara++;
-                    showFeedback("ｱﾗﾗ", "#95a5a6");
-                }
-            }
-            else if (note.type === 'long') {
-                let target = lanes[note.lane];
-                let endTime = note.time + note.duration;
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let headProg = (currentTime - (note.time - travelTime)) / travelTime;
-                let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
-
-                if (headProg >= 0 && tailProg <= 1.2) {
-                    let headX, headY, tailX, tailY;
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
-
-                    if (headProg >= 1.0 || note.started) {
-                        headX = target.x;
-                        headY = target.y;
-                    } else {
-                        let pHead = Math.max(0, headProg);
-                        headX = startSpawnX + (target.x - startSpawnX) * pHead;
-                        headY = startSpawnY + (target.y - startSpawnY) * pHead;
-                    }
-
-                    if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
-                        tailX = target.x;
-                        tailY = target.y;
-                    } else {
-                        let pTail = Math.max(0, tailProg);
-                        tailX = startSpawnX + (target.x - startSpawnX) * pTail;
-                        tailY = startSpawnY + (target.y - startSpawnY) * pTail;
-                    }
-
-                    if (headProg >= 0) {
-                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
-                        ctx.lineWidth = 12;
-                        ctx.lineCap = "round";
-                        ctx.beginPath();
-                        ctx.moveTo(tailX, tailY);
-                        ctx.lineTo(headX, headY);
-                        ctx.stroke();
-                    }
-
-                    if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
-                        ctx.fillStyle = "#f39c12";
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(tailX, tailY, 15, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-
-                    if (!note.holding && headProg <= 1.2) {
-                        ctx.fillStyle = "#f39c12";
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(headX, headY, 16, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    } else if (note.holding) {
-                        if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
-                        
-                        if (currentTime >= endTime) {
-                            note.hit = true;
-                            note.holding = false;
-                            spawnParticles(target.x, target.y, '#f39c12');
-                            playHitSound();
-                        }
-                    }
-                }
-            }
-            else {
-                let target = lanes[note.lane];
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let progress = (currentTime - (note.time - travelTime)) / travelTime;
-                if (progress >= 0 && progress <= 1.2) {
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
-                    let x = startSpawnX + (target.x - startSpawnX) * progress;
-                    let y = startSpawnY + (target.y - startSpawnY) * progress;
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.fillStyle = "#1abc9c";
-                    ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                if (progress > 1.2 && !note.hit) {
-                    note.hit = true;
-                    judgeCounts.alara++;
-                    showFeedback("ｱﾗﾗ", "#95a5a6");
-                }
-            }
-        }
-    }
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.decay;
-
-        if (p.alpha <= 0) {
-            particles.splice(i, 1);
-            continue;
-        }
-
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-
-    if (feedback.timer > 0) {
-        feedback.timer--;
-        let progressRate = 1 - (feedback.timer / feedback.maxTime);
-        let floatY = -Math.sin(progressRate * Math.PI) * 25;
-        let alpha = feedback.timer < 8 ? (feedback.timer / 8) : 1.0;
-        let scale = progressRate < 0.2 ? (0.8 + progressRate * 1.0) : 1.0;
-
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.translate(centerX, girlY - 65 + floatY);
-        ctx.scale(scale, scale);
-
-        ctx.fillStyle = feedback.color;
-        ctx.font = "bold 24px 'RocknRoll One', sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#ffffff";
-        ctx.strokeText(feedback.text, 0, 0);
-        ctx.fillText(feedback.text, 0, 0);
-        ctx.restore();
-    }
-
-    requestAnimationFrame(gameLoop);
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+animTimer += 0.05;
+let centerX = canvas.width / 2;
+let girlY = canvas.height * 0.3 - 70;
+let lanes = getLanePositions();
+let spawnOffsetY = 75;
+if (gameState === 'PLAYING') {
+let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
+if (songs.length > 0 && songs[currentSongIndex].id === 'song_1') {
+for (let m of scheduledMelodyNotes) {
+if (!m.played && currentTime >= m.time) {
+playMelodyTone(m.freq);
+m.played = true;
 }
-
+}
+}
+if (currentTime >= songDuration) {
+finishGame();
+}
+let girlFloatY = Math.sin(animTimer * 2) * 4;
+ctx.fillStyle = "#f5d0c5";
+ctx.beginPath();
+ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
+ctx.fill();
+ctx.strokeStyle = "#e8dfd1";
+ctx.lineWidth = 4;
+ctx.stroke();
+ctx.fillStyle = "#e6beae";
+ctx.beginPath();
+ctx.arc(centerX, girlY + girlFloatY - 15, 30, 0, Math.PI * 2);
+ctx.fill();
+for (let i = 0; i < lanes.length; i++) {
+let x = lanes[i].x;
+let y = lanes[i].y;
+let currentRadius = targetRadius;
+ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+ctx.strokeStyle = "#d4c5b9";
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+ctx.strokeStyle = "#e8dfd1";
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
+ctx.stroke();
+}
+for (let note of notes) {
+if (note.hit) continue;
+if (note.type === 'flick') {
+let target = lanes[note.lane];
+let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+let progress = (currentTime - (note.time - travelTime)) / travelTime;
+if (progress >= 0 && progress <= 1.2) {
+let startSpawnX = centerX;
+let startSpawnY = girlY + spawnOffsetY;
+let x = startSpawnX + (target.x - startSpawnX) * progress;
+let y = startSpawnY + (target.y - startSpawnY) * progress;
+ctx.fillStyle = "#9b59b6";
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.arc(x, y, 16, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+ctx.fillStyle = "#ffffff";
+ctx.font = "bold 13px sans-serif";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText("◆", x, y);
+}
+if (progress > 1.2 && !note.hit) {
+note.hit = true;
+judgeCounts.alara++;
+showFeedback("ｱﾗﾗ", "#95a5a6");
+}
+}
+else if (note.type === 'long') {
+let target = lanes[note.lane];
+let endTime = note.time + note.duration;
+let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+let headProg = (currentTime - (note.time - travelTime)) / travelTime;
+let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
+if (headProg >= 0 && tailProg <= 1.2) {
+let headX, headY, tailX, tailY;
+let startSpawnX = centerX;
+let startSpawnY = girlY + spawnOffsetY;
+if (headProg >= 1.0 || note.started) {
+headX = target.x;
+headY = target.y;
+} else {
+let pHead = Math.max(0, headProg);
+headX = startSpawnX + (target.x - startSpawnX) * pHead;
+headY = startSpawnY + (target.y - startSpawnY) * pHead;
+}
+if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
+tailX = target.x;
+tailY = target.y;
+} else {
+let pTail = Math.max(0, tailProg);
+tailX = startSpawnX + (target.x - startSpawnX) * pTail;
+tailY = startSpawnY + (target.y - startSpawnY) * pTail;
+}
+if (headProg >= 0) {
+ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
+ctx.lineWidth = 12;
+ctx.lineCap = "round";
+ctx.beginPath();
+ctx.moveTo(tailX, tailY);
+ctx.lineTo(headX, headY);
+ctx.stroke();
+}
+if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
+ctx.fillStyle = "#f39c12";
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.arc(tailX, tailY, 15, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+}
+if (!note.holding && headProg <= 1.2) {
+ctx.fillStyle = "#f39c12";
+ctx.strokeStyle = "#ffffff";
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+} else if (note.holding) {
+if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
+if (currentTime >= endTime) {
+note.hit = true;
+note.holding = false;
+spawnParticles(target.x, target.y, '#f39c12');
+playHitSound();
+}
+}
+}
+}
+else {
+let target = lanes[note.lane];
+let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+let progress = (currentTime - (note.time - travelTime)) / travelTime;
+if (progress >= 0 && progress <= 1.2) {
+let startSpawnX = centerX;
+let startSpawnY = girlY + spawnOffsetY;
+let x = startSpawnX + (target.x - startSpawnX) * progress;
+let y = startSpawnY + (target.y - startSpawnY) * progress;
+ctx.lineWidth = 3;
+ctx.strokeStyle = "#ffffff";
+ctx.fillStyle = "#1abc9c";
+ctx.beginPath();
+ctx.arc(x, y, 16, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+}
+if (progress > 1.2 && !note.hit) {
+note.hit = true;
+judgeCounts.alara++;
+showFeedback("ｱﾗﾗ", "#95a5a6");
+}
+}
+}
+}
+for (let i = particles.length - 1; i >= 0; i--) {
+let p = particles[i];
+p.x += p.vx;
+p.y += p.vy;
+p.alpha -= p.decay;
+if (p.alpha <= 0) {
+particles.splice(i, 1);
+continue;
+}
+ctx.save();
+ctx.globalAlpha = p.alpha;
+ctx.fillStyle = p.color;
+ctx.beginPath();
+ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+ctx.fill();
+ctx.restore();
+}
+if (feedback.timer > 0) {
+feedback.timer--;
+let progressRate = 1 - (feedback.timer / feedback.maxTime);
+let floatY = -Math.sin(progressRate * Math.PI) * 25;
+let alpha = feedback.timer < 8 ? (feedback.timer / 8) : 1.0;
+let scale = progressRate < 0.2 ? (0.8 + progressRate * 1.0) : 1.0;
+ctx.save();
+ctx.globalAlpha = alpha;
+ctx.translate(centerX, girlY - 65 + floatY);
+ctx.scale(scale, scale);
+ctx.fillStyle = feedback.color;
+ctx.font = "bold 24px 'RocknRoll One', sans-serif";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.lineWidth = 4;
+ctx.strokeStyle = "#ffffff";
+ctx.strokeText(feedback.text, 0, 0);
+ctx.fillText(feedback.text, 0, 0);
+ctx.restore();
+}
+requestAnimationFrame(gameLoop);
+}
 gameLoop();
 </script>
-
 </body>
 </html>
