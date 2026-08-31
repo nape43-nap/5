@@ -1403,12 +1403,13 @@ function gameLoop() {
                     let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
                     let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
 
-                    // 左右の向きに応じてカーブの膨らみ方向を修正
-                    let curveSign = (note.direction === 'left') ? 1 : -1;
+                    // 判定ラインの形（下に向かってアーチ＝谷型）に沿うように制御点の高さを調整
+                    // progressが進むにつれて（奥から手前へ）、下方向（+方向）に膨らむようにプラスのオフセットに修正
+                    let curveSign = (note.direction === 'left') ? -1 : 1;
                     let midX = (startX + endX) / 2;
-                    let midY = (startY + endY) / 2 + (15 * curveSign);
+                    let midY = (startY + endY) / 2 - (15 * curveSign);
                     let controlX = midX;
-                    let controlY = midY - 35 * progress;
+                    let controlY = midY + 45 * progress;
 
                     // 黄色い帯（カーブ）の描画
                     ctx.strokeStyle = "rgba(241, 196, 15, 0.85)";
