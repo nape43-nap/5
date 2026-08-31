@@ -622,9 +622,8 @@
                 <p><strong>📖 遊び方</strong></p>
                 <ul>
                     <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
-                    <li><strong>◆ (C4)</strong>：フリーズ/フリックノーツ（素早くスワイプ）</li>
+                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
                     <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
-                    <li><strong>✨ (C5)</strong>：軌道を描く特殊ノーツ</li>
                 </ul>
                 <br>
                 <p><strong>🎨 クレジット</strong></p>
@@ -682,47 +681,13 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- ① 曲ファイルのリストを読み込む -->
+<!-- ① 個別の曲データをすべて読み込む -->
+<script src="assets/charts/1.js"></script>
+<script src="assets/charts/2.js"></script>
+<script src="assets/charts/3.js"></script>
+
+<!-- ② 曲ファイルのリストを読み込む -->
 <script src="song-list.js"></script>
-
-<!-- ② リストを元に、すべての曲ファイルを自動で読み込む仕組み -->
-<script>
-const songs = [];
-
-async function loadSongs() {
-    if (!window.allSongFiles) {
-        console.warn('song-list.js が見つからないか、allSongFiles が定義されていません。');
-        return;
-    }
-
-    for (let path of window.allSongFiles) {
-        await new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = path;
-            script.onload = () => {
-                let fileName = path.split('/').pop().replace('.js', '');
-                let songDataKey = 'songData_' + fileName;
-                
-                if (window[songDataKey]) {
-                    songs.push(window[songDataKey]);
-                } else {
-                    console.warn(songDataKey + ' が見つかりませんでした。');
-                }
-                resolve();
-            };
-            script.onerror = () => {
-                console.warn(path + ' の読み込みに失敗しました。');
-                resolve();
-            };
-            document.head.appendChild(script);
-        });
-    }
-
-    renderSongSelector(false);
-}
-
-loadSongs();
-</script>
 
 <!-- ③ メインのゲームシステム処理 -->
 <script>
@@ -735,6 +700,18 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
+// song-list.js で定義されたパスから、ウィンドウに展開された曲データを自動収集する
+const songs = [];
+if (window.allSongFiles) {
+    // 1.js なら window.songData_1、2.js なら window.songData_2 がグローバルにある前提で読み込む
+    window.allSongFiles.forEach((path, index) => {
+        let songDataKey = 'songData_' + (index + 1);
+        if (window[songDataKey]) {
+            songs.push(window[songDataKey]);
+        }
+    });
+}
 
 let gameState = 'SELECT';
 let score = 0;
@@ -881,6 +858,8 @@ function handleDragEnd(e) {
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
+
+renderSongSelector(false);
 
 function getLanePositions() {
     let positions = [];
@@ -1104,13 +1083,6 @@ canvas.addEventListener('pointerdown', (e) => {
                                 judgeAction(diff);
                                 spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
                                 playHitSound();
-                            } else if (note.type === 'slide') { // C5: 軌道を描くノーツ
-                                note.hit = true;
-                                score += 350;
-                                judgeCounts.kirari++;
-                                showFeedback("ｷﾗﾘ!", "#f1c40f");
-                                spawnParticles(lanes[i].x, lanes[i].y, '#e91e63');
-                                playHitSound();
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
@@ -1172,7 +1144,7 @@ function handleTouchEndOrCancel(e) {
         }
     } else {
         for (let note of notes) {
-            if (!note.hit && note.type === 'flick') { // C4: フリックノーツ
+            if (!note.hit && note.type === 'flick') {
                 let diff = Math.abs(currentTime - note.time);
                 if (diff < 0.4) {
                     let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
@@ -1310,7 +1282,7 @@ function gameLoop() {
         for (let note of notes) {
             if (note.hit) continue;
 
-            if (note.type === 'flick') { // C4: フリックノーツ (◆)
+            if (note.type === 'flick') {
                 let target = lanes[note.lane];
                 let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let progress = (currentTime - (note.time - travelTime)) / travelTime;
@@ -1333,36 +1305,6 @@ function gameLoop() {
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     ctx.fillText("◆", x, y);
-                }
-                if (progress > 1.2 && !note.hit) {
-                    note.hit = true;
-                    judgeCounts.alara++;
-                    showFeedback("ｱﾗﾗ", "#95a5a6");
-                }
-            }
-            else if (note.type === 'slide') { // C5: 軌道を描くノーツ (✨)
-                let target = lanes[note.lane];
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let progress = (currentTime - (note.time - travelTime)) / travelTime;
-                if (progress >= 0 && progress <= 1.2) {
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
-                    let x = startSpawnX + (target.x - startSpawnX) * progress;
-                    let y = startSpawnY + (target.y - startSpawnY) * progress;
-
-                    ctx.fillStyle = "#e91e63";
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText("✨", x, y);
                 }
                 if (progress > 1.2 && !note.hit) {
                     note.hit = true;
@@ -1440,7 +1382,7 @@ function gameLoop() {
                     }
                 }
             }
-            else { // 通常タップ (C3など)
+            else {
                 let target = lanes[note.lane];
                 let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let progress = (currentTime - (note.time - travelTime)) / travelTime;
