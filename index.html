@@ -570,14 +570,6 @@
             accent-color: #d4a373;
             cursor: pointer;
         }
-        .x-link {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .x-link:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -647,7 +639,7 @@
                 </ul>
                 <br>
                 <p><strong>🎨 クレジット</strong></p>
-                <p>開発・制作：あなたのお名前</p>
+                <p>絵本風リズムゲーム制作プロジェクト</p>
             </div>
 
             <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
@@ -701,11 +693,7 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- 個別曲ファイルを読み込むエリア（ここに曲のjsを追加していく） -->
-<script src="assets/charts/donguri.js"></script>
-<!-- 例: <script src="assets/charts/song2.js"></script> -->
-
-<!-- 曲リストを管理するファイル -->
+<!-- 曲リスト管理ファイルを読み込み -->
 <script src="songlist.js"></script>
 
 <script>
@@ -734,7 +722,7 @@ const songs = (typeof songList !== 'undefined' && songList.length > 0) ? songLis
     { id: 'fallback', title: '曲がありません', artist: 'songlist.jsを確認してね', jacket: '⚠️', duration: 10, chart: [] }
 ];
 let currentSongIndex = 0;
-let currentAudio = null; // BGM用
+let currentAudio = null;
 
 function getSongHighScore(songId) {
     const saved = localStorage.getItem('rhythm_game_hs_' + songId);
@@ -956,7 +944,6 @@ function confirmSelectedSong() {
     document.getElementById('credit-screen').classList.remove('hidden');
     gameState = 'CREDIT';
 
-    // 音源の事前読み込み
     if (currentAudio) {
         currentAudio.pause();
         currentAudio = null;
