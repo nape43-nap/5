@@ -693,7 +693,7 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- 曲リスト管理ファイルを読み込み -->
+<!-- 曲のファイル一覧を定義する管理ファイルを読み込む -->
 <script src="songlist.js"></script>
 
 <script>
@@ -707,7 +707,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-let gameState = 'SELECT';
+let gameState = 'LOADING'; // ロード完了するまで待機
 let score = 0;
 let startTime = 0;
 let songDuration = 18.0; 
@@ -717,12 +717,60 @@ let totalPausedTime = 0;
 
 let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
 
-// songlist.jsから曲配列を安全に取得
-const songs = (typeof songList !== 'undefined' && songList.length > 0) ? songList : [
-    { id: 'fallback', title: '曲がありません', artist: 'songlist.jsを確認してね', jacket: '⚠️', duration: 10, chart: [] }
-];
+let songs = [];
 let currentSongIndex = 0;
 let currentAudio = null;
+
+// songlist.js に記載されたファイルパスから曲データを動的にすべて読み込む
+async function loadAllSongs() {
+    if (typeof registeredSongFiles === 'undefined' || registeredSongFiles.length === 0) {
+        songs = [{ id: 'fallback', title: '曲がありません', artist: 'songlist.jsを確認してね', jacket: '⚠️', duration: 10, chart: [] }];
+        gameState = 'SELECT';
+        renderSongSelector(false);
+        return;
+    }
+
+    for (let path of registeredSongFiles) {
+        try {
+            // 一時的にグローバル変数をクリアしてスクリプトを読み込む
+            window.temp_song_data = null;
+            await new Promise((resolve, reject) => {
+                let script = document.createElement('script');
+                script.src = path + "?t=" + Date.now(); // キャッシュ対策
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+
+            // コンバーターで出力された window.song_xxx 形式をキャッチして配列に格納
+            // (または各jsが直接 window.songsDatabase 等にpushしている形式にも対応できるようにチェック)
+            let loadedSong = null;
+            for (let key in window) {
+                if (key.startsWith('song_') && typeof window[key] === 'object' && window[key] !== null && window[key].id) {
+                    loadedSong = window[key];
+                    // 一度読み込んだら重複しないようキーをリセット
+                    window[key] = undefined;
+                    break;
+                }
+            }
+            if (loadedSong) {
+                songs.push(loadedSong);
+            }
+        } catch (e) {
+            console.error("Failed to load song file: " + path, e);
+        }
+    }
+
+    if (songs.length === 0) {
+        songs = [{ id: 'fallback', title: '読み込み失敗', artist: 'ファイルを確認してね', jacket: '❌', duration: 10, chart: [] }];
+    }
+
+    gameState = 'SELECT';
+    renderSongSelector(false);
+}
+
+// 起動時に曲をロード
+loadAllSongs();
 
 function getSongHighScore(songId) {
     const saved = localStorage.getItem('rhythm_game_hs_' + songId);
@@ -740,6 +788,7 @@ function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
 }
 
 function updateSelectorHighScoreDisplay() {
+    if (songs.length === 0) return;
     let song = songs[currentSongIndex];
     let hsData = getSongHighScore(song.id);
     document.getElementById('selector-highscore').innerText = hsData.score;
@@ -774,6 +823,10 @@ const baseNoteSpeed = 2.8;
 
 function setJacketContent(element, jacketValue) {
     element.innerHTML = '';
+    if (!jacketValue) {
+        element.innerText = '🎵';
+        return;
+    }
     if (jacketValue.startsWith('assets/') || jacketValue.startsWith('http')) {
         let img = document.createElement('img');
         img.src = jacketValue;
@@ -784,6 +837,7 @@ function setJacketContent(element, jacketValue) {
 }
 
 function renderSongSelector(animating = false) {
+    if (songs.length === 0) return;
     const viewport = document.getElementById('song-viewport');
     viewport.innerHTML = '';
 
@@ -873,8 +927,6 @@ function handleDragEnd(e) {
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
 
-renderSongSelector(false);
-
 function getLanePositions() {
     let positions = [];
     let centerX = canvas.width / 2;
@@ -931,6 +983,7 @@ let activeTouches = new Map();
 let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
 
 function confirmSelectedSong() {
+    if (gameState !== 'SELECT') return;
     let selectedSong = songs[currentSongIndex];
     songDuration = selectedSong.duration;
 
