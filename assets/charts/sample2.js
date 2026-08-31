@@ -33,7 +33,7 @@ window.songData_sample2 = {
         {
             "time": 2.34,
             "lane": 4,
-            "type": "slide",
+            "type": "flick",
             "noteName": "E4"
         },
         {
@@ -83,31 +83,31 @@ window.songData_sample2 = {
         {
             "time": 9.38,
             "lane": 0,
-            "type": "slide",
+            "type": "flick",
             "noteName": "F4"
         },
         {
             "time": 10.31,
             "lane": 2,
-            "type": "slide",
+            "type": "flick",
             "noteName": "D4"
         },
         {
             "time": 11.25,
             "lane": 2,
-            "type": "flick",
+            "type": "slide",
             "noteName": "C5"
         },
         {
             "time": 13.13,
             "lane": 2,
-            "type": "flick",
+            "type": "slide",
             "noteName": "F5"
         },
         {
             "time": 14.06,
             "lane": 1,
-            "type": "flick",
+            "type": "slide",
             "noteName": "E5"
         }
     ]
