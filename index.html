@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>絵本風リズムゲーム</title>
+    <title>絵本風リズムゲーム - どんぐりころころ</title>
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
     <style>
         body {
@@ -86,6 +86,30 @@
         }
         .btn:active {
             transform: scale(0.95);
+        }
+
+        /* セレクト画面用の設定ボタン */
+        #selector-config-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #fff;
+            border: 2.5px solid #f0e6d2;
+            color: #7c6f64;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+            z-index: 25;
+            transition: 0.15s;
+        }
+        #selector-config-btn:active {
+            transform: scale(0.92);
         }
 
         .song-selector-container {
@@ -276,7 +300,7 @@
             height: 55px;
             background: #e3c4a8;
             color: #fff;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             display: flex;
             justify-content: center;
@@ -466,6 +490,78 @@
             border: none;
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
         }
+
+        /* 共通モーダル画面デザイン */
+        .modal-panel {
+            background: #fff;
+            border: 3px solid #f0e6d2;
+            width: 90%;
+            max-width: 340px;
+            max-height: 85vh;
+            padding: 22px 18px;
+            border-radius: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 19px;
+            color: #7c6f64;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px dashed #f5efe6;
+            padding-bottom: 8px;
+        }
+        .modal-body {
+            font-size: 13px;
+            color: #7c6f64;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .modal-body p {
+            margin: 6px 0;
+        }
+        .modal-body ul {
+            margin: 6px 0;
+            padding-left: 20px;
+        }
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #fffcf7;
+            border: 2px solid #f5efe6;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .setting-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #7c6f64;
+            display: flex;
+            justify-content: space-between;
+        }
+        .setting-range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="range"] {
+            flex: 1;
+            accent-color: #d4a373;
+            cursor: pointer;
+        }
+        .x-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .x-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -473,9 +569,14 @@
 <div id="game-container">
     <div id="score-board">スコア: <span id="score-num">0</span></div>
 
+    <!-- プレイ中のポーズボタン -->
     <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
 
+    <!-- 曲選択画面 -->
     <div id="select-screen" class="screen">
+        <!-- 曲選択画面の右上設定ボタン -->
+        <button id="selector-config-btn" onclick="openConfigModal()">⚙️</button>
+
         <h1 class="en-font">MUSIC SELECT</h1>
         <div class="song-selector-container">
             <div class="song-list-viewport" id="song-viewport"></div>
@@ -490,13 +591,15 @@
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
 
+    <!-- カウントダウン画面 -->
     <div id="credit-screen" class="screen hidden">
-        <div class="credit-jacket-large" id="credit-jacket-icon">🏰</div>
-        <div class="credit-title" id="credit-song-title">お城のメヌエット</div>
-        <div class="credit-artist" id="credit-song-artist">Royal Orchestra</div>
+        <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
+        <div class="credit-title" id="credit-song-title">どんぐりころころ</div>
+        <div class="credit-artist" id="credit-song-artist">文部省唱歌 / 童謡</div>
         <div class="ready-text en-font">READY...♪</div>
     </div>
 
+    <!-- プレイ中ポーズ画面 -->
     <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
         <div class="pause-panel">
             <div class="pause-title en-font">PAUSE</div>
@@ -506,15 +609,50 @@
         </div>
     </div>
 
+    <!-- 設定モーダル画面 -->
+    <div id="config-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.92); z-index: 40;">
+        <div class="modal-panel">
+            <div class="modal-title en-font">CONFIG / INFO</div>
+            
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>ノーツの速さ (速度)</span>
+                    <span id="speed-val-text" style="color: #d4a373;">1.0倍</span>
+                </div>
+                <div class="setting-range-container">
+                    <span style="font-size: 11px; color: #b8aea1;">0.5x</span>
+                    <input type="range" id="speed-range" min="0.5" max="10.0" step="0.5" value="1.0" oninput="onSpeedChange(this.value)">
+                    <span style="font-size: 11px; color: #b8aea1;">10.0x</span>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>📖 遊び方</strong></p>
+                <ul>
+                    <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
+                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
+                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
+                </ul>
+                <br>
+                <p><strong>🎨 クレジット</strong></p>
+                <p>開発・制作：あなたのお名前</p>
+                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
+            </div>
+
+            <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
+        </div>
+    </div>
+
+    <!-- リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
             
             <div class="result-song-header">
-                <div class="result-jacket-small" id="result-jacket-icon">🏰</div>
+                <div class="result-jacket-small" id="result-jacket-icon">🌰</div>
                 <div class="result-song-meta">
-                    <div class="result-title-text" id="result-song-title">お城のメヌエット</div>
-                    <div class="result-artist-text" id="result-song-artist">Royal Orchestra</div>
+                    <div class="result-title-text" id="result-song-title">どんぐりころころ</div>
+                    <div class="result-artist-text" id="result-song-artist">文部省唱歌 / 童謡</div>
                 </div>
             </div>
 
@@ -567,15 +705,17 @@ let gameState = 'SELECT';
 let score = 0;
 let audioCtx = null;
 let startTime = 0;
-let songDuration = 12.0; 
+let songDuration = 18.0; 
 
 let pauseStartTime = 0;
 let totalPausedTime = 0;
 
+let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
+
 const songs = [
+    { id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0 },
     { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
-    { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 },
-    { id: 'extra', title: 'おひめさまのパレード', artist: 'Dreamy Kingdom', jacket: '🎠', duration: 13.0 }
+    { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 }
 ];
 let currentSongIndex = 0;
 
@@ -586,7 +726,7 @@ function getSongHighScore(songId) {
 
 function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
     let current = getSongHighScore(songId);
-    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore > current.score)) {
+    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore >= current.score)) {
         const data = { score: newScore, accuracy: newAccuracy, rank: newRank };
         localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
         return true;
@@ -601,6 +741,22 @@ function updateSelectorHighScoreDisplay() {
     document.getElementById('selector-rank').innerText = hsData.rank;
 }
 
+function openConfigModal() {
+    document.getElementById('speed-range').value = noteSpeedMultiplier;
+    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
+    document.getElementById('config-screen').classList.remove('hidden');
+}
+
+function closeConfigModal() {
+    document.getElementById('config-screen').classList.add('hidden');
+}
+
+function onSpeedChange(val) {
+    noteSpeedMultiplier = parseFloat(val);
+    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
+    localStorage.setItem('rhythm_game_speed', noteSpeedMultiplier);
+}
+
 let dragStartY = 0;
 let dragCurrentOffset = 0;
 let isDragging = false;
@@ -609,7 +765,7 @@ const itemHeight = 75;
 let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
 
 const targetRadius = 32; 
-const noteSpeed = 2.8;   
+const baseNoteSpeed = 2.8;   
 
 function renderSongSelector(animating = false) {
     const viewport = document.getElementById('song-viewport');
@@ -649,6 +805,7 @@ function renderSongSelector(animating = false) {
         `;
         viewport.appendChild(card);
     }
+    // 描画が更新されるタイミングで必ずハイスコアも更新
     updateSelectorHighScoreDisplay();
 }
 
@@ -677,6 +834,8 @@ viewportEl.addEventListener('pointermove', (e) => {
             dragStartY -= itemHeight;
             dragCurrentOffset += itemHeight;
         }
+        // ドラッグ中につまみが切り替わったときにもスコア表示を即時更新
+        updateSelectorHighScoreDisplay();
     }
     renderSongSelector(false);
 });
@@ -693,6 +852,8 @@ function handleDragEnd(e) {
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
+
+// 初期読み込み時にスコアを反映
 renderSongSelector(false);
 
 function getLanePositions() {
@@ -713,6 +874,7 @@ function getLanePositions() {
 
 let notes = [];
 let particles = [];
+let scheduledMelodyNotes = [];
 
 function spawnParticles(x, y, color) {
     for (let i = 0; i < 10; i++) {
@@ -731,46 +893,68 @@ function spawnParticles(x, y, color) {
     }
 }
 
+const NOTE_FREQS = {
+    'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+    'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
+};
+
 function generateChart(type) {
     notes = [];
     particles = [];
+    scheduledMelodyNotes = [];
     let chartData = [];
 
-    if (type === 'easy') {
+    if (type === 'donguri') {
+        const melodySeq = [
+            { time: 1.0, noteName: 'G4', lane: 2, type: 'tap' },
+            { time: 1.5, noteName: 'E4', lane: 1, type: 'tap' },
+            { time: 2.0, noteName: 'G4', lane: 3, type: 'tap' },
+            { time: 2.5, noteName: 'E4', lane: 1, type: 'tap' },
+            { time: 3.0, noteName: 'C5', lane: 4, type: 'tap' },
+            { time: 3.5, noteName: 'A4', lane: 0, type: 'tap' },
+            { time: 4.0, noteName: 'G4', lane: 2, type: 'tap' },
+            
+            { time: 5.5, noteName: 'C5', lane: 0, type: 'tap' },
+            { time: 5.5, noteName: 'C5', lane: 4, type: 'tap' },
+            { time: 6.2, noteName: 'A4', lane: 1, type: 'tap' },
+            { time: 6.8, noteName: 'G4', lane: 3, type: 'tap' },
+            { time: 7.5, noteName: 'E4', lane: 2, type: 'long', duration: 1.5 },
+            
+            { time: 10.0, noteName: 'G4', lane: 0, type: 'flick' },
+            { time: 10.6, noteName: 'A4', lane: 1, type: 'tap' },
+            { time: 11.2, noteName: 'C5', lane: 2, type: 'tap' },
+            { time: 11.8, noteName: 'D4', lane: 3, type: 'tap' },
+            { time: 12.5, noteName: 'C5', lane: 4, type: 'flick' }
+        ];
+
+        chartData = melodySeq;
+        scheduledMelodyNotes = melodySeq.map(m => ({ time: m.time, freq: NOTE_FREQS[m.noteName], played: false }));
+        songDuration = 15.0;
+
+    } else if (type === 'easy') {
         chartData = [
             { time: 1.5, lane: 0, type: 'tap' },
             { time: 3.0, lane: 4, type: 'flick' },
-            { time: 4.5, lane: 2, type: 'long', duration: 1.5 },
-            // 同时押しの例（レーン0とレーン4の同時タップ）
-            { time: 6.0, lane: 0, type: 'tap' },
-            { time: 6.0, lane: 4, type: 'tap' },
-            { time: 7.5, lane: 1, type: 'tap' },
-            { time: 8.5, lane: 3, type: 'flick' },
+            { time: 4.5, lane: 1, type: 'tap' },
+            { time: 4.5, lane: 3, type: 'tap' },
+            { time: 7.0, lane: 2, type: 'long', duration: 1.5 },
+            { time: 8.5, lane: 0, type: 'tap' },
+            { time: 8.5, lane: 4, type: 'flick' },
             { time: 10.0, lane: 2, type: 'tap' }
         ];
-    } else if (type === 'normal') {
-        chartData = [
-            { time: 1.0, lane: 0, type: 'tap' },
-            { time: 1.0, lane: 4, type: 'tap' }, // 同時押し
-            { time: 2.0, lane: 2, type: 'flick' },
-            { time: 3.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
-            { time: 6.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
-            { time: 8.0, lane: 1, type: 'tap' },
-            { time: 8.0, lane: 3, type: 'tap' }, // 同時押し
-            { time: 9.5, lane: 2, type: 'long', duration: 2.0 }
-        ];
+        songDuration = 12.0;
     } else {
         chartData = [
             { time: 1.0, lane: 0, type: 'flick' },
-            { time: 1.0, lane: 4, type: 'flick' }, // 同時フリック
-            { time: 2.5, lane: 4, type: 'slidenode', path: [4, 3, 2, 1, 0], pathTime: 1.5, direction: 'left' },  
-            { time: 5.5, lane: 0, type: 'slidenode', path: [0, 1, 2, 3, 4], pathTime: 1.5, direction: 'right' }, 
-            { time: 7.0, lane: 1, type: 'tap' },
-            { time: 7.0, lane: 3, type: 'tap' }, // 同時押し
-            { time: 8.5, lane: 2, type: 'long', duration: 2.0 },
-            { time: 11.0, lane: 0, type: 'flick' },
-            { time: 11.0, lane: 4, type: 'flick' }  // 同時フリック
+            { time: 1.0, lane: 4, type: 'flick' },
+            { time: 2.5, lane: 1, type: 'slidenode', path: [1, 2, 3], pathTime: 1.5, direction: 'right' },
+            { time: 6.0, lane: 0, type: 'long', duration: 2.0 },
+            { time: 6.0, lane: 4, type: 'long', duration: 2.0 },
+            { time: 9.5, lane: 2, type: 'tap' },
+            { time: 11.0, lane: 1, type: 'flick' },
+            { time: 11.0, lane: 3, type: 'flick' }
         ];
+        songDuration = 13.0;
     }
 
     notes = chartData.map(n => ({
@@ -778,14 +962,12 @@ function generateChart(type) {
         hit: false,       
         holding: false,   
         started: false,
-        activePointerId: null // 各ノーツをどの指がタッチしているかを個別管理
+        activePointerId: null
     }));
 }
 
 let animTimer = 0;
-// 各指の情報を保存するマップ（複数の指を同時追跡）
 let activeTouches = new Map();
-
 let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
 
 function confirmSelectedSong() {
@@ -868,10 +1050,19 @@ function finishGame() {
     let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
 
     let rank = 'D';
-    if (accuracyPercent >= 80) rank = 'S';
-    else if (accuracyPercent >= 60) rank = 'A';
-    else if (accuracyPercent >= 40) rank = 'B';
-    else if (accuracyPercent >= 20) rank = 'C';
+    if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) {
+        rank = 'SSS';
+    } else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) {
+        rank = 'SS';
+    } else if (accuracyPercent >= 80) {
+        rank = 'S';
+    } else if (accuracyPercent >= 60) {
+        rank = 'A';
+    } else if (accuracyPercent >= 40) {
+        rank = 'B';
+    } else if (accuracyPercent >= 20) {
+        rank = 'C';
+    }
 
     document.getElementById('result-rank').innerText = rank;
     saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
@@ -892,14 +1083,13 @@ function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
-    renderSongSelector(false);
+    renderSongSelector(false); // 曲選択に戻る際に最新のハイスコアを反映
 }
 
 function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
-// マルチタッチ対応：pointerdownでそれぞれの指を個別登録して判定
 canvas.addEventListener('pointerdown', (e) => {
     if(gameState !== 'PLAYING') return;
 
@@ -907,13 +1097,13 @@ canvas.addEventListener('pointerdown', (e) => {
     const touchX = e.clientX - rect.left;
     const touchY = e.clientY - rect.top;
 
-    // 指の情報を記録
     activeTouches.set(e.pointerId, {
         id: e.pointerId,
         startX: touchX,
         startY: touchY,
         currentX: touchX,
-        currentY: touchY
+        currentY: touchY,
+        assignedNote: null
     });
     canvas.setPointerCapture(e.pointerId);
 
@@ -922,7 +1112,7 @@ canvas.addEventListener('pointerdown', (e) => {
 
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
-        if (distance < targetRadius * 2.2) {
+        if (distance < targetRadius * 2.0) {
             for (let note of notes) {
                 if (!note.hit && !note.started) {
                     if (note.lane === i) {
@@ -933,24 +1123,24 @@ canvas.addEventListener('pointerdown', (e) => {
                                 judgeAction(diff);
                                 spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
                                 playHitSound();
-                                break; // 1回のタッチで1つのノーツを処理
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
                                 note.activePointerId = e.pointerId;
+                                activeTouches.get(e.pointerId).assignedNote = note;
                                 score += 100;
                                 scoreBoardUpdate();
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
                                 playHitSound();
-                                break;
                             } else if (note.type === 'slidenode') {
                                 note.started = true;
                                 note.holding = true;
                                 note.activePointerId = e.pointerId;
+                                activeTouches.get(e.pointerId).assignedNote = note;
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
                                 playHitSound();
-                                break;
                             }
+                            break;
                         }
                     }
                 }
@@ -960,117 +1150,103 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 canvas.addEventListener('pointermove', (e) => {
-    let touchInfo = activeTouches.get(e.pointerId);
-    if (!touchInfo) return;
-
+    if (!activeTouches.has(e.pointerId)) return;
     const rect = canvas.getBoundingClientRect();
     const touchX = e.clientX - rect.left;
     const touchY = e.clientY - rect.top;
 
+    let touchInfo = activeTouches.get(e.pointerId);
     touchInfo.currentX = touchX;
     touchInfo.currentY = touchY;
 
-    // ロングノーツやスライドノーツを掴んでいる指の追跡処理
-    for (let note of notes) {
-        if (!note.hit && note.holding && note.activePointerId === e.pointerId) {
-            if (note.type === 'slidenode') {
-                let lanes = getLanePositions();
-                let endLaneIdx = note.path[note.path.length - 1];
-                let targetLanePos = lanes[endLaneIdx];
+    if (touchInfo.assignedNote && touchInfo.assignedNote.holding) {
+        let note = touchInfo.assignedNote;
+        if (note.type === 'slidenode') {
+            let lanes = getLanePositions();
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
 
-                if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
-                    note.hit = true;
-                    note.holding = false;
-                    note.activePointerId = null;
-                    score += 300;
-                    scoreBoardUpdate();
-                    judgeCounts.kirari++;
-                    showFeedback("ｷﾗﾘ!", "#f1c40f");
-                    spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
-                    playHitSound();
-                }
+            if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                note.holding = false;
+                touchInfo.assignedNote = null;
+                score += 300;
+                scoreBoardUpdate();
+                judgeCounts.kirari++;
+                showFeedback("ｷﾗﾘ!", "#f1c40f");
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+                playHitSound();
             }
         }
     }
 });
 
-canvas.addEventListener('pointerup', (e) => {
-    handleTouchEndOrCancel(e);
-});
-canvas.addEventListener('pointercancel', (e) => {
-    handleTouchEndOrCancel(e);
-});
+canvas.addEventListener('pointerup', (e) => { handleTouchEndOrCancel(e); });
+canvas.addEventListener('pointercancel', (e) => { handleTouchEndOrCancel(e); });
 
 function handleTouchEndOrCancel(e) {
+    if (!activeTouches.has(e.pointerId)) return;
     let touchInfo = activeTouches.get(e.pointerId);
-    if (!touchInfo) return;
-
     let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
     let lanes = getLanePositions();
 
-    // 離された指がロング・スライド担当だった場合
-    for (let note of notes) {
-        if (!note.hit && note.holding && note.activePointerId === e.pointerId) {
-            if (note.type === 'long') {
-                let endTime = note.time + note.duration;
-                let diff = Math.abs(currentTime - endTime);
-                if (diff < 0.35) {
-                    score += 400;
-                    judgeCounts.kirari++;
-                    showFeedback("ｷﾗﾘ!", "#f1c40f");
-                } else {
-                    score += 100;
-                    judgeCounts.ii++;
-                    showFeedback("ｲｲ!", "#3498db");
-                }
+    if (touchInfo.assignedNote) {
+        let note = touchInfo.assignedNote;
+        if (note.type === 'long' && note.holding) {
+            let endTime = note.time + note.duration;
+            let diff = Math.abs(currentTime - endTime);
+            if (diff < 0.35) {
+                score += 400;
+                judgeCounts.kirari++;
+                showFeedback("ｷﾗﾘ!", "#f1c40f");
+            } else {
+                score += 100;
+                judgeCounts.ii++;
+                showFeedback("ｲｲ!", "#3498db");
+            }
+            note.hit = true;
+            note.holding = false;
+            spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
+            playHitSound();
+            scoreBoardUpdate();
+        } else if (note.type === 'slidenode' && note.holding) {
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
+            if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
                 note.hit = true;
-                note.holding = false;
-                note.activePointerId = null;
-                spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
-                playHitSound();
-                scoreBoardUpdate();
-            } else if (note.type === 'slidenode') {
-                let endLaneIdx = note.path[note.path.length - 1];
-                let targetLanePos = lanes[endLaneIdx];
-                if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
-                    note.hit = true;
-                    score += 200;
-                    judgeCounts.suteki++;
-                    showFeedback("ｽﾃｷ!", "#e67e22");
-                    spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
-                } else {
-                    note.hit = true;
-                    judgeCounts.alara++;
-                    showFeedback("ｱﾗﾗ", "#95a5a6");
-                }
-                note.holding = false;
-                note.activePointerId = null;
-                scoreBoardUpdate();
+                score += 200;
+                judgeCounts.suteki++;
+                showFeedback("ｽﾃｷ!", "#e67e22");
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+            } else {
+                note.hit = true;
+                judgeCounts.alara++;
+                showFeedback("ｱﾗﾗ", "#95a5a6");
             }
+            scoreBoardUpdate();
         }
-    }
-
-    // フリックの判定（指を大きくスワイプして離したとき）
-    for (let note of notes) {
-        if (!note.hit && note.type === 'flick') {
-            let diff = Math.abs(currentTime - note.time);
-            if (diff < 0.4) {
-                let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
-                if (dist > 15) {
-                    note.hit = true;
-                    score += 350;
-                    judgeCounts.kirari++;
-                    showFeedback("ｷﾗﾘ!", "#f1c40f");
-                    spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
-                    playHitSound();
-                    break;
+    } else {
+        for (let note of notes) {
+            if (!note.hit && note.type === 'flick') {
+                let diff = Math.abs(currentTime - note.time);
+                if (diff < 0.4) {
+                    let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
+                    if (dist > 15) {
+                        note.hit = true;
+                        score += 350;
+                        judgeCounts.kirari++;
+                        showFeedback("ｷﾗﾘ!", "#f1c40f");
+                        spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
+                        playHitSound();
+                        break;
+                    }
                 }
             }
         }
     }
 
-    activeTouches.delete(e.pointerId);
     try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+    activeTouches.delete(e.pointerId);
 }
 
 function judgeAction(diff) {
@@ -1091,6 +1267,20 @@ function judgeAction(diff) {
 }
 
 window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+function playMelodyTone(freq) {
+    if (!audioCtx) return;
+    let osc = audioCtx.createOscillator();
+    let gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.35);
+}
 
 function playHitSound() {
     if (!audioCtx) return;
@@ -1117,11 +1307,23 @@ function gameLoop() {
     animTimer += 0.05;
 
     let centerX = canvas.width / 2;
-    let girlY = canvas.height * 0.3; 
+    let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
+
+    let spawnOffsetY = 75;
 
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+        let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
+
+        if (songs[currentSongIndex].id === 'donguri') {
+            for (let m of scheduledMelodyNotes) {
+                if (!m.played && currentTime >= m.time) {
+                    playMelodyTone(m.freq);
+                    m.played = true;
+                }
+            }
+        }
 
         if (currentTime >= songDuration) {
             finishGame();
@@ -1146,7 +1348,6 @@ function gameLoop() {
             let y = lanes[i].y;
             let currentRadius = targetRadius;
 
-            // 判定ライン（黄色いハイライトなし・シンプルな白背景）
             ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
@@ -1155,7 +1356,6 @@ function gameLoop() {
             ctx.fill();
             ctx.stroke();
 
-            // 内側の二重円（アクセント）
             ctx.strokeStyle = "#e8dfd1";
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1168,10 +1368,13 @@ function gameLoop() {
 
             if (note.type === 'flick') {
                 let target = lanes[note.lane];
-                let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
-                    let x = centerX + (target.x - centerX) * progress;
-                    let y = girlY + (target.y - girlY) * progress;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+                    let x = startSpawnX + (target.x - startSpawnX) * progress;
+                    let y = startSpawnY + (target.y - startSpawnY) * progress;
 
                     ctx.fillStyle = "#9b59b6";
                     ctx.strokeStyle = "#ffffff";
@@ -1195,15 +1398,19 @@ function gameLoop() {
             }
             else if (note.type === 'slidenode') {
                 let path = note.path;
-                let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.5) {
                     let startPos = lanes[path[0]];
                     let endPos = lanes[path[path.length - 1]];
 
-                    let startX = centerX + (startPos.x - centerX) * progress;
-                    let startY = girlY + (startPos.y - girlY) * progress;
-                    let endX = centerX + (endPos.x - centerX) * progress;
-                    let endY = girlY + (endPos.y - girlY) * progress;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+
+                    let startX = startSpawnX + (startPos.x - startSpawnX) * progress;
+                    let startY = startSpawnY + (startPos.y - startSpawnY) * progress;
+                    let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
+                    let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
 
                     let midX = (startX + endX) / 2;
                     let midY = (startY + endY) / 2;
@@ -1250,19 +1457,22 @@ function gameLoop() {
             else if (note.type === 'long') {
                 let target = lanes[note.lane];
                 let endTime = note.time + note.duration;
-                let headProg = (currentTime - (note.time - noteSpeed)) / noteSpeed;
-                let tailProg = (currentTime - (endTime - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let headProg = (currentTime - (note.time - travelTime)) / travelTime;
+                let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
 
                 if (headProg >= 0 && tailProg <= 1.2) {
                     let headX, headY, tailX, tailY;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
 
                     if (headProg >= 1.0 || note.started) {
                         headX = target.x;
                         headY = target.y;
                     } else {
                         let pHead = Math.max(0, headProg);
-                        headX = centerX + (target.x - centerX) * pHead;
-                        headY = girlY + (target.y - girlY) * pHead;
+                        headX = startSpawnX + (target.x - startSpawnX) * pHead;
+                        headY = startSpawnY + (target.y - startSpawnY) * pHead;
                     }
 
                     if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
@@ -1270,8 +1480,8 @@ function gameLoop() {
                         tailY = target.y;
                     } else {
                         let pTail = Math.max(0, tailProg);
-                        tailX = centerX + (target.x - centerX) * pTail;
-                        tailY = girlY + (target.y - girlY) * pTail;
+                        tailX = startSpawnX + (target.x - startSpawnX) * pTail;
+                        tailY = startSpawnY + (target.y - startSpawnY) * pTail;
                     }
 
                     if (headProg >= 0) {
@@ -1308,7 +1518,6 @@ function gameLoop() {
                         if (currentTime >= endTime) {
                             note.hit = true;
                             note.holding = false;
-                            note.activePointerId = null;
                             spawnParticles(target.x, target.y, '#f39c12');
                             playHitSound();
                         }
@@ -1317,10 +1526,13 @@ function gameLoop() {
             }
             else {
                 let target = lanes[note.lane];
-                let progress = (currentTime - (note.time - noteSpeed)) / noteSpeed;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
-                    let x = centerX + (target.x - centerX) * progress;
-                    let y = girlY + (target.y - girlY) * progress;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+                    let x = startSpawnX + (target.x - startSpawnX) * progress;
+                    let y = startSpawnY + (target.y - startSpawnY) * progress;
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = "#ffffff";
                     ctx.fillStyle = "#1abc9c";
