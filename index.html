@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>絵本風リズムゲーム</title>
+    <title>絵本風リズムゲーム - どんぐりころころ</title>
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
     <style>
         body {
@@ -88,6 +88,7 @@
             transform: scale(0.95);
         }
 
+        /* セレクト画面用の設定ボタン */
         #selector-config-btn {
             position: absolute;
             top: 15px;
@@ -161,12 +162,6 @@
             font-size: 24px;
             flex-shrink: 0;
             border: 2px solid #f0e6d2;
-            overflow: hidden;
-        }
-        .song-jacket img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
         .song-info {
             display: flex;
@@ -249,12 +244,6 @@
             font-size: 60px;
             margin-bottom: 20px;
             animation: pulseJacket 1.5s infinite alternate;
-            overflow: hidden;
-        }
-        .credit-jacket-large img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
         @keyframes pulseJacket {
             0% { transform: scale(1); }
@@ -341,12 +330,6 @@
             font-size: 22px;
             border: 2px solid #f0e6d2;
             flex-shrink: 0;
-            overflow: hidden;
-        }
-        .result-jacket-small img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
         .result-song-meta {
             display: flex;
@@ -508,6 +491,7 @@
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
         }
 
+        /* 共通モーダル画面デザイン */
         .modal-panel {
             background: #fff;
             border: 3px solid #f0e6d2;
@@ -570,6 +554,14 @@
             accent-color: #d4a373;
             cursor: pointer;
         }
+        .x-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .x-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -579,7 +571,6 @@
 
     <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
 
-    <!-- 曲選択画面 -->
     <div id="select-screen" class="screen">
         <button id="selector-config-btn" onclick="openConfigModal()">⚙️</button>
 
@@ -597,15 +588,13 @@
         <button class="btn" onclick="confirmSelectedSong()">決定</button>
     </div>
 
-    <!-- カウントダウン画面 -->
     <div id="credit-screen" class="screen hidden">
         <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
-        <div class="credit-title" id="credit-song-title">曲名</div>
-        <div class="credit-artist" id="credit-song-artist">アーティスト</div>
+        <div class="credit-title" id="credit-song-title">どんぐりころころ</div>
+        <div class="credit-artist" id="credit-song-artist">文部省唱歌 / 童謡</div>
         <div class="ready-text en-font">READY...♪</div>
     </div>
 
-    <!-- プレイ中ポーズ画面 -->
     <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
         <div class="pause-panel">
             <div class="pause-title en-font">PAUSE</div>
@@ -615,7 +604,6 @@
         </div>
     </div>
 
-    <!-- 設定モーダル画面 -->
     <div id="config-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.92); z-index: 40;">
         <div class="modal-panel">
             <div class="modal-title en-font">CONFIG / INFO</div>
@@ -636,17 +624,19 @@
                 <p><strong>📖 遊び方</strong></p>
                 <ul>
                     <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
+                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
+                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
                 </ul>
                 <br>
                 <p><strong>🎨 クレジット</strong></p>
-                <p>絵本風リズムゲーム制作プロジェクト</p>
+                <p>開発・制作：あなたのお名前</p>
+                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
             </div>
 
             <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
         </div>
     </div>
 
-    <!-- リザルト画面 -->
     <div id="result-screen" class="screen hidden">
         <div class="result-panel">
             <div class="rank-badge" id="result-rank">S</div>
@@ -654,8 +644,8 @@
             <div class="result-song-header">
                 <div class="result-jacket-small" id="result-jacket-icon">🌰</div>
                 <div class="result-song-meta">
-                    <div class="result-title-text" id="result-song-title">曲名</div>
-                    <div class="result-artist-text" id="result-song-artist">アーティスト</div>
+                    <div class="result-title-text" id="result-song-title">どんぐりころころ</div>
+                    <div class="result-artist-text" id="result-song-artist">文部省唱歌 / 童謡</div>
                 </div>
             </div>
 
@@ -693,9 +683,6 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- 曲のファイル一覧を定義する管理ファイルを読み込む -->
-<script src="songlist.js"></script>
-
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -707,8 +694,9 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-let gameState = 'LOADING'; // ロード完了するまで待機
+let gameState = 'SELECT';
 let score = 0;
+let audioCtx = null;
 let startTime = 0;
 let songDuration = 18.0; 
 
@@ -717,60 +705,12 @@ let totalPausedTime = 0;
 
 let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
 
-let songs = [];
+const songs = [
+    { id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0 },
+    { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
+    { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 }
+];
 let currentSongIndex = 0;
-let currentAudio = null;
-
-// songlist.js に記載されたファイルパスから曲データを動的にすべて読み込む
-async function loadAllSongs() {
-    if (typeof registeredSongFiles === 'undefined' || registeredSongFiles.length === 0) {
-        songs = [{ id: 'fallback', title: '曲がありません', artist: 'songlist.jsを確認してね', jacket: '⚠️', duration: 10, chart: [] }];
-        gameState = 'SELECT';
-        renderSongSelector(false);
-        return;
-    }
-
-    for (let path of registeredSongFiles) {
-        try {
-            // 一時的にグローバル変数をクリアしてスクリプトを読み込む
-            window.temp_song_data = null;
-            await new Promise((resolve, reject) => {
-                let script = document.createElement('script');
-                script.src = path + "?t=" + Date.now(); // キャッシュ対策
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-
-            // コンバーターで出力された window.song_xxx 形式をキャッチして配列に格納
-            // (または各jsが直接 window.songsDatabase 等にpushしている形式にも対応できるようにチェック)
-            let loadedSong = null;
-            for (let key in window) {
-                if (key.startsWith('song_') && typeof window[key] === 'object' && window[key] !== null && window[key].id) {
-                    loadedSong = window[key];
-                    // 一度読み込んだら重複しないようキーをリセット
-                    window[key] = undefined;
-                    break;
-                }
-            }
-            if (loadedSong) {
-                songs.push(loadedSong);
-            }
-        } catch (e) {
-            console.error("Failed to load song file: " + path, e);
-        }
-    }
-
-    if (songs.length === 0) {
-        songs = [{ id: 'fallback', title: '読み込み失敗', artist: 'ファイルを確認してね', jacket: '❌', duration: 10, chart: [] }];
-    }
-
-    gameState = 'SELECT';
-    renderSongSelector(false);
-}
-
-// 起動時に曲をロード
-loadAllSongs();
 
 function getSongHighScore(songId) {
     const saved = localStorage.getItem('rhythm_game_hs_' + songId);
@@ -788,7 +728,6 @@ function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
 }
 
 function updateSelectorHighScoreDisplay() {
-    if (songs.length === 0) return;
     let song = songs[currentSongIndex];
     let hsData = getSongHighScore(song.id);
     document.getElementById('selector-highscore').innerText = hsData.score;
@@ -821,23 +760,7 @@ let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
 const targetRadius = 32; 
 const baseNoteSpeed = 2.8;   
 
-function setJacketContent(element, jacketValue) {
-    element.innerHTML = '';
-    if (!jacketValue) {
-        element.innerText = '🎵';
-        return;
-    }
-    if (jacketValue.startsWith('assets/') || jacketValue.startsWith('http')) {
-        let img = document.createElement('img');
-        img.src = jacketValue;
-        element.appendChild(img);
-    } else {
-        element.innerText = jacketValue;
-    }
-}
-
 function renderSongSelector(animating = false) {
-    if (songs.length === 0) return;
     const viewport = document.getElementById('song-viewport');
     viewport.innerHTML = '';
 
@@ -866,19 +789,13 @@ function renderSongSelector(animating = false) {
         card.style.opacity = opacity;
         card.style.zIndex = zIndex;
 
-        let jacketDiv = document.createElement('div');
-        jacketDiv.className = 'song-jacket';
-        setJacketContent(jacketDiv, song.jacket);
-
-        let infoDiv = document.createElement('div');
-        infoDiv.className = 'song-info';
-        infoDiv.innerHTML = `
-            <div class="song-title">${song.title}</div>
-            <div class="song-artist">${song.artist}</div>
+        card.innerHTML = `
+            <div class="song-jacket">${song.jacket}</div>
+            <div class="song-info">
+                <div class="song-title">${song.title}</div>
+                <div class="song-artist">${song.artist}</div>
+            </div>
         `;
-
-        card.appendChild(jacketDiv);
-        card.appendChild(infoDiv);
         viewport.appendChild(card);
     }
     updateSelectorHighScoreDisplay();
@@ -927,6 +844,8 @@ function handleDragEnd(e) {
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
 
+renderSongSelector(false);
+
 function getLanePositions() {
     let positions = [];
     let centerX = canvas.width / 2;
@@ -945,13 +864,15 @@ function getLanePositions() {
 
 let notes = [];
 let particles = [];
+let scheduledMelodyNotes = [];
 
 function spawnParticles(x, y, color) {
     for (let i = 0; i < 10; i++) {
         let angle = Math.random() * Math.PI * 2;
         let speed = 2 + Math.random() * 4;
         particles.push({
-            x: x, y: y,
+            x: x,
+            y: y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             radius: 3 + Math.random() * 4,
@@ -962,20 +883,78 @@ function spawnParticles(x, y, color) {
     }
 }
 
-function loadChartForSong(song) {
+const NOTE_FREQS = {
+    'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+    'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
+};
+
+function generateChart(type) {
     notes = [];
     particles = [];
-    songDuration = song.duration || 15.0;
+    scheduledMelodyNotes = [];
+    let chartData = [];
 
-    if (song.chart && Array.isArray(song.chart)) {
-        notes = song.chart.map(n => ({
-            ...n,
-            hit: false,
-            holding: false,
-            started: false,
-            activePointerId: null
-        }));
+    if (type === 'donguri') {
+        const melodySeq = [
+            { time: 1.0, noteName: 'G4', lane: 2, type: 'tap' },
+            { time: 1.5, noteName: 'E4', lane: 1, type: 'tap' },
+            { time: 2.0, noteName: 'G4', lane: 3, type: 'tap' },
+            { time: 2.5, noteName: 'E4', lane: 1, type: 'tap' },
+            { time: 3.0, noteName: 'C5', lane: 4, type: 'tap' },
+            { time: 3.5, noteName: 'A4', lane: 0, type: 'tap' },
+            { time: 4.0, noteName: 'G4', lane: 2, type: 'tap' },
+            
+            { time: 5.5, noteName: 'C5', lane: 0, type: 'tap' },
+            { time: 5.5, noteName: 'C5', lane: 4, type: 'tap' },
+            { time: 6.2, noteName: 'A4', lane: 1, type: 'tap' },
+            { time: 6.8, noteName: 'G4', lane: 3, type: 'tap' },
+            { time: 7.5, noteName: 'E4', lane: 2, type: 'long', duration: 1.5 },
+            
+            { time: 10.0, noteName: 'G4', lane: 0, type: 'flick' },
+            { time: 10.6, noteName: 'A4', lane: 1, type: 'tap' },
+            { time: 11.2, noteName: 'C5', lane: 2, type: 'tap' },
+            { time: 11.8, noteName: 'D4', lane: 3, type: 'tap' },
+            { time: 12.5, noteName: 'C5', lane: 4, type: 'flick' }
+        ];
+
+        chartData = melodySeq;
+        scheduledMelodyNotes = melodySeq.map(m => ({ time: m.time, freq: NOTE_FREQS[m.noteName], played: false }));
+        songDuration = 15.0;
+
+    } else if (type === 'easy') {
+        chartData = [
+            { time: 1.5, lane: 0, type: 'tap' },
+            { time: 3.0, lane: 4, type: 'flick' },
+            { time: 4.5, lane: 1, type: 'tap' },
+            { time: 4.5, lane: 3, type: 'tap' },
+            { time: 7.0, lane: 2, type: 'long', duration: 1.5 },
+            { time: 8.5, lane: 0, type: 'tap' },
+            { time: 8.5, lane: 4, type: 'flick' },
+            { time: 10.0, lane: 2, type: 'tap' }
+        ];
+        songDuration = 12.0;
+    } else {
+        chartData = [
+            { time: 1.0, lane: 0, type: 'flick' },
+            { time: 1.0, lane: 4, type: 'flick' },
+            { time: 2.5, lane: 1, type: 'slidenode', path: [1, 2, 3], pathTime: 1.5, direction: 'right' },
+            { time: 5.0, lane: 3, type: 'slidenode', path: [3, 2, 1], pathTime: 1.5, direction: 'left' },
+            { time: 6.0, lane: 0, type: 'long', duration: 2.0 },
+            { time: 6.0, lane: 4, type: 'long', duration: 2.0 },
+            { time: 9.5, lane: 2, type: 'tap' },
+            { time: 11.0, lane: 1, type: 'flick' },
+            { time: 11.0, lane: 3, type: 'flick' }
+        ];
+        songDuration = 13.0;
     }
+
+    notes = chartData.map(n => ({
+        ...n,
+        hit: false,       
+        holding: false,   
+        started: false,
+        activePointerId: null
+    }));
 }
 
 let animTimer = 0;
@@ -983,27 +962,18 @@ let activeTouches = new Map();
 let feedback = { text: "", color: "#f1c40f", timer: 0, maxTime: 25 };
 
 function confirmSelectedSong() {
-    if (gameState !== 'SELECT') return;
     let selectedSong = songs[currentSongIndex];
     songDuration = selectedSong.duration;
 
     document.getElementById('select-screen').classList.add('hidden');
-    
-    let creditJacket = document.getElementById('credit-jacket-icon');
-    setJacketContent(creditJacket, selectedSong.jacket);
-
+    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
     document.getElementById('credit-song-title').innerText = selectedSong.title;
     document.getElementById('credit-song-artist').innerText = selectedSong.artist;
     document.getElementById('credit-screen').classList.remove('hidden');
     gameState = 'CREDIT';
 
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-    }
-    if (selectedSong.audioSrc) {
-        currentAudio = new Audio(selectedSong.audioSrc);
-        currentAudio.load();
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
     setTimeout(() => {
@@ -1021,49 +991,32 @@ function startActualGame(song) {
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
-    loadChartForSong(song);
-    
-    if (currentAudio) {
-        currentAudio.currentTime = 0;
-        currentAudio.play().catch(e => console.log("Audio play error:", e));
-    }
-    
-    startTime = performance.now() / 1000;
+    generateChart(song.id);
+    startTime = audioCtx.currentTime;
     gameState = 'PLAYING';
-}
-
-function getCurrentAudioTime() {
-    if (currentAudio && !currentAudio.paused) {
-        return currentAudio.currentTime;
-    }
-    return (performance.now() / 1000) - startTime - totalPausedTime;
 }
 
 function openPauseMenu() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSE';
-    if (currentAudio) currentAudio.pause();
-    pauseStartTime = performance.now() / 1000;
+    pauseStartTime = audioCtx.currentTime;
     document.getElementById('pause-screen').classList.remove('hidden');
 }
 
 function resumeGame() {
     document.getElementById('pause-screen').classList.add('hidden');
-    totalPausedTime += ((performance.now() / 1000) - pauseStartTime);
-    if (currentAudio) currentAudio.play().catch(e => {});
+    totalPausedTime += (audioCtx.currentTime - pauseStartTime);
     gameState = 'PLAYING';
 }
 
 function retryGame() {
     document.getElementById('pause-screen').classList.add('hidden');
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
     startActualGame(songs[currentSongIndex]);
 }
 
 function returnToSelectFromPause() {
     document.getElementById('pause-screen').classList.add('hidden');
     document.getElementById('menu-btn').classList.add('hidden');
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -1072,12 +1025,9 @@ function returnToSelectFromPause() {
 function finishGame() {
     gameState = 'RESULT';
     document.getElementById('menu-btn').classList.add('hidden');
-    if (currentAudio) currentAudio.pause();
     
     let currentSong = songs[currentSongIndex];
-    let resultJacket = document.getElementById('result-jacket-icon');
-    setJacketContent(resultJacket, currentSong.jacket);
-
+    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
     document.getElementById('result-song-title').innerText = currentSong.title;
     document.getElementById('result-song-artist').innerText = currentSong.artist;
 
@@ -1117,13 +1067,11 @@ function finishGame() {
 
 function retryFromResult() {
     document.getElementById('result-screen').classList.add('hidden');
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
     startActualGame(songs[currentSongIndex]);
 }
 
 function backToSelect() {
     document.getElementById('result-screen').classList.add('hidden');
-    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -1151,7 +1099,7 @@ canvas.addEventListener('pointerdown', (e) => {
     canvas.setPointerCapture(e.pointerId);
 
     let lanes = getLanePositions();
-    let currentTime = getCurrentAudioTime();
+    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
 
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
@@ -1165,7 +1113,8 @@ canvas.addEventListener('pointerdown', (e) => {
                                 note.hit = true;
                                 judgeAction(diff);
                                 spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
-                            } else if (note.type === 'long' || note.type === 'yellow_band') {
+                                playHitSound();
+                            } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
                                 note.activePointerId = e.pointerId;
@@ -1173,6 +1122,14 @@ canvas.addEventListener('pointerdown', (e) => {
                                 score += 100;
                                 scoreBoardUpdate();
                                 spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
+                                playHitSound();
+                            } else if (note.type === 'slidenode') {
+                                note.started = true;
+                                note.holding = true;
+                                note.activePointerId = e.pointerId;
+                                activeTouches.get(e.pointerId).assignedNote = note;
+                                spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
+                                playHitSound();
                             }
                             break;
                         }
@@ -1186,9 +1143,33 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointermove', (e) => {
     if (!activeTouches.has(e.pointerId)) return;
     const rect = canvas.getBoundingClientRect();
+    const touchX = e.clientX - rect.left;
+    const touchY = e.clientY - rect.top;
+
     let touchInfo = activeTouches.get(e.pointerId);
-    touchInfo.currentX = e.clientX - rect.left;
-    touchInfo.currentY = e.clientY - rect.top;
+    touchInfo.currentX = touchX;
+    touchInfo.currentY = touchY;
+
+    if (touchInfo.assignedNote && touchInfo.assignedNote.holding) {
+        let note = touchInfo.assignedNote;
+        if (note.type === 'slidenode') {
+            let lanes = getLanePositions();
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
+
+            if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                note.holding = false;
+                touchInfo.assignedNote = null;
+                score += 300;
+                scoreBoardUpdate();
+                judgeCounts.kirari++;
+                showFeedback("ｷﾗﾘ!", "#f1c40f");
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+                playHitSound();
+            }
+        }
+    }
 });
 
 canvas.addEventListener('pointerup', (e) => { handleTouchEndOrCancel(e); });
@@ -1197,12 +1178,12 @@ canvas.addEventListener('pointercancel', (e) => { handleTouchEndOrCancel(e); });
 function handleTouchEndOrCancel(e) {
     if (!activeTouches.has(e.pointerId)) return;
     let touchInfo = activeTouches.get(e.pointerId);
-    let currentTime = getCurrentAudioTime();
+    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
     let lanes = getLanePositions();
 
     if (touchInfo.assignedNote) {
         let note = touchInfo.assignedNote;
-        if ((note.type === 'long' || note.type === 'yellow_band') && note.holding) {
+        if (note.type === 'long' && note.holding) {
             let endTime = note.time + note.duration;
             let diff = Math.abs(currentTime - endTime);
             if (diff < 0.35) {
@@ -1217,6 +1198,22 @@ function handleTouchEndOrCancel(e) {
             note.hit = true;
             note.holding = false;
             spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#f39c12');
+            playHitSound();
+            scoreBoardUpdate();
+        } else if (note.type === 'slidenode' && note.holding) {
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
+            if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                score += 200;
+                judgeCounts.suteki++;
+                showFeedback("ｽﾃｷ!", "#e67e22");
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+            } else {
+                note.hit = true;
+                judgeCounts.alara++;
+                showFeedback("ｱﾗﾗ", "#95a5a6");
+            }
             scoreBoardUpdate();
         }
     } else {
@@ -1231,6 +1228,7 @@ function handleTouchEndOrCancel(e) {
                         judgeCounts.kirari++;
                         showFeedback("ｷﾗﾘ!", "#f1c40f");
                         spawnParticles(lanes[note.lane].x, lanes[note.lane].y, '#9b59b6');
+                        playHitSound();
                         break;
                     }
                 }
@@ -1261,6 +1259,34 @@ function judgeAction(diff) {
 
 window.addEventListener('contextmenu', (e) => e.preventDefault());
 
+function playMelodyTone(freq) {
+    if (!audioCtx) return;
+    let osc = audioCtx.createOscillator();
+    let gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.35);
+}
+
+function playHitSound() {
+    if (!audioCtx) return;
+    let osc = audioCtx.createOscillator();
+    let gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+}
+
 function showFeedback(text, color) {
     feedback.text = text;
     feedback.color = color;
@@ -1274,11 +1300,21 @@ function gameLoop() {
     let centerX = canvas.width / 2;
     let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
+
     let spawnOffsetY = 75;
 
     if (gameState === 'PLAYING') {
-        let currentTime = getCurrentAudioTime();
+        let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
+
+        if (songs[currentSongIndex].id === 'donguri') {
+            for (let m of scheduledMelodyNotes) {
+                if (!m.played && currentTime >= m.time) {
+                    playMelodyTone(m.freq);
+                    m.played = true;
+                }
+            }
+        }
 
         if (currentTime >= songDuration) {
             finishGame();
@@ -1301,28 +1337,29 @@ function gameLoop() {
         for (let i = 0; i < lanes.length; i++) {
             let x = lanes[i].x;
             let y = lanes[i].y;
+            let currentRadius = targetRadius;
 
             ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(x, y, targetRadius, 0, Math.PI * 2);
+            ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
             ctx.strokeStyle = "#e8dfd1";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(x, y, targetRadius * 0.55, 0, Math.PI * 2);
+            ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
             ctx.stroke();
         }
 
         for (let note of notes) {
             if (note.hit) continue;
-            let travelTime = baseNoteSpeed / effectiveNoteSpeed;
 
             if (note.type === 'flick') {
                 let target = lanes[note.lane];
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
                     let startSpawnX = centerX;
@@ -1350,9 +1387,74 @@ function gameLoop() {
                     showFeedback("ｱﾗﾗ", "#95a5a6");
                 }
             }
-            else if (note.type === 'long' || note.type === 'yellow_band') {
+            else if (note.type === 'slidenode') {
+                let path = note.path;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
+                if (progress >= 0 && progress <= 1.5) {
+                    let startPos = lanes[path[0]];
+                    let endPos = lanes[path[path.length - 1]];
+
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+
+                    let startX = startSpawnX + (startPos.x - startSpawnX) * progress;
+                    let startY = startSpawnY + (startPos.y - startSpawnY) * progress;
+                    let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
+                    let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
+
+                    // 左右の向きに応じてカーブの向き・膨らみを調整
+                    let curveSign = (note.direction === 'left') ? -1 : 1;
+                    let midX = (startX + endX) / 2;
+                    let midY = (startY + endY) / 2 + (15 * curveSign);
+                    let controlX = midX;
+                    let controlY = midY - 35 * progress;
+
+                    // 黄色い帯（カーブ）の描画
+                    ctx.strokeStyle = "rgba(241, 196, 15, 0.85)";
+                    ctx.lineWidth = 14;
+                    ctx.lineCap = "round";
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+                    ctx.stroke();
+
+                    // 終点の丸を描画
+                    ctx.fillStyle = "#f1c40f";
+                    ctx.strokeStyle = "#fff";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(endX, endY, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 始点の丸を描画
+                    ctx.fillStyle = "#f1c40f";
+                    ctx.strokeStyle = "#fff";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // 始点に左右の矢印を表示
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 12px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    let arrowText = (note.direction === 'right') ? "▶︎" : "◀︎";
+                    ctx.fillText(arrowText, startX, startY - 1);
+                }
+                if (progress > 1.5 && !note.hit) {
+                    note.hit = true;
+                    judgeCounts.alara++;
+                    showFeedback("ｱﾗﾗ", "#95a5a6");
+                }
+            }
+            else if (note.type === 'long') {
                 let target = lanes[note.lane];
                 let endTime = note.time + note.duration;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let headProg = (currentTime - (note.time - travelTime)) / travelTime;
                 let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
 
@@ -1380,7 +1482,7 @@ function gameLoop() {
                     }
 
                     if (headProg >= 0) {
-                        ctx.strokeStyle = (note.type === 'yellow_band') ? "rgba(241, 196, 15, 0.65)" : "rgba(243, 156, 18, 0.65)";
+                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
                         ctx.lineWidth = 12;
                         ctx.lineCap = "round";
                         ctx.beginPath();
@@ -1390,7 +1492,7 @@ function gameLoop() {
                     }
 
                     if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
-                        ctx.fillStyle = (note.type === 'yellow_band') ? "#f1c40f" : "#f39c12";
+                        ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 3;
                         ctx.beginPath();
@@ -1400,7 +1502,7 @@ function gameLoop() {
                     }
 
                     if (!note.holding && headProg <= 1.2) {
-                        ctx.fillStyle = (note.type === 'yellow_band') ? "#f1c40f" : "#f39c12";
+                        ctx.fillStyle = "#f39c12";
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 3;
                         ctx.beginPath();
@@ -1409,16 +1511,19 @@ function gameLoop() {
                         ctx.stroke();
                     } else if (note.holding) {
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
+                        
                         if (currentTime >= endTime) {
                             note.hit = true;
                             note.holding = false;
                             spawnParticles(target.x, target.y, '#f39c12');
+                            playHitSound();
                         }
                     }
                 }
             }
             else {
                 let target = lanes[note.lane];
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
                 let progress = (currentTime - (note.time - travelTime)) / travelTime;
                 if (progress >= 0 && progress <= 1.2) {
                     let startSpawnX = centerX;
