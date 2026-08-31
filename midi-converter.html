@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>絵本風リズムゲーム - MIDI譜面コンバーター</title>
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
-    <!-- Tone.js と @tonejs/midi の読み込み -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script src="https://unpkg.com/@tonejs/midi@2.0.28/build/Midi.js"></script>
     <style>
@@ -58,7 +57,6 @@
             width: 100%;
             margin-top: 10px;
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
-            transition: 0.2s;
         }
         .btn:active { transform: scale(0.97); }
         textarea {
@@ -92,10 +90,10 @@
     
     <div class="note-rule">
         <strong>📌 MIDI音程の割り当てルール:</strong><br>
-        ・ <strong>C3 (ド) 〜 G3</strong>：通常のタップノーツ<br>
-        ・ <strong>C3の長さがある音</strong>：ロングノーツ<br>
-        ・ <strong>C4 (上のド) 〜 G4</strong>：フリックノーツ (◆)<br>
-        ・ <strong>C5 (さらに上のド) 〜</strong>：黄色の弧を描くロング/スライドノーツ
+        ・ <strong>C3 〜 G3 (長さなし)</strong>：タップノーツ<br>
+        ・ <strong>C3 〜 G3 (長さあり)</strong>：ロングノーツ（オレンジのまっすぐな帯）<br>
+        ・ <strong>C4 〜 G4</strong>：フリックノーツ (◆)<br>
+        ・ <strong>C5 〜</strong>：黄色の横帯ノーツ（弧を描く帯）
     </div>
 
     <div class="form-group">
@@ -111,11 +109,11 @@
         <input type="text" id="songArtist" value="作者名">
     </div>
     <div class="form-group">
-        <label>ジャケット画像パス (例: assets/images/4.jpg または 🎵)</label>
+        <label>ジャケット画像パス</label>
         <input type="text" id="songJacket" value="🎵">
     </div>
     <div class="form-group">
-        <label>音声ファイルパス (例: assets/audio/4.mp3)</label>
+        <label>音声ファイルパス</label>
         <input type="text" id="songAudio" value="assets/audio/4.mp3">
     </div>
     <div class="form-group">
@@ -141,11 +139,11 @@ async function convertMidi() {
     const midi = new Midi(arrayBuffer);
 
     let chartNotes = [];
-    let maxTime = 15; // デフォルト秒数
+    let maxTime = 15;
 
     midi.tracks.forEach(track => {
         track.notes.forEach(note => {
-            let midiNote = note.midi; // 60 = C4, 48 = C3, 72 = C5
+            let midiNote = note.midi;
             let time = note.time;
             let duration = note.duration;
 
@@ -153,19 +151,18 @@ async function convertMidi() {
                 maxTime = Math.ceil(time + duration + 2);
             }
 
-            // レーンの割り振り (0〜4の5レーン)
             let lane = Math.floor(((midiNote % 12) / 12) * 5);
             if (lane > 4) lane = 4;
 
             let type = 'tap';
             if (midiNote >= 72) {
-                // C5以上：黄色の弧を描くロングノーツ
-                type = 'long';
+                // C5以上：黄色の横帯ノーツ
+                type = 'yellow_band';
             } else if (midiNote >= 60 && midiNote < 72) {
                 // C4以上：フリック
                 type = 'flick';
             } else if (duration > 0.25) {
-                // C3付近で長い音：ロングノーツ
+                // C3付近で長さがある音：通常のロングノーツ（まっすぐな帯）
                 type = 'long';
             }
 
@@ -173,13 +170,12 @@ async function convertMidi() {
                 time: parseFloat(time.toFixed(3)),
                 lane: lane,
                 type: type,
-                duration: type === 'long' ? parseFloat(duration.toFixed(3)) : 0,
+                duration: (type === 'long' || type === 'yellow_band') ? parseFloat(duration.toFixed(3)) : 0,
                 noteName: note.name
             });
         });
     });
 
-    // 時間順にソート
     chartNotes.sort((a, b) => a.time - b.time);
 
     const songData = {
@@ -194,7 +190,7 @@ async function convertMidi() {
 
     const outputCode = `window.${songData.id} = ${JSON.stringify(songData, null, 2)};`;
     document.getElementById('outputResult').value = outputCode;
-    alert('譜面データの生成が完了しました！下部のボックスからコピーして保存してください。');
+    alert('譜面データの生成が完了しました！');
 }
 </script>
 
