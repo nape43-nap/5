@@ -136,11 +136,11 @@
                     // --- 音の高さ（MIDIノート番号）による自動振り分けルール ---
                     // C3 = 48, C4 = 60, C5 = 72
                     if (note.midi >= 72) {
-                        // C5以上 ＝ 軌道を描く特殊ノーツ (slide)
-                        type = 'slide';
-                    } else if (note.midi >= 60 && note.midi < 72) {
-                        // C4台 ＝ フリックノーツ (flick)
+                        // C5以上（高い音）＝ 軌道を描くフリックノーツ
                         type = 'flick';
+                    } else if (note.midi >= 60 && note.midi < 72) {
+                        // C4台（中くらいの音）＝ スライドノーツ
+                        type = 'slide';
                     } else {
                         // C3以下（低い音）＝ 長さによって タップ か ロング を自動判定
                         type = note.duration > 0.4 ? 'long' : 'tap';
