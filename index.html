@@ -681,10 +681,15 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- ① 曲リストの定義ファイルを読み込む -->
+<!-- ① 個別の曲データを読み込む -->
+<script src="assets/charts/1.js"></script>
+<script src="assets/charts/2.js"></script>
+<script src="assets/charts/3.js"></script>
+
+<!-- ② 曲リスト定義ファイルを読み込む（ここで songs 配列が完成する） -->
 <script src="song-list.js"></script>
 
-<!-- ② 曲データを動的に読み込み、ゲームシステムを初期化する -->
+<!-- ③ メインのゲームシステム処理 -->
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -696,33 +701,11 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-const songs = [];
-
-// song-list.js の定義を元に曲スクリプトを動的に読み込む
-async function loadSongScripts() {
-    if (!window.allSongFiles) return;
-
-    for (const songFile of window.allSongFiles) {
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = songFile.path;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-
-    // 読み込み完了後に songs 配列を構築
-    window.allSongFiles.forEach((songFile) => {
-        if (window[songFile.dataKey]) {
-            songs.push(window[songFile.dataKey]);
-        }
-    });
-
-    renderSongSelector(false);
+// song-list.js で定義された `songs` をそのまま使用
+// （もし song-list.js がまだ読み込まれていない場合は空配列にフォールバック）
+if (typeof songs === 'undefined') {
+    var songs = [];
 }
-
-loadSongScripts();
 
 let gameState = 'SELECT';
 let score = 0;
@@ -869,6 +852,9 @@ function handleDragEnd(e) {
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
+
+// 初期描画
+renderSongSelector(false);
 
 function getLanePositions() {
     let positions = [];
