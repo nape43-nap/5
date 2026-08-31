@@ -641,12 +641,8 @@
                 <ul>
                     <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
                     <li><strong>◆ (フリック)</strong>：指で素早くスワイプ・弾く</li>
-                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
+                    <li><strong>黄色い弧ノーツ</strong>：終点まで指を押し続ける</li>
                 </ul>
-                <br>
-                <p><strong>🎨 クレジット</strong></p>
-                <p>開発・制作：あなたのお名前</p>
-                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
             </div>
 
             <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
@@ -698,21 +694,20 @@
 
     <canvas id="gameCanvas"></canvas>
     
-    <!-- 音楽再生用の隠しaudio要素 -->
     <audio id="bgm-audio" preload="auto"></audio>
 </div>
 
-<!-- ① 個別の曲データをすべて読み込む -->
+<!-- ① 個別の曲データ読み込み -->
 <script src="assets/charts/1.js"></script>
 <script src="assets/charts/2.js"></script>
 <script src="assets/charts/3.js"></script>
 <script src="assets/charts/sample.js"></script>
 <script src="assets/charts/sample2.js"></script>
 
-<!-- ② 曲ファイルのリストを読み込む -->
+<!-- ② 曲ファイルリスト -->
 <script src="song-list.js"></script>
 
-<!-- ③ メインのゲームシステム処理 -->
+<!-- ③ ゲーム本体システム -->
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -725,40 +720,29 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// ジャケットが画像ファイルパスか絵文字かを判定して美しく表示するヘルパー
 function setJacketContent(element, jacketStr) {
     element.innerHTML = '';
     if (jacketStr && (jacketStr.includes('.') || jacketStr.startsWith('assets/') || jacketStr.startsWith('http'))) {
         let img = document.createElement('img');
         img.src = jacketStr;
-        img.onerror = function() {
-            element.innerHTML = '🎵'; // 万が一画像読み込みに失敗したときのフォールバック
-        };
+        img.onerror = function() { element.innerHTML = '🎵'; };
         element.appendChild(img);
     } else {
         element.innerText = jacketStr || '🎵';
     }
 }
 
-// song-list.js で定義されたパスから、ウィンドウに展開された曲データを自動収集する
 const songs = [];
 if (window.allSongFiles) {
     window.allSongFiles.forEach((path, index) => {
         let songDataKey = 'songData_' + (index + 1);
-        // sampleなどの文字列IDにも対応できるように走査
-        if (window[songDataKey]) {
-            songs.push(window[songDataKey]);
-        }
+        if (window[songDataKey]) songs.push(window[songDataKey]);
     });
 }
-
-// 念のためグローバルに window.songData_XXX が直接あるものも自動で拾う
 for (let key in window) {
     if (key.startsWith('songData_')) {
         let songObj = window[key];
-        if (songObj && !songs.some(s => s.id === songObj.id)) {
-            songs.push(songObj);
-        }
+        if (songObj && !songs.some(s => s.id === songObj.id)) songs.push(songObj);
     }
 }
 
@@ -819,7 +803,6 @@ let isDragging = false;
 const itemHeight = 75;
 
 let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
-
 const targetRadius = 32; 
 const baseNoteSpeed = 2.8;   
 
@@ -843,12 +826,7 @@ function renderSongSelector(animating = false) {
         let opacity = Math.max(0.15, 1 - Math.abs(normY) * 0.35);
         let zIndex = 3 - Math.abs(i);
 
-        if (animating) {
-            card.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
-        } else {
-            card.style.transition = 'none';
-        }
-
+        card.style.transition = animating ? 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease' : 'none';
         card.style.transform = `translateY(${totalY}px) scale(${scale})`;
         card.style.opacity = opacity;
         card.style.zIndex = zIndex;
@@ -859,10 +837,7 @@ function renderSongSelector(animating = false) {
 
         let infoDiv = document.createElement('div');
         infoDiv.className = 'song-info';
-        infoDiv.innerHTML = `
-            <div class="song-title">${song.title}</div>
-            <div class="song-artist">${song.artist}</div>
-        `;
+        infoDiv.innerHTML = `<div class="song-title">${song.title}</div><div class="song-artist">${song.artist}</div>`;
 
         card.appendChild(jacketDiv);
         card.appendChild(infoDiv);
@@ -913,7 +888,6 @@ function handleDragEnd(e) {
 
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
-
 renderSongSelector(false);
 
 function getLanePositions() {
@@ -926,8 +900,7 @@ function getLanePositions() {
     for (let i = 0; i < 5; i++) {
         let x = centerX - (totalWidth / 2) + (spacing * i);
         let offsetY = -Math.pow((i - 2), 2) * 12 + 25; 
-        let y = baseY + offsetY;
-        positions.push({ x: x, y: y });
+        positions.push({ x: x, y: baseY + offsetY });
     }
     return positions;
 }
@@ -941,14 +914,11 @@ function spawnParticles(x, y, color) {
         let angle = Math.random() * Math.PI * 2;
         let speed = 2 + Math.random() * 4;
         particles.push({
-            x: x,
-            y: y,
+            x: x, y: y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             radius: 3 + Math.random() * 4,
-            color: color,
-            alpha: 1.0,
-            decay: 0.04 + Math.random() * 0.04
+            color: color, alpha: 1.0, decay: 0.04 + Math.random() * 0.04
         });
     }
 }
@@ -963,7 +933,6 @@ function generateChart(song) {
     particles = [];
     scheduledMelodyNotes = [];
     songDuration = song.duration;
-
     let chartData = song.chart || [];
 
     if (song.id === 'song_1') {
@@ -990,7 +959,6 @@ function confirmSelectedSong() {
     let selectedSong = songs[currentSongIndex];
 
     document.getElementById('select-screen').classList.add('hidden');
-    
     let creditJacketEl = document.getElementById('credit-jacket-icon');
     setJacketContent(creditJacketEl, selectedSong.jacket);
 
@@ -1003,7 +971,6 @@ function confirmSelectedSong() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    // 音楽ファイルのプリロード準備
     bgmAudio.src = selectedSong.audioSrc || '';
     bgmAudio.load();
 
@@ -1024,7 +991,6 @@ function startActualGame(song) {
     
     generateChart(song);
     
-    // BGM再生と同期用タイマーのセット
     bgmAudio.currentTime = 0;
     bgmAudio.play().catch(e => console.log("BGM再生エラー:", e));
 
@@ -1035,14 +1001,14 @@ function startActualGame(song) {
 function openPauseMenu() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSE';
-    bgmAudio.pause(); // 音楽を一時停止
+    bgmAudio.pause();
     pauseStartTime = audioCtx.currentTime;
     document.getElementById('pause-screen').classList.remove('hidden');
 }
 
 function resumeGame() {
     document.getElementById('pause-screen').classList.add('hidden');
-    bgmAudio.play().catch(e => console.log("BGM再開エラー:", e)); // 音楽を再開
+    bgmAudio.play().catch(e => console.log("BGM再開エラー:", e));
     totalPausedTime += (audioCtx.currentTime - pauseStartTime);
     gameState = 'PLAYING';
 }
@@ -1085,19 +1051,12 @@ function finishGame() {
     let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
 
     let rank = 'D';
-    if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) {
-        rank = 'SSS';
-    } else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) {
-        rank = 'SS';
-    } else if (accuracyPercent >= 80) {
-        rank = 'S';
-    } else if (accuracyPercent >= 60) {
-        rank = 'A';
-    } else if (accuracyPercent >= 40) {
-        rank = 'B';
-    } else if (accuracyPercent >= 20) {
-        rank = 'C';
-    }
+    if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) rank = 'SSS';
+    else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) rank = 'SS';
+    else if (accuracyPercent >= 80) rank = 'S';
+    else if (accuracyPercent >= 60) rank = 'A';
+    else if (accuracyPercent >= 40) rank = 'B';
+    else if (accuracyPercent >= 20) rank = 'C';
 
     document.getElementById('result-rank').innerText = rank;
     saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
@@ -1137,10 +1096,8 @@ canvas.addEventListener('pointerdown', (e) => {
 
     activeTouches.set(e.pointerId, {
         id: e.pointerId,
-        startX: touchX,
-        startY: touchY,
-        currentX: touchX,
-        currentY: touchY,
+        startX: touchX, startY: touchY,
+        currentX: touchX, currentY: touchY,
         assignedNote: null
     });
     canvas.setPointerCapture(e.pointerId);
@@ -1183,12 +1140,9 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointermove', (e) => {
     if (!activeTouches.has(e.pointerId)) return;
     const rect = canvas.getBoundingClientRect();
-    const touchX = e.clientX - rect.left;
-    const touchY = e.clientY - rect.top;
-
     let touchInfo = activeTouches.get(e.pointerId);
-    touchInfo.currentX = touchX;
-    touchInfo.currentY = touchY;
+    touchInfo.currentX = e.clientX - rect.left;
+    touchInfo.currentY = e.clientY - rect.top;
 });
 
 canvas.addEventListener('pointerup', (e) => { handleTouchEndOrCancel(e); });
@@ -1319,9 +1273,7 @@ function gameLoop() {
             }
         }
 
-        if (currentTime >= songDuration) {
-            finishGame();
-        }
+        if (currentTime >= songDuration) finishGame();
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
         ctx.fillStyle = "#f5d0c5";
@@ -1340,20 +1292,18 @@ function gameLoop() {
         for (let i = 0; i < lanes.length; i++) {
             let x = lanes[i].x;
             let y = lanes[i].y;
-            let currentRadius = targetRadius;
-
             ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
+            ctx.arc(x, y, targetRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
             ctx.strokeStyle = "#e8dfd1";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
+            ctx.arc(x, y, targetRadius * 0.55, 0, Math.PI * 2);
             ctx.stroke();
         }
 
@@ -1391,6 +1341,7 @@ function gameLoop() {
                 }
             }
             else if (note.type === 'long') {
+                // 黄色の弧を描くロングノーツ
                 let target = lanes[note.lane];
                 let endTime = note.time + note.duration;
                 let travelTime = baseNoteSpeed / effectiveNoteSpeed;
@@ -1398,40 +1349,30 @@ function gameLoop() {
                 let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
 
                 if (headProg >= 0 && tailProg <= 1.2) {
-                    let headX, headY, tailX, tailY;
                     let startSpawnX = centerX;
                     let startSpawnY = girlY + spawnOffsetY;
 
-                    if (headProg >= 1.0 || note.started) {
-                        headX = target.x;
-                        headY = target.y;
-                    } else {
-                        let pHead = Math.max(0, headProg);
-                        headX = startSpawnX + (target.x - startSpawnX) * pHead;
-                        headY = startSpawnY + (target.y - startSpawnY) * pHead;
-                    }
+                    let headX = (headProg >= 1.0 || note.started) ? target.x : startSpawnX + (target.x - startSpawnX) * Math.max(0, headProg);
+                    let headY = (headProg >= 1.0 || note.started) ? target.y : startSpawnY + (target.y - startSpawnY) * Math.max(0, headProg);
 
-                    if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
-                        tailX = target.x;
-                        tailY = target.y;
-                    } else {
-                        let pTail = Math.max(0, tailProg);
-                        tailX = startSpawnX + (target.x - startSpawnX) * pTail;
-                        tailY = startSpawnY + (target.y - startSpawnY) * pTail;
-                    }
+                    let tailX = (tailProg >= 1.0 || (note.started && currentTime >= endTime)) ? target.x : startSpawnX + (target.x - startSpawnX) * Math.max(0, tailProg);
+                    let tailY = (tailProg >= 1.0 || (note.started && currentTime >= endTime)) ? target.y : startSpawnY + (target.y - startSpawnY) * Math.max(0, tailProg);
 
                     if (headProg >= 0) {
-                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
-                        ctx.lineWidth = 12;
+                        ctx.strokeStyle = "rgba(243, 156, 18, 0.85)"; // 黄色〜オレンジの弧の軌道
+                        ctx.lineWidth = 14;
                         ctx.lineCap = "round";
                         ctx.beginPath();
                         ctx.moveTo(tailX, tailY);
-                        ctx.lineTo(headX, headY);
+                        // 上に膨らむ黄色の美しい弧を描く制御点
+                        let cpX = (tailX + headX) / 2;
+                        let cpY = Math.min(tailY, headY) - 25;
+                        ctx.quadraticCurveTo(cpX, cpY, headX, headY);
                         ctx.stroke();
                     }
 
                     if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
-                        ctx.fillStyle = "#f39c12";
+                        ctx.fillStyle = "#f1c40f";
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 3;
                         ctx.beginPath();
@@ -1441,7 +1382,7 @@ function gameLoop() {
                     }
 
                     if (!note.holding && headProg <= 1.2) {
-                        ctx.fillStyle = "#f39c12";
+                        ctx.fillStyle = "#f1c40f";
                         ctx.strokeStyle = "#ffffff";
                         ctx.lineWidth = 3;
                         ctx.beginPath();
@@ -1450,11 +1391,10 @@ function gameLoop() {
                         ctx.stroke();
                     } else if (note.holding) {
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
-                        
                         if (currentTime >= endTime) {
                             note.hit = true;
                             note.holding = false;
-                            spawnParticles(target.x, target.y, '#f39c12');
+                            spawnParticles(target.x, target.y, '#f1c40f');
                             playHitSound();
                         }
                     }
@@ -1488,15 +1428,8 @@ function gameLoop() {
 
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.decay;
-
-        if (p.alpha <= 0) {
-            particles.splice(i, 1);
-            continue;
-        }
-
+        p.x += p.vx; p.y += p.vy; p.alpha -= p.decay;
+        if (p.alpha <= 0) { particles.splice(i, 1); continue; }
         ctx.save();
         ctx.globalAlpha = p.alpha;
         ctx.fillStyle = p.color;
