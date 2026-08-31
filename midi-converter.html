@@ -78,7 +78,7 @@
 </head>
 <body>
 
-    <h2>🎵 MIDI 譜面コンバーター</h2>
+    <h2>🎵 MIDI 譜面コンバーター (音程自動判別版)</h2>
 
     <div class="form-group">
         <label>1. 曲ID (半角英数字)</label>
@@ -131,7 +131,20 @@
             if (midi.tracks.length > 0) {
                 parsedNotes = midi.tracks[0].notes.map(note => {
                     const lane = note.midi % 5;
-                    const type = note.duration > 0.4 ? 'long' : 'tap';
+                    let type = 'tap';
+
+                    // --- 音の高さ（MIDIノート番号）による自動振り分けルール ---
+                    // C3 = 48, C4 = 60, C5 = 72
+                    if (note.midi >= 72) {
+                        // C5以上（高い音）＝ 軌道を描くフリックノーツ
+                        type = 'flick';
+                    } else if (note.midi >= 60 && note.midi < 72) {
+                        // C4台（中くらいの音）＝ スライドノーツ
+                        type = 'slide';
+                    } else {
+                        // C3以下（低い音）＝ 長さによって タップ か ロング を自動判定
+                        type = note.duration > 0.4 ? 'long' : 'tap';
+                    }
                     
                     let noteObj = {
                         time: Number(note.time.toFixed(2)),
@@ -170,13 +183,11 @@
             const title = document.getElementById('input-title').value || '';
             const artist = document.getElementById('input-artist').value || '';
             
-            // ジャケットのパス補完
             let jacketInput = document.getElementById('input-jacket').value.trim() || '🎵';
             let jacketValue = jacketInput.includes('.') && !jacketInput.startsWith('assets/') && !jacketInput.startsWith('http')
                 ? `assets/images/${jacketInput}`
                 : jacketInput;
 
-            // 音源のパス補完
             let audioInput = document.getElementById('input-audio').value.trim() || '1.mp3';
             let audioValue = audioInput.includes('.') && !audioInput.startsWith('assets/') && !audioInput.startsWith('http')
                 ? `assets/audio/${audioInput}`
