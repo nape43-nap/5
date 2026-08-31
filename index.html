@@ -1403,8 +1403,8 @@ function gameLoop() {
                     let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
                     let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
 
-                    // 左右の向きに応じてカーブの向き・膨らみを調整
-                    let curveSign = (note.direction === 'left') ? -1 : 1;
+                    // 左右の向きに応じてカーブの膨らみ方向を修正
+                    let curveSign = (note.direction === 'left') ? 1 : -1;
                     let midX = (startX + endX) / 2;
                     let midY = (startY + endY) / 2 + (15 * curveSign);
                     let controlX = midX;
