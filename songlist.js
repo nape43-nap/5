@@ -1,7 +1,4 @@
-// 曲の管理ファイル（追加・削除はここだけ！）
+// 曲の管理ファイル（追加・削除したいファイルパスをここに並べます）
 const registeredSongFiles = [
-    "assets/charts/donguri.js",
-    "assets/charts/hoshi.js",
-    // "assets/charts/fuji.js" ← 消したいときはコメントアウトするか行を削除するだけ
+    "assets/charts/donguri.js"
 ];
-
