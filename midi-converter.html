@@ -2,52 +2,117 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MIDI 譜面コンバーター</title>
-    <!-- 音楽データを解析するためのライブラリをネット経由で読み込み -->
     <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.js"></script>
     <style>
         body {
             font-family: sans-serif;
             background: #fdfbf7;
             color: #7c6f64;
-            padding: 30px;
+            padding: 20px;
             max-width: 600px;
-            margin: 40px auto;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        h2, h3 {
             text-align: center;
         }
-        .drop-zone {
-            border: 3px dashed #e3c4a8;
+        .form-group {
             background: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            cursor: pointer;
-            margin-bottom: 20px;
+            border: 2px solid #f0e6d2;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #7c6f64;
+        }
+        input[type="text"], input[type="file"] {
+            padding: 10px;
+            border: 2px solid #f5efe6;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fffcf7;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            border-color: #d4a373;
         }
         textarea {
             width: 100%;
-            height: 250px;
+            height: 220px;
             font-family: monospace;
-            padding: 10px;
+            padding: 12px;
             border: 2px solid #f0e6d2;
-            border-radius: 10px;
+            border-radius: 12px;
             box-sizing: border-box;
             background: #fff;
+            font-size: 13px;
+        }
+        .copy-btn {
+            background-color: #e3c4a8;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
+        }
+        .copy-btn:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
 <body>
 
-    <h2>MIDI ➔ 譜面データ変換ツール</h2>
-    <p>お手持ちのMIDIファイル（.mid）を選んでください</p>
+    <h2>🎵 MIDI 譜面コンバーター</h2>
 
-    <div class="drop-zone">
+    <div class="form-group">
+        <label>1. 曲ID (半角英数字)</label>
+        <input type="text" id="input-id" value="new_song" placeholder="例: twinkle">
+    </div>
+
+    <div class="form-group">
+        <label>2. 曲名</label>
+        <input type="text" id="input-title" value="きらきら星" placeholder="例: きらきら星">
+    </div>
+
+    <div class="form-group">
+        <label>3. アーティスト名</label>
+        <input type="text" id="input-artist" value="フランス民謡" placeholder="例: フランス民謡">
+    </div>
+
+    <div class="form-group">
+        <label>4. ジャケット (絵文字 または 画像パス)</label>
+        <input type="text" id="input-jacket" value="⭐" placeholder="例: ⭐ または assets/images/star.png">
+    </div>
+
+    <div class="form-group">
+        <label>5. MIDIファイル (.mid)</label>
         <input type="file" id="midiFileInput" accept=".mid,.midi">
     </div>
 
-    <h3>変換されたコード（コピーして使う）</h3>
-    <textarea id="output" placeholder="ここに変換結果が自動で表示されます..."></textarea>
+    <h3>出力されたコード</h3>
+    <textarea id="output" placeholder="MIDIを選ぶとここにコードが自動生成されます..."></textarea>
+    <button class="copy-btn" onclick="copyCode()">コードをコピーする</button>
 
     <script>
+        let parsedNotes = [];
+        let songDuration = 15.0;
+
         document.getElementById('midiFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -55,12 +120,13 @@
             const arrayBuffer = await file.arrayBuffer();
             const midi = new Midi(arrayBuffer);
 
-            let notes = [];
+            songDuration = midi.duration;
+            parsedNotes = [];
+
             if (midi.tracks.length > 0) {
-                // トラック内の音符情報を自動でゲーム用に変換
-                notes = midi.tracks[0].notes.map(note => {
-                    const lane = note.midi % 5; // 音の高さから 0〜4 のレーンを自動割り振り
-                    const type = note.duration > 0.4 ? 'long' : 'tap'; // 長ければロング、短ければタップ
+                parsedNotes = midi.tracks[0].notes.map(note => {
+                    const lane = note.midi % 5;
+                    const type = note.duration > 0.4 ? 'long' : 'tap';
                     
                     let noteObj = {
                         time: Number(note.time.toFixed(2)),
@@ -79,18 +145,43 @@
                 });
             }
 
-            // 綺麗なJavaScript形式にしてテキストエリアに出力
-            const codeOutput = `window.songData_New = {\n` +
-                `    id: 'song_new',\n` +
-                `    title: '${file.name.replace(/\.[^/.]+$/, "")}',\n` +
-                `    artist: 'アーティスト名',\n` +
-                `    jacket: '🎵',\n` +
-                `    duration: ${midi.duration.toFixed(1)},\n` +
-                `    chart: ${JSON.stringify(notes, null, 4).replace(/^/gm, '    ')}\n` +
+            // ファイル名から自動でIDや曲名の初期値にできたらちょっと便利にする
+            let defaultName = file.name.replace(/\.[^/.]+$/, "");
+            document.getElementById('input-id').value = defaultName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            document.getElementById('input-title').value = defaultName;
+
+            updateOutputCode();
+        });
+
+        // 入力欄が変更されたらリアルタイムで出力コードを更新する
+        ['input-id', 'input-title', 'input-artist', 'input-jacket'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateOutputCode);
+        });
+
+        function updateOutputCode() {
+            const songId = document.getElementById('input-id').value || 'song';
+            const title = document.getElementById('input-title').value || '';
+            const artist = document.getElementById('input-artist').value || '';
+            const jacket = document.getElementById('input-jacket').value || '🎵';
+
+            const codeOutput = `window.songData_${songId} = {\n` +
+                `    id: '${songId}',\n` +
+                `    title: '${title}',\n` +
+                `    artist: '${artist}',\n` +
+                `    jacket: '${jacket}',\n` +
+                `    duration: ${songDuration.toFixed(1)},\n` +
+                `    chart: ${JSON.stringify(parsedNotes, null, 4).replace(/^/gm, '    ')}\n` +
                 `};`;
 
             document.getElementById('output').value = codeOutput;
-        });
+        }
+
+        function copyCode() {
+            const textarea = document.getElementById('output');
+            textarea.select();
+            document.execCommand('copy'); // スマホ対応のコピー処理
+            alert('コードをコピーしました！');
+        }
     </script>
 
 </body>
