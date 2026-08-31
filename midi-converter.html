@@ -96,8 +96,8 @@
     </div>
 
     <div class="form-group">
-        <label>4. ジャケット (絵文字 または 画像パス)</label>
-        <input type="text" id="input-jacket" value="⭐" placeholder="例: ⭐ または assets/images/star.png">
+        <label>4. ジャケット (絵文字 または 1.jpg など)</label>
+        <input type="text" id="input-jacket" value="⭐" placeholder="例: ⭐ または 1.jpg">
     </div>
 
     <div class="form-group">
@@ -145,7 +145,6 @@
                 });
             }
 
-            // ファイル名から自動でIDや曲名の初期値にできたらちょっと便利にする
             let defaultName = file.name.replace(/\.[^/.]+$/, "");
             document.getElementById('input-id').value = defaultName.toLowerCase().replace(/[^a-z0-9]/g, '_');
             document.getElementById('input-title').value = defaultName;
@@ -153,7 +152,6 @@
             updateOutputCode();
         });
 
-        // 入力欄が変更されたらリアルタイムで出力コードを更新する
         ['input-id', 'input-title', 'input-artist', 'input-jacket'].forEach(id => {
             document.getElementById(id).addEventListener('input', updateOutputCode);
         });
@@ -162,13 +160,22 @@
             const songId = document.getElementById('input-id').value || 'song';
             const title = document.getElementById('input-title').value || '';
             const artist = document.getElementById('input-artist').value || '';
-            const jacket = document.getElementById('input-jacket').value || '🎵';
+            
+            let jacketInput = document.getElementById('input-jacket').value.trim() || '🎵';
+            let jacketValue = '';
+
+            // ドットを含み、パスやURLから始まっていない場合は自動で assets/images/ を補完
+            if (jacketInput.includes('.') && !jacketInput.startsWith('assets/') && !jacketInput.startsWith('http')) {
+                jacketValue = `assets/images/${jacketInput}`;
+            } else {
+                jacketValue = jacketInput;
+            }
 
             const codeOutput = `window.songData_${songId} = {\n` +
                 `    id: '${songId}',\n` +
                 `    title: '${title}',\n` +
                 `    artist: '${artist}',\n` +
-                `    jacket: '${jacket}',\n` +
+                `    jacket: '${jacketValue}',\n` +
                 `    duration: ${songDuration.toFixed(1)},\n` +
                 `    chart: ${JSON.stringify(parsedNotes, null, 4).replace(/^/gm, '    ')}\n` +
                 `};`;
@@ -179,7 +186,7 @@
         function copyCode() {
             const textarea = document.getElementById('output');
             textarea.select();
-            document.execCommand('copy'); // スマホ対応のコピー処理
+            document.execCommand('copy');
             alert('コードをコピーしました！');
         }
     </script>
