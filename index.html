@@ -681,7 +681,7 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- 曲の管理と自動読み込みはすべて song-list.js に集約しました -->
+<!-- 曲の管理リスト（このファイルを読み込むだけです） -->
 <script src="song-list.js"></script>
 
 <!-- メインのゲームシステム処理 -->
@@ -696,7 +696,6 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// song-list.js 側で songs が未定義の場合のフォールバック
 if (typeof songs === 'undefined') {
     var songs = [];
 }
@@ -849,7 +848,6 @@ function handleDragEnd(e) {
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
 
-// 初期描画（非同期読み込み完了時に song-list.js からも再描画される）
 renderSongSelector(false);
 
 function getLanePositions() {
