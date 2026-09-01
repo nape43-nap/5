@@ -1317,20 +1317,20 @@ function showFloatingText(text, color, x, y) {
     });
 }
 
-function drawMusicalNoteIcon(x, y, color, symbol) {
-    ctx.fillStyle = color;
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 3;
+// --- 丸いノーツを描画する関数（もとに戻しました） ---
+function drawNoteCircle(x, y, fillColor, strokeColor) {
+    ctx.fillStyle = fillColor;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(x, y, 16, 0, Math.PI * 2);
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 14px 'RocknRoll One', sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(symbol, x, y);
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 function gameLoop() {
@@ -1361,9 +1361,9 @@ function gameLoop() {
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
         
-        // --- 140pxに大きめにした女の子のイラストを描画 ---
-        let girlWidth = 140;  
-        let girlHeight = 140; 
+        // --- 150pxに少し大きめにした女の子のイラストを描画 ---
+        let girlWidth = 150;  
+        let girlHeight = 150; 
         if (girlImg.complete && girlImg.naturalWidth !== 0) {
             ctx.drawImage(
                 girlImg, 
@@ -1375,7 +1375,7 @@ function gameLoop() {
         } else {
             ctx.fillStyle = "#f5d0c5";
             ctx.beginPath();
-            ctx.arc(centerX, girlY + girlFloatY + 15, 55, 0, Math.PI * 2);
+            ctx.arc(centerX, girlY + girlFloatY + 15, 60, 0, Math.PI * 2);
             ctx.fill();
         }
 
@@ -1411,7 +1411,7 @@ function gameLoop() {
                     let startSpawnY = girlY + spawnOffsetY;
                     let x = startSpawnX + (target.x - startSpawnX) * progress;
                     let y = startSpawnY + (target.y - startSpawnY) * progress;
-                    drawMusicalNoteIcon(x, y, "#9b59b6", "🎶");
+                    drawNoteCircle(x, y, "#9b59b6", "#e8d7f1");
                 }
                 if (progress > 1.2 && !note.hit) {
                     note.hit = true;
@@ -1449,8 +1449,8 @@ function gameLoop() {
                     ctx.quadraticCurveTo(controlX, controlY, endX, endY);
                     ctx.stroke();
 
-                    drawMusicalNoteIcon(endX, endY, "#e056fd", "♪");
-                    drawMusicalNoteIcon(startX, startY, "#e056fd", "♫");
+                    drawNoteCircle(endX, endY, "#e056fd", "#f5d0ff");
+                    drawNoteCircle(startX, startY, "#e056fd", "#f5d0ff");
                 }
                 if (progress > 1.5 && !note.hit) {
                     note.hit = true;
@@ -1500,11 +1500,11 @@ function gameLoop() {
                     }
 
                     if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
-                        drawMusicalNoteIcon(tailX, tailY, "#f39c12", "♪");
+                        drawNoteCircle(tailX, tailY, "#f39c12", "#fdebd0");
                     }
 
                     if (!note.holding && headProg <= 1.2) {
-                        drawMusicalNoteIcon(headX, headY, "#f39c12", "♫");
+                        drawNoteCircle(headX, headY, "#f39c12", "#fdebd0");
                     } else if (note.holding) {
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
                         
@@ -1527,8 +1527,8 @@ function gameLoop() {
                     let x = startSpawnX + (target.x - startSpawnX) * progress;
                     let y = startSpawnY + (target.y - startSpawnY) * progress;
                     
-                    // --- 音符型のノーツを描画 ---
-                    drawMusicalNoteIcon(x, y, "#1abc9c", "♪");
+                    // --- 丸いノーツを描画 ---
+                    drawNoteCircle(x, y, "#1abc9c", "#d1f2eb");
                 }
                 if (progress > 1.2 && !note.hit) {
                     note.hit = true;
