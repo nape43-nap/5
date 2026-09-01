@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>絵本風リズムゲーム </title>
+
+    <title>絵本風リズムゲーム</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
+
     <style>
         body {
             margin: 0;
@@ -40,12 +43,13 @@
             border: 8px solid #f0e6d2;
             -webkit-touch-callout: none;
         }
+
         canvas {
             display: block;
             width: 100%;
             height: 100%;
         }
-        
+
         .screen {
             position: absolute;
             top: 0;
@@ -61,15 +65,18 @@
             padding: 20px;
             box-sizing: border-box;
         }
+
         .hidden {
             display: none !important;
         }
+
         h1 {
             color: #7c6f64;
             font-size: 26px;
             margin-bottom: 20px;
             text-align: center;
         }
+
         .btn {
             background-color: #e3c4a8;
             color: #fff;
@@ -84,6 +91,7 @@
             font-family: 'RocknRoll One', sans-serif;
             z-index: 5;
         }
+
         .btn:active {
             transform: scale(0.95);
         }
@@ -107,6 +115,7 @@
             z-index: 25;
             transition: 0.15s;
         }
+
         #selector-config-btn:active {
             transform: scale(0.92);
         }
@@ -118,6 +127,7 @@
             position: relative;
             width: 100%;
         }
+
         .song-list-viewport {
             width: 330px;
             height: 280px;
@@ -128,9 +138,22 @@
             align-items: center;
             cursor: grab;
             touch-action: none;
-            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(
+                to bottom,
+                transparent,
+                black 10%,
+                black 90%,
+                transparent
+            );
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                transparent,
+                black 10%,
+                black 90%,
+                transparent
+            );
         }
+
         .song-card {
             position: absolute;
             width: 300px;
@@ -145,11 +168,13 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
             pointer-events: none;
         }
+
         .song-card.selected {
             border-color: #d4a373;
             background: #fffcf7;
             box-shadow: 0 6px 15px rgba(212, 163, 115, 0.15);
         }
+
         .song-jacket {
             width: 50px;
             height: 50px;
@@ -162,16 +187,19 @@
             flex-shrink: 0;
             border: 2px solid #f0e6d2;
         }
+
         .song-info {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
+
         .song-title {
             font-weight: bold;
             color: #7c6f64;
             font-size: 15px;
         }
+
         .song-artist {
             font-size: 12px;
             color: #b8aea1;
@@ -193,10 +221,17 @@
             z-index: 15;
             box-sizing: border-box;
         }
+
         @keyframes floatCloud {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-8px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            100% {
+                transform: translateY(-8px);
+            }
         }
+
         .cloud-rank-box {
             width: 24px;
             height: 24px;
@@ -210,16 +245,19 @@
             font-weight: bold;
             color: #d4a373;
         }
+
         .cloud-info {
             display: flex;
             flex-direction: column;
             text-align: left;
         }
+
         .cloud-label {
             font-size: 7px;
             color: #b8aea1;
             letter-spacing: 0.5px;
         }
+
         .cloud-score-val {
             font-size: 13px;
             font-weight: bold;
@@ -230,6 +268,7 @@
             background: rgba(253, 251, 247, 0.99);
             text-align: center;
         }
+
         .credit-jacket-large {
             width: 130px;
             height: 130px;
@@ -244,21 +283,30 @@
             margin-bottom: 20px;
             animation: pulseJacket 1.5s infinite alternate;
         }
+
         @keyframes pulseJacket {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.04); }
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.04);
+            }
         }
+
         .credit-title {
             font-size: 22px;
             font-weight: bold;
             color: #7c6f64;
             margin-bottom: 8px;
         }
+
         .credit-artist {
             font-size: 14px;
             color: #b8aea1;
             margin-bottom: 30px;
         }
+
         .ready-text {
             font-size: 22px;
             color: #d4a373;
@@ -268,9 +316,15 @@
         #result-screen {
             animation: screenFadeIn 0.4s ease-out forwards;
         }
+
         @keyframes screenFadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         .result-panel {
@@ -284,11 +338,24 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.02);
             position: relative;
             margin-top: 5px;
-            animation: panelPopup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: panelPopup 0.5s cubic-bezier(
+                0.175,
+                0.885,
+                0.32,
+                1.275
+            ) forwards;
         }
+
         @keyframes panelPopup {
-            0% { transform: scale(0.85) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+            0% {
+                transform: scale(0.85) translateY(20px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
         }
 
         .rank-badge {
@@ -318,6 +385,7 @@
             border-bottom: 2px dashed #f5efe6;
             padding-bottom: 10px;
         }
+
         .result-jacket-small {
             width: 45px;
             height: 45px;
@@ -330,17 +398,20 @@
             border: 2px solid #f0e6d2;
             flex-shrink: 0;
         }
+
         .result-song-meta {
             display: flex;
             flex-direction: column;
             gap: 3px;
             text-align: left;
         }
+
         .result-title-text {
             font-weight: bold;
             color: #7c6f64;
             font-size: 15px;
         }
+
         .result-artist-text {
             font-size: 11px;
             color: #b8aea1;
@@ -352,17 +423,20 @@
             border-bottom: 2px dashed #f5efe6;
             padding-bottom: 8px;
         }
+
         .result-score-val {
             font-size: 28px;
             font-weight: bold;
             color: #d4a373;
         }
+
         .judge-stats {
             display: flex;
             flex-direction: column;
             gap: 4px;
             margin-bottom: 2px;
         }
+
         .judge-row {
             display: flex;
             justify-content: space-between;
@@ -371,10 +445,23 @@
             font-weight: bold;
             padding: 0 10px;
         }
-        .stat-label-suteki { color: #e67e22; }
-        .stat-label-kirari { color: #f1c40f; }
-        .stat-label-ii { color: #3498db; }
-        .stat-label-alara { color: #95a5a6; }
+
+        .stat-label-suteki {
+            color: #e67e22;
+        }
+
+        .stat-label-kirari {
+            color: #f1c40f;
+        }
+
+        .stat-label-ii {
+            color: #3498db;
+        }
+
+        .stat-label-alara {
+            color: #95a5a6;
+        }
+
         .stat-value {
             color: #7c6f64;
             font-size: 15px;
@@ -387,6 +474,7 @@
             max-width: 330px;
             justify-content: center;
         }
+
         .result-btn {
             background-color: #e3c4a8;
             color: #fff;
@@ -402,12 +490,14 @@
             flex: 1;
             z-index: 5;
         }
+
         .result-btn.sub {
             background-color: #f7f2ea;
             color: #7c6f64;
             border: 2px solid #f0e6d2;
             box-shadow: none;
         }
+
         .result-btn:active {
             transform: scale(0.95);
         }
@@ -422,6 +512,7 @@
             font-size: 20px;
             font-weight: bold;
             pointer-events: none;
+            z-index: 5;
         }
 
         #menu-btn {
@@ -443,9 +534,11 @@
             z-index: 20;
             transition: 0.15s;
         }
+
         #menu-btn:active {
             transform: scale(0.92);
         }
+
         .pause-panel {
             background: #fff;
             border: 3px solid #f0e6d2;
@@ -460,12 +553,14 @@
             flex-direction: column;
             gap: 12px;
         }
+
         .pause-title {
             font-size: 20px;
             color: #7c6f64;
             margin-bottom: 5px;
             font-weight: bold;
         }
+
         .pause-btn {
             background-color: #f7f2ea;
             color: #7c6f64;
@@ -479,10 +574,12 @@
             width: 100%;
             font-weight: bold;
         }
+
         .pause-btn:active {
             transform: scale(0.96);
             background-color: #eee5d3;
         }
+
         .pause-btn.primary {
             background-color: #e3c4a8;
             color: #fff;
@@ -505,6 +602,7 @@
             gap: 14px;
             overflow-y: auto;
         }
+
         .modal-title {
             font-size: 19px;
             color: #7c6f64;
@@ -513,19 +611,23 @@
             border-bottom: 2px dashed #f5efe6;
             padding-bottom: 8px;
         }
+
         .modal-body {
             font-size: 13px;
             color: #7c6f64;
             line-height: 1.6;
             text-align: left;
         }
+
         .modal-body p {
             margin: 6px 0;
         }
+
         .modal-body ul {
             margin: 6px 0;
             padding-left: 20px;
         }
+
         .setting-item {
             display: flex;
             flex-direction: column;
@@ -535,6 +637,7 @@
             padding: 12px;
             border-radius: 12px;
         }
+
         .setting-label {
             font-size: 14px;
             font-weight: bold;
@@ -542,1091 +645,4713 @@
             display: flex;
             justify-content: space-between;
         }
+
         .setting-range-container {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         input[type="range"] {
             flex: 1;
             accent-color: #d4a373;
             cursor: pointer;
         }
+
         .x-link {
             color: #3498db;
             text-decoration: none;
             font-weight: bold;
         }
+
         .x-link:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
 
 <div id="game-container">
-    <div id="score-board">スコア: <span id="score-num">0</span></div>
 
-    <button id="menu-btn" class="hidden" onclick="openPauseMenu()">⚙️</button>
+    <div id="score-board">
+        スコア: <span id="score-num">0</span>
+    </div>
+
+    <button
+        id="menu-btn"
+        class="hidden"
+        onclick="openPauseMenu()"
+    >
+        ⚙️
+    </button>
+
+
+    <!-- ============================= -->
+    <!-- 曲選択画面 -->
+    <!-- ============================= -->
 
     <div id="select-screen" class="screen">
-        <button id="selector-config-btn" onclick="openConfigModal()">⚙️</button>
 
-        <h1 class="en-font">MUSIC SELECT</h1>
+        <button
+            id="selector-config-btn"
+            onclick="openConfigModal()"
+        >
+            ⚙️
+        </button>
+
+        <h1 class="en-font">
+            MUSIC SELECT
+        </h1>
+
         <div class="song-selector-container">
-            <div class="song-list-viewport" id="song-viewport"></div>
+
+            <div
+                class="song-list-viewport"
+                id="song-viewport"
+            ></div>
+
             <div class="cloud-highscore">
-                <div class="cloud-rank-box" id="selector-rank">-</div>
+
+                <div
+                    class="cloud-rank-box"
+                    id="selector-rank"
+                >
+                    -
+                </div>
+
                 <div class="cloud-info">
-                    <div class="cloud-label en-font">HIGH SCORE</div>
-                    <div class="cloud-score-val" id="selector-highscore">0</div>
+
+                    <div class="cloud-label en-font">
+                        HIGH SCORE
+                    </div>
+
+                    <div
+                        class="cloud-score-val"
+                        id="selector-highscore"
+                    >
+                        0
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
-        <button class="btn" onclick="confirmSelectedSong()">決定</button>
+
+        <button
+            class="btn"
+            onclick="confirmSelectedSong()"
+        >
+            決定
+        </button>
+
     </div>
 
-    <div id="credit-screen" class="screen hidden">
-        <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
-        <div class="credit-title" id="credit-song-title">どんぐりころころ</div>
-        <div class="credit-artist" id="credit-song-artist">文部省唱歌 / 童謡</div>
-        <div class="ready-text en-font">READY...♪</div>
+
+    <!-- ============================= -->
+    <!-- クレジット画面 -->
+    <!-- ============================= -->
+
+    <div
+        id="credit-screen"
+        class="screen hidden"
+    >
+
+        <div
+            class="credit-jacket-large"
+            id="credit-jacket-icon"
+        >
+            🌰
+        </div>
+
+        <div
+            class="credit-title"
+            id="credit-song-title"
+        >
+            どんぐりころころ
+        </div>
+
+        <div
+            class="credit-artist"
+            id="credit-song-artist"
+        >
+            文部省唱歌 / 童謡
+        </div>
+
+        <div class="ready-text en-font">
+            READY...♪
+        </div>
+
     </div>
 
-    <div id="pause-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.9); z-index: 30;">
+
+    <!-- ============================= -->
+    <!-- ポーズ画面 -->
+    <!-- ============================= -->
+
+    <div
+        id="pause-screen"
+        class="screen hidden"
+        style="
+            background: rgba(253, 251, 247, 0.9);
+            z-index: 30;
+        "
+    >
+
         <div class="pause-panel">
-            <div class="pause-title en-font">PAUSE</div>
-            <button class="pause-btn primary" onclick="resumeGame()">つづける</button>
-            <button class="pause-btn" onclick="retryGame()">やりなおす</button>
-            <button class="pause-btn" onclick="returnToSelectFromPause()">曲選択へもどる</button>
+
+            <div class="pause-title en-font">
+                PAUSE
+            </div>
+
+            <button
+                class="pause-btn primary"
+                onclick="resumeGame()"
+            >
+                つづける
+            </button>
+
+            <button
+                class="pause-btn"
+                onclick="retryGame()"
+            >
+                やりなおす
+            </button>
+
+            <button
+                class="pause-btn"
+                onclick="returnToSelectFromPause()"
+            >
+                曲選択へもどる
+            </button>
+
         </div>
+
     </div>
 
-    <div id="config-screen" class="screen hidden" style="background: rgba(253, 251, 247, 0.92); z-index: 40;">
+
+    <!-- ============================= -->
+    <!-- CONFIG画面 -->
+    <!-- ============================= -->
+
+    <div
+        id="config-screen"
+        class="screen hidden"
+        style="
+            background: rgba(253, 251, 247, 0.92);
+            z-index: 40;
+        "
+    >
+
         <div class="modal-panel">
-            <div class="modal-title en-font">CONFIG / INFO</div>
-            
-            <div class="setting-item">
-                <div class="setting-label">
-                    <span>ノーツの速さ (速度)</span>
-                    <span id="speed-val-text" style="color: #d4a373;">1.0倍</span>
-                </div>
-                <div class="setting-range-container">
-                    <span style="font-size: 11px; color: #b8aea1;">0.5x</span>
-                    <input type="range" id="speed-range" min="0.5" max="10.0" step="0.5" value="1.0" oninput="onSpeedChange(this.value)">
-                    <span style="font-size: 11px; color: #b8aea1;">10.0x</span>
-                </div>
+
+            <div class="modal-title en-font">
+                CONFIG / INFO
             </div>
+
+
+            <div class="setting-item">
+
+                <div class="setting-label">
+
+                    <span>
+                        ノーツの速さ (速度)
+                    </span>
+
+                    <span
+                        id="speed-val-text"
+                        style="color: #d4a373;"
+                    >
+                        1.0倍
+                    </span>
+
+                </div>
+
+                <div class="setting-range-container">
+
+                    <span
+                        style="
+                            font-size: 11px;
+                            color: #b8aea1;
+                        "
+                    >
+                        0.5x
+                    </span>
+
+                    <input
+                        type="range"
+                        id="speed-range"
+                        min="0.5"
+                        max="10.0"
+                        step="0.5"
+                        value="1.0"
+                        oninput="onSpeedChange(this.value)"
+                    >
+
+                    <span
+                        style="
+                            font-size: 11px;
+                            color: #b8aea1;
+                        "
+                    >
+                        10.0x
+                    </span>
+
+                </div>
+
+            </div>
+
 
             <div class="modal-body">
-                <p><strong>📖 遊び方</strong></p>
+
+                <p>
+                    <strong>📖 遊び方</strong>
+                </p>
+
                 <ul>
-                    <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
-                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
-                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
+
+                    <li>
+                        画面奥から流れてくるノーツが
+                        丸い判定枠に重なるタイミングに合わせてタップ！
+                    </li>
+
+                    <li>
+                        <strong>◆ フリック</strong>：
+                        指で素早くスワイプ・弾く
+                    </li>
+
+                    <li>
+                        <strong>ロングノーツ</strong>：
+                        終点まで指を押し続ける
+                    </li>
+
+                    <li>
+                        <strong>スライドノーツ</strong>：
+                        始点を押して終点まで指を移動
+                    </li>
+
                 </ul>
+
                 <br>
-                <p><strong>🎨 クレジット</strong></p>
-                <p>開発・制作：あなたのお名前</p>
-                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
+
+                <p>
+                    <strong>🎨 クレジット</strong>
+                </p>
+
+                <p>
+                    開発・制作：あなたのお名前
+                </p>
+
+                <p>
+                    公式X（旧Twitter）：
+                    <a
+                        href="https://twitter.com/"
+                        target="_blank"
+                        class="x-link"
+                    >
+                        @YourXAccount
+                    </a>
+                </p>
+
             </div>
 
-            <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
+
+            <button
+                class="pause-btn primary"
+                onclick="closeConfigModal()"
+            >
+                とじる
+            </button>
+
         </div>
+
     </div>
 
-    <div id="result-screen" class="screen hidden">
+
+    <!-- ============================= -->
+    <!-- リザルト画面 -->
+    <!-- ============================= -->
+
+    <div
+        id="result-screen"
+        class="screen hidden"
+    >
+
         <div class="result-panel">
-            <div class="rank-badge" id="result-rank">S</div>
-            
-            <div class="result-song-header">
-                <div class="result-jacket-small" id="result-jacket-icon">🌰</div>
-                <div class="result-song-meta">
-                    <div class="result-title-text" id="result-song-title">どんぐりころころ</div>
-                    <div class="result-artist-text" id="result-song-artist">文部省唱歌 / 童謡</div>
-                </div>
+
+            <div
+                class="rank-badge"
+                id="result-rank"
+            >
+                S
             </div>
+
+
+            <div class="result-song-header">
+
+                <div
+                    class="result-jacket-small"
+                    id="result-jacket-icon"
+                >
+                    🌰
+                </div>
+
+                <div class="result-song-meta">
+
+                    <div
+                        class="result-title-text"
+                        id="result-song-title"
+                    >
+                        どんぐりころころ
+                    </div>
+
+                    <div
+                        class="result-artist-text"
+                        id="result-song-artist"
+                    >
+                        文部省唱歌 / 童謡
+                    </div>
+
+                </div>
+
+            </div>
+
 
             <div class="result-score-container">
-                <div style="font-size: 11px; color: #a89f91;" class="en-font">SCORE</div>
-                <div class="result-score-val en-font" id="final-score">0</div>
+
+                <div
+                    style="
+                        font-size: 11px;
+                        color: #a89f91;
+                    "
+                    class="en-font"
+                >
+                    SCORE
+                </div>
+
+                <div
+                    class="result-score-val en-font"
+                    id="final-score"
+                >
+                    0
+                </div>
+
             </div>
+
 
             <div class="judge-stats">
+
                 <div class="judge-row">
-                    <span class="stat-label-kirari">ｷﾗﾘ!</span>
-                    <span class="stat-value" id="count-kirari">0</span>
+                    <span class="stat-label-kirari">
+                        ｷﾗﾘ!
+                    </span>
+                    <span
+                        class="stat-value"
+                        id="count-kirari"
+                    >
+                        0
+                    </span>
                 </div>
+
                 <div class="judge-row">
-                    <span class="stat-label-suteki">ｽﾃｷ!</span>
-                    <span class="stat-value" id="count-suteki">0</span>
+                    <span class="stat-label-suteki">
+                        ｽﾃｷ!
+                    </span>
+                    <span
+                        class="stat-value"
+                        id="count-suteki"
+                    >
+                        0
+                    </span>
                 </div>
+
                 <div class="judge-row">
-                    <span class="stat-label-ii">ｲｲ!</span>
-                    <span class="stat-value" id="count-ii">0</span>
+                    <span class="stat-label-ii">
+                        ｲｲ!
+                    </span>
+                    <span
+                        class="stat-value"
+                        id="count-ii"
+                    >
+                        0
+                    </span>
                 </div>
+
                 <div class="judge-row">
-                    <span class="stat-label-alara">ｱﾗﾗ</span>
-                    <span class="stat-value" id="count-alara">0</span>
+                    <span class="stat-label-alara">
+                        ｱﾗﾗ
+                    </span>
+                    <span
+                        class="stat-value"
+                        id="count-alara"
+                    >
+                        0
+                    </span>
                 </div>
+
             </div>
+
         </div>
+
 
         <div class="result-btn-container">
-            <button class="result-btn sub" onclick="retryFromResult()">もう一度</button>
-            <button class="result-btn" onclick="backToSelect()">曲選択へ</button>
+
+            <button
+                class="result-btn sub"
+                onclick="retryFromResult()"
+            >
+                もう一度
+            </button>
+
+            <button
+                class="result-btn"
+                onclick="backToSelect()"
+            >
+                曲選択へ
+            </button>
+
         </div>
+
     </div>
 
+
+    <!-- ============================= -->
+    <!-- ゲームキャンバス -->
+    <!-- ============================= -->
+
     <canvas id="gameCanvas"></canvas>
+
 </div>
 
+
+<!-- ========================================================= -->
+<!-- ここが重要：sample.jsを外部ファイルとして読み込む -->
+<!-- ========================================================= -->
+
+<script src="assets/songs/sample.js"></script>
+
+
 <script>
+
+'use strict';
+
+
+/* =========================================================
+   Canvas
+========================================================= */
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+
 function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
+
+    canvas.width =
+        canvas.parentElement.clientWidth;
+
+    canvas.height =
+        canvas.parentElement.clientHeight;
 }
-window.addEventListener('resize', resizeCanvas);
+
+
+window.addEventListener(
+    'resize',
+    resizeCanvas
+);
+
 resizeCanvas();
 
-// 女の子のイラスト画像を読み込む設定
+
+/* =========================================================
+   女の子画像
+========================================================= */
+
 const girlImg = new Image();
-girlImg.src = 'girl.png'; // ファイル名が異なる場合はここを変更してください
+
+girlImg.src = 'girl.png';
+
+
+/* =========================================================
+   ゲーム状態
+========================================================= */
 
 let gameState = 'SELECT';
+
 let score = 0;
+
 let audioCtx = null;
+
 let startTime = 0;
-let songDuration = 18.0; 
+
+let songDuration = 18.0;
 
 let pauseStartTime = 0;
+
 let totalPausedTime = 0;
 
-let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
+let noteSpeedMultiplier =
+    parseFloat(
+        localStorage.getItem(
+            'rhythm_game_speed'
+        )
+    ) || 1.0;
+
+
+/* =========================================================
+   実際に曲を再生するAudio
+========================================================= */
+
+let audioElement = new Audio();
+
+audioElement.preload = 'auto';
+
+audioElement.volume = 1.0;
+
+
+/*
+    audioElement.currentTime が、
+    実際のMP3の再生位置になります。
+*/
+
+
+/* =========================================================
+   sample.jsから曲を登録
+========================================================= */
 
 const songs = [
-    { id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0 },
-    { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
-    { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 }
+
+    {
+        id: 'donguri',
+        title: 'どんぐりころころ',
+        artist: '文部省唱歌',
+        jacket: '🌰',
+        duration: 16.0,
+        audioSrc: ''
+    },
+
+    {
+        id: 'easy',
+        title: 'お城のメヌエット',
+        artist: 'Royal Orchestra',
+        jacket: '🏰',
+        duration: 12.0,
+        audioSrc: ''
+    },
+
+    {
+        id: 'normal',
+        title: '星降る森の舞踏会',
+        artist: 'Silky Night',
+        jacket: '✨',
+        duration: 13.0,
+        audioSrc: ''
+    }
+
 ];
+
+
+/*
+    sample.js が読み込まれていたら
+    自動的に曲リストへ追加
+*/
+
+if (
+    window.sample &&
+    window.sample.id
+) {
+
+    songs.push({
+
+        id: window.sample.id,
+
+        title: window.sample.title || 'さんぷる',
+
+        artist: window.sample.artist || '',
+
+        jacket: window.sample.jacket || '🎵',
+
+        duration:
+            Number(window.sample.duration) || 15,
+
+        audioSrc:
+            window.sample.audioSrc || '',
+
+        chart:
+            Array.isArray(window.sample.chart)
+                ? window.sample.chart
+                : []
+
+    });
+
+}
+
+
 let currentSongIndex = 0;
 
-function getSongHighScore(songId) {
-    const saved = localStorage.getItem('rhythm_game_hs_' + songId);
-    return saved ? JSON.parse(saved) : { score: 0, accuracy: 0, rank: '-' };
+
+/* =========================================================
+   現在の曲を取得
+========================================================= */
+
+function getCurrentSong() {
+
+    return songs[currentSongIndex];
+
 }
 
-function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
-    let current = getSongHighScore(songId);
-    if (newAccuracy > current.accuracy || (newAccuracy === current.accuracy && newScore >= current.score)) {
-        const data = { score: newScore, accuracy: newAccuracy, rank: newRank };
-        localStorage.setItem('rhythm_game_hs_' + songId, JSON.stringify(data));
+
+/* =========================================================
+   ハイスコア
+========================================================= */
+
+function getSongHighScore(songId) {
+
+    const saved =
+        localStorage.getItem(
+            'rhythm_game_hs_' + songId
+        );
+
+    return saved
+        ? JSON.parse(saved)
+        : {
+            score: 0,
+            accuracy: 0,
+            rank: '-'
+        };
+
+}
+
+
+function saveSongHighScore(
+    songId,
+    newScore,
+    newAccuracy,
+    newRank
+) {
+
+    let current =
+        getSongHighScore(songId);
+
+    if (
+        newAccuracy > current.accuracy ||
+        (
+            newAccuracy === current.accuracy &&
+            newScore >= current.score
+        )
+    ) {
+
+        const data = {
+
+            score: newScore,
+
+            accuracy: newAccuracy,
+
+            rank: newRank
+
+        };
+
+        localStorage.setItem(
+            'rhythm_game_hs_' + songId,
+            JSON.stringify(data)
+        );
+
         return true;
     }
+
     return false;
+
 }
+
 
 function updateSelectorHighScoreDisplay() {
-    let song = songs[currentSongIndex];
-    let hsData = getSongHighScore(song.id);
-    document.getElementById('selector-highscore').innerText = hsData.score;
-    document.getElementById('selector-rank').innerText = hsData.rank;
+
+    let song =
+        getCurrentSong();
+
+    let hsData =
+        getSongHighScore(song.id);
+
+    document.getElementById(
+        'selector-highscore'
+    ).innerText =
+        hsData.score;
+
+    document.getElementById(
+        'selector-rank'
+    ).innerText =
+        hsData.rank;
+
 }
+
+
+/* =========================================================
+   CONFIG
+========================================================= */
 
 function openConfigModal() {
-    document.getElementById('speed-range').value = noteSpeedMultiplier;
-    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
-    document.getElementById('config-screen').classList.remove('hidden');
+
+    document.getElementById(
+        'speed-range'
+    ).value =
+        noteSpeedMultiplier;
+
+    document.getElementById(
+        'speed-val-text'
+    ).innerText =
+        noteSpeedMultiplier.toFixed(1) +
+        '倍';
+
+    document.getElementById(
+        'config-screen'
+    ).classList.remove('hidden');
+
 }
+
 
 function closeConfigModal() {
-    document.getElementById('config-screen').classList.add('hidden');
+
+    document.getElementById(
+        'config-screen'
+    ).classList.add('hidden');
+
 }
+
 
 function onSpeedChange(val) {
-    noteSpeedMultiplier = parseFloat(val);
-    document.getElementById('speed-val-text').innerText = noteSpeedMultiplier.toFixed(1) + '倍';
-    localStorage.setItem('rhythm_game_speed', noteSpeedMultiplier);
+
+    noteSpeedMultiplier =
+        parseFloat(val);
+
+    document.getElementById(
+        'speed-val-text'
+    ).innerText =
+        noteSpeedMultiplier.toFixed(1) +
+        '倍';
+
+    localStorage.setItem(
+        'rhythm_game_speed',
+        noteSpeedMultiplier
+    );
+
 }
+
+
+/* =========================================================
+   曲選択
+========================================================= */
 
 let dragStartY = 0;
+
 let dragCurrentOffset = 0;
+
 let isDragging = false;
+
 const itemHeight = 75;
 
-let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
 
-const targetRadius = 32; 
-const baseNoteSpeed = 2.8;   
+let judgeCounts = {
 
-function renderSongSelector(animating = false) {
-    const viewport = document.getElementById('song-viewport');
+    kirari: 0,
+
+    suteki: 0,
+
+    ii: 0,
+
+    alara: 0
+
+};
+
+
+const targetRadius = 32;
+
+const baseNoteSpeed = 2.8;
+
+
+/* =========================================================
+   曲選択表示
+========================================================= */
+
+function renderSongSelector(
+    animating = false
+) {
+
+    const viewport =
+        document.getElementById(
+            'song-viewport'
+        );
+
     viewport.innerHTML = '';
 
-    for (let i = -2; i <= 2; i++) {
-        let targetIdx = (currentSongIndex + i + songs.length * 10) % songs.length;
-        let song = songs[targetIdx];
 
-        let card = document.createElement('div');
-        card.className = 'song-card';
-        if (i === 0 && dragCurrentOffset === 0) card.classList.add('selected');
+    for (
+        let i = -2;
+        i <= 2;
+        i++
+    ) {
 
-        let baseY = i * itemHeight;
-        let totalY = baseY + dragCurrentOffset;
-        let normY = totalY / itemHeight; 
-        let scale = Math.max(0.75, 1 - Math.abs(normY) * 0.15);
-        let opacity = Math.max(0.15, 1 - Math.abs(normY) * 0.35);
-        let zIndex = 3 - Math.abs(i);
+        let targetIdx =
+            (
+                currentSongIndex +
+                i +
+                songs.length * 10
+            ) %
+            songs.length;
+
+        let song =
+            songs[targetIdx];
+
+
+        let card =
+            document.createElement('div');
+
+        card.className =
+            'song-card';
+
+
+        if (
+            i === 0 &&
+            dragCurrentOffset === 0
+        ) {
+
+            card.classList.add(
+                'selected'
+            );
+
+        }
+
+
+        let baseY =
+            i * itemHeight;
+
+        let totalY =
+            baseY + dragCurrentOffset;
+
+        let normY =
+            totalY / itemHeight;
+
+        let scale =
+            Math.max(
+                0.75,
+                1 - Math.abs(normY) * 0.15
+            );
+
+        let opacity =
+            Math.max(
+                0.15,
+                1 - Math.abs(normY) * 0.35
+            );
+
+        let zIndex =
+            3 - Math.abs(i);
+
 
         if (animating) {
-            card.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
+
+            card.style.transition =
+                'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
+
         } else {
-            card.style.transition = 'none';
+
+            card.style.transition =
+                'none';
+
         }
 
-        card.style.transform = `translateY(${totalY}px) scale(${scale})`;
-        card.style.opacity = opacity;
-        card.style.zIndex = zIndex;
+
+        card.style.transform =
+            `translateY(${totalY}px) scale(${scale})`;
+
+        card.style.opacity =
+            opacity;
+
+        card.style.zIndex =
+            zIndex;
+
 
         card.innerHTML = `
-            <div class="song-jacket">${song.jacket}</div>
-            <div class="song-info">
-                <div class="song-title">${song.title}</div>
-                <div class="song-artist">${song.artist}</div>
+
+            <div class="song-jacket">
+                ${song.jacket}
             </div>
+
+            <div class="song-info">
+
+                <div class="song-title">
+                    ${song.title}
+                </div>
+
+                <div class="song-artist">
+                    ${song.artist}
+                </div>
+
+            </div>
+
         `;
+
+
         viewport.appendChild(card);
+
     }
+
+
     updateSelectorHighScoreDisplay();
+
 }
 
-const viewportEl = document.getElementById('song-viewport');
-viewportEl.addEventListener('pointerdown', (e) => {
-    if (gameState !== 'SELECT') return;
-    isDragging = true;
-    dragStartY = e.clientY;
-    dragCurrentOffset = 0;
-    renderSongSelector(false);
-    viewportEl.setPointerCapture(e.pointerId);
-});
 
-viewportEl.addEventListener('pointermove', (e) => {
-    if (!isDragging || gameState !== 'SELECT') return;
-    let diffY = e.clientY - dragStartY;
-    dragCurrentOffset = diffY;
-    
-    while (Math.abs(dragCurrentOffset) >= itemHeight) {
-        if (dragCurrentOffset > 0) {
-            currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-            dragStartY += itemHeight;
-            dragCurrentOffset -= itemHeight;
-        } else {
-            currentSongIndex = (currentSongIndex + 1) % songs.length;
-            dragStartY -= itemHeight;
-            dragCurrentOffset += itemHeight;
+const viewportEl =
+    document.getElementById(
+        'song-viewport'
+    );
+
+
+viewportEl.addEventListener(
+    'pointerdown',
+    (e) => {
+
+        if (
+            gameState !== 'SELECT'
+        ) {
+            return;
         }
-        updateSelectorHighScoreDisplay();
+
+        isDragging = true;
+
+        dragStartY =
+            e.clientY;
+
+        dragCurrentOffset = 0;
+
+        renderSongSelector(false);
+
+        viewportEl.setPointerCapture(
+            e.pointerId
+        );
+
     }
-    renderSongSelector(false);
-});
+);
+
+
+viewportEl.addEventListener(
+    'pointermove',
+    (e) => {
+
+        if (
+            !isDragging ||
+            gameState !== 'SELECT'
+        ) {
+            return;
+        }
+
+        let diffY =
+            e.clientY -
+            dragStartY;
+
+        dragCurrentOffset =
+            diffY;
+
+
+        while (
+            Math.abs(
+                dragCurrentOffset
+            ) >= itemHeight
+        ) {
+
+            if (
+                dragCurrentOffset > 0
+            ) {
+
+                currentSongIndex =
+                    (
+                        currentSongIndex -
+                        1 +
+                        songs.length
+                    ) %
+                    songs.length;
+
+                dragStartY +=
+                    itemHeight;
+
+                dragCurrentOffset -=
+                    itemHeight;
+
+            } else {
+
+                currentSongIndex =
+                    (
+                        currentSongIndex +
+                        1
+                    ) %
+                    songs.length;
+
+                dragStartY -=
+                    itemHeight;
+
+                dragCurrentOffset +=
+                    itemHeight;
+
+            }
+
+        }
+
+
+        renderSongSelector(false);
+
+    }
+);
+
 
 function handleDragEnd(e) {
-    if (!isDragging || gameState !== 'SELECT') return;
+
+    if (
+        !isDragging ||
+        gameState !== 'SELECT'
+    ) {
+        return;
+    }
+
     isDragging = false;
-    let snapSteps = Math.round(dragCurrentOffset / itemHeight);
-    currentSongIndex = (currentSongIndex - snapSteps + songs.length * 10) % songs.length;
+
+
+    let snapSteps =
+        Math.round(
+            dragCurrentOffset /
+            itemHeight
+        );
+
+
+    currentSongIndex =
+        (
+            currentSongIndex -
+            snapSteps +
+            songs.length * 10
+        ) %
+        songs.length;
+
+
     dragCurrentOffset = 0;
+
+
     renderSongSelector(true);
-    try { viewportEl.releasePointerCapture(e.pointerId); } catch(err) {}
+
+
+    try {
+
+        viewportEl.releasePointerCapture(
+            e.pointerId
+        );
+
+    } catch (err) {}
+
 }
 
-viewportEl.addEventListener('pointerup', handleDragEnd);
-viewportEl.addEventListener('pointercancel', handleDragEnd);
+
+viewportEl.addEventListener(
+    'pointerup',
+    handleDragEnd
+);
+
+viewportEl.addEventListener(
+    'pointercancel',
+    handleDragEnd
+);
+
 
 renderSongSelector(false);
 
-function getLanePositions() {
-    let positions = [];
-    let centerX = canvas.width / 2;
-    let baseY = canvas.height * 0.62; 
-    let totalWidth = canvas.width * 0.76; 
-    let spacing = totalWidth / 4;
 
-    for (let i = 0; i < 5; i++) {
-        let x = centerX - (totalWidth / 2) + (spacing * i);
-        let offsetY = -Math.pow((i - 2), 2) * 12 + 25; 
-        let y = baseY + offsetY;
-        positions.push({ x: x, y: y });
+/* =========================================================
+   レーン位置
+========================================================= */
+
+function getLanePositions() {
+
+    let positions = [];
+
+    let centerX =
+        canvas.width / 2;
+
+    let baseY =
+        canvas.height * 0.62;
+
+    let totalWidth =
+        canvas.width * 0.76;
+
+    let spacing =
+        totalWidth / 4;
+
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        let x =
+            centerX -
+            (totalWidth / 2) +
+            (spacing * i);
+
+        let offsetY =
+            -Math.pow(
+                i - 2,
+                2
+            ) * 12 + 25;
+
+        let y =
+            baseY + offsetY;
+
+
+        positions.push({
+
+            x: x,
+
+            y: y
+
+        });
+
     }
+
+
     return positions;
+
 }
+
+
+/* =========================================================
+   ノーツ関連
+========================================================= */
 
 let notes = [];
+
 let particles = [];
-let scheduledMelodyNotes = [];
+
 let floatingTexts = [];
 
-function spawnParticles(x, y, color) {
-    for (let i = 0; i < 10; i++) {
-        let angle = Math.random() * Math.PI * 2;
-        let speed = 2 + Math.random() * 4;
+let scheduledMelodyNotes = [];
+
+
+/* =========================================================
+   パーティクル
+========================================================= */
+
+function spawnParticles(
+    x,
+    y,
+    color
+) {
+
+    for (
+        let i = 0;
+        i < 10;
+        i++
+    ) {
+
+        let angle =
+            Math.random() *
+            Math.PI * 2;
+
+        let speed =
+            2 +
+            Math.random() * 4;
+
+
         particles.push({
+
             x: x,
+
             y: y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            radius: 3 + Math.random() * 4,
+
+            vx:
+                Math.cos(angle) *
+                speed,
+
+            vy:
+                Math.sin(angle) *
+                speed,
+
+            radius:
+                3 +
+                Math.random() * 4,
+
             color: color,
+
             alpha: 1.0,
-            decay: 0.04 + Math.random() * 0.04
+
+            decay:
+                0.04 +
+                Math.random() * 0.04
+
         });
+
     }
+
 }
+
+
+/* =========================================================
+   ノート音
+========================================================= */
 
 const NOTE_FREQS = {
-    'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
-    'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
+
+    'C3': 130.81,
+
+    'D3': 146.83,
+
+    'E3': 164.81,
+
+    'F3': 174.61,
+
+    'G3': 196.00,
+
+    'A3': 220.00,
+
+    'B3': 246.94,
+
+    'C4': 261.63,
+
+    'D4': 293.66,
+
+    'E4': 329.63,
+
+    'F4': 349.23,
+
+    'G4': 392.00,
+
+    'A4': 440.00,
+
+    'B4': 493.88,
+
+    'C5': 523.25,
+
+    'D5': 587.33,
+
+    'E5': 659.25,
+
+    'F5': 698.46,
+
+    'G5': 783.99
+
 };
 
-function generateChart(type) {
+
+/* =========================================================
+   譜面生成
+========================================================= */
+
+function generateChart(song) {
+
     notes = [];
+
     particles = [];
-    scheduledMelodyNotes = [];
+
     floatingTexts = [];
-    let chartData = [];
 
-    if (type === 'donguri') {
-        const melodySeq = [
-            { time: 1.0, noteName: 'G4', lane: 2, type: 'tap' },
-            { time: 1.5, noteName: 'E4', lane: 1, type: 'tap' },
-            { time: 2.0, noteName: 'G4', lane: 3, type: 'tap' },
-            { time: 2.5, noteName: 'E4', lane: 1, type: 'tap' },
-            { time: 3.0, noteName: 'C5', lane: 4, type: 'tap' },
-            { time: 3.5, noteName: 'A4', lane: 0, type: 'tap' },
-            { time: 4.0, noteName: 'G4', lane: 2, type: 'tap' },
-            
-            { time: 5.5, noteName: 'C5', lane: 0, type: 'tap' },
-            { time: 5.5, noteName: 'C5', lane: 4, type: 'tap' },
-            { time: 6.2, noteName: 'A4', lane: 1, type: 'tap' },
-            { time: 6.8, noteName: 'G4', lane: 3, type: 'tap' },
-            { time: 7.5, noteName: 'E4', lane: 2, type: 'long', duration: 1.5 },
-            
-            { time: 10.0, noteName: 'G4', lane: 0, type: 'flick' },
-            { time: 10.6, noteName: 'A4', lane: 1, type: 'tap' },
-            { time: 11.2, noteName: 'C5', lane: 2, type: 'tap' },
-            { time: 11.8, noteName: 'D4', lane: 3, type: 'tap' },
-            { time: 12.5, noteName: 'C5', lane: 4, type: 'flick' }
-        ];
+    scheduledMelodyNotes = [];
 
-        chartData = melodySeq;
-        scheduledMelodyNotes = melodySeq.map(m => ({ time: m.time, freq: NOTE_FREQS[m.noteName], played: false }));
-        songDuration = 15.0;
 
-    } else if (type === 'easy') {
-        chartData = [
-            { time: 1.5, lane: 0, type: 'tap' },
-            { time: 3.0, lane: 4, type: 'flick' },
-            { time: 4.5, lane: 1, type: 'tap' },
-            { time: 4.5, lane: 3, type: 'tap' },
-            { time: 7.0, lane: 2, type: 'long', duration: 1.5 },
-            { time: 8.5, lane: 0, type: 'tap' },
-            { time: 8.5, lane: 4, type: 'flick' },
-            { time: 10.0, lane: 2, type: 'tap' }
-        ];
-        songDuration = 12.0;
-    } else {
-        chartData = [
-            { time: 1.0, lane: 0, type: 'flick' },
-            { time: 1.0, lane: 4, type: 'flick' },
-            { time: 2.5, lane: 1, type: 'slidenode', path: [1, 2, 3], pathTime: 1.5, direction: 'right' },
-            { time: 5.0, lane: 3, type: 'slidenode', path: [3, 2, 1], pathTime: 1.5, direction: 'left' },
-            { time: 6.0, lane: 0, type: 'long', duration: 2.0 },
-            { time: 6.0, lane: 4, type: 'long', duration: 2.0 },
-            { time: 9.5, lane: 2, type: 'tap' },
-            { time: 11.0, lane: 1, type: 'flick' },
-            { time: 11.0, lane: 3, type: 'flick' }
-        ];
-        songDuration = 13.0;
+    /*
+        sample.jsの譜面が存在する場合
+    */
+
+    if (
+        song.chart &&
+        Array.isArray(song.chart)
+    ) {
+
+        notes =
+            song.chart.map(
+                (n, index) => {
+
+                    return {
+
+                        id: index,
+
+                        time:
+                            Number(n.time) || 0,
+
+                        lane:
+                            Number(n.lane) || 0,
+
+                        type:
+                            n.type || 'tap',
+
+                        duration:
+                            Number(n.duration) || 0,
+
+                        noteName:
+                            n.noteName || '',
+
+                        path:
+                            Array.isArray(n.path)
+                                ? n.path
+                                : null,
+
+                        direction:
+                            n.direction || 'right',
+
+                        slideDuration:
+                            Number(
+                                n.slideDuration ||
+                                n.pathTime ||
+                                0.5
+                            ),
+
+                        hit: false,
+
+                        holding: false,
+
+                        started: false,
+
+                        assignedTouchId: null,
+
+                        startJudged: false,
+
+                        endJudged: false
+
+                    };
+
+                }
+            );
+
+
+        /*
+            音符名がある譜面だけ
+            簡単な補助音を鳴らす
+        */
+
+        scheduledMelodyNotes =
+            notes
+                .filter(
+                    n =>
+                        n.noteName &&
+                        NOTE_FREQS[n.noteName]
+                )
+                .map(
+                    n => ({
+
+                        time: n.time,
+
+                        freq:
+                            NOTE_FREQS[
+                                n.noteName
+                            ],
+
+                        played: false
+
+                    })
+                );
+
+
+        return;
+
     }
 
-    notes = chartData.map(n => ({
-        ...n,
-        hit: false,       
-        holding: false,   
-        started: false,
-        activePointerId: null,
-        assignedTouchId: null
-    }));
+
+    /*
+        sample.jsがない場合の
+        デフォルト譜面
+    */
+
+    notes = [
+
+        {
+            id: 0,
+            time: 1.0,
+            lane: 2,
+            type: 'tap',
+            duration: 0,
+            hit: false,
+            holding: false,
+            started: false,
+            assignedTouchId: null
+        },
+
+        {
+            id: 1,
+            time: 1.5,
+            lane: 1,
+            type: 'tap',
+            duration: 0,
+            hit: false,
+            holding: false,
+            started: false,
+            assignedTouchId: null
+        },
+
+        {
+            id: 2,
+            time: 2.0,
+            lane: 3,
+            type: 'tap',
+            duration: 0,
+            hit: false,
+            holding: false,
+            started: false,
+            assignedTouchId: null
+        }
+
+    ];
+
 }
 
-let animTimer = 0;
-let activeTouches = new Map();
+
+/* =========================================================
+   タッチ情報
+========================================================= */
+
+let activeTouches =
+    new Map();
+
+
+/* =========================================================
+   曲開始
+========================================================= */
 
 function confirmSelectedSong() {
-    let selectedSong = songs[currentSongIndex];
-    songDuration = selectedSong.duration;
 
-    document.getElementById('select-screen').classList.add('hidden');
-    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
-    document.getElementById('credit-song-title').innerText = selectedSong.title;
-    document.getElementById('credit-song-artist').innerText = selectedSong.artist;
-    document.getElementById('credit-screen').classList.remove('hidden');
-    gameState = 'CREDIT';
+    let selectedSong =
+        getCurrentSong();
+
+
+    /*
+        AudioContextを準備
+    */
 
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        audioCtx =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
     }
 
-    setTimeout(() => {
-        startActualGame(selectedSong);
-    }, 3000);
+
+    /*
+        iPhone / Safari対策
+    */
+
+    if (
+        audioCtx.state === 'suspended'
+    ) {
+
+        audioCtx.resume();
+
+    }
+
+
+    /*
+        曲情報をクレジット画面へ
+    */
+
+    document.getElementById(
+        'select-screen'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'credit-jacket-icon'
+    ).innerText =
+        selectedSong.jacket;
+
+
+    document.getElementById(
+        'credit-song-title'
+    ).innerText =
+        selectedSong.title;
+
+
+    document.getElementById(
+        'credit-song-artist'
+    ).innerText =
+        selectedSong.artist;
+
+
+    document.getElementById(
+        'credit-screen'
+    ).classList.remove('hidden');
+
+
+    gameState =
+        'CREDIT';
+
+
+    /*
+        ここで音源をセット
+    */
+
+    if (
+        selectedSong.audioSrc
+    ) {
+
+        audioElement.pause();
+
+        audioElement.currentTime = 0;
+
+        audioElement.src =
+            selectedSong.audioSrc;
+
+        audioElement.load();
+
+    }
+
+
+    /*
+        READY表示3秒
+    */
+
+    setTimeout(
+        () => {
+
+            startActualGame(
+                selectedSong
+            );
+
+        },
+        3000
+    );
+
 }
 
-function startActualGame(song) {
-    document.getElementById('credit-screen').classList.add('hidden');
-    document.getElementById('menu-btn').classList.remove('hidden');
-    
+
+/* =========================================================
+   実際のゲーム開始
+========================================================= */
+
+async function startActualGame(song) {
+
+    document.getElementById(
+        'credit-screen'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'result-screen'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'pause-screen'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'menu-btn'
+    ).classList.remove('hidden');
+
+
     score = 0;
+
     totalPausedTime = 0;
+
+    pauseStartTime = 0;
+
     activeTouches.clear();
-    judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
+
+    judgeCounts = {
+
+        kirari: 0,
+
+        suteki: 0,
+
+        ii: 0,
+
+        alara: 0
+
+    };
+
+
     scoreBoardUpdate();
-    
-    generateChart(song.id);
-    startTime = audioCtx.currentTime;
-    gameState = 'PLAYING';
+
+
+    /*
+        譜面生成
+    */
+
+    generateChart(song);
+
+
+    /*
+        曲の長さ
+    */
+
+    songDuration =
+        Number(song.duration) ||
+        15;
+
+
+    /*
+        音源がある曲
+    */
+
+    if (
+        song.audioSrc
+    ) {
+
+        try {
+
+            audioElement.pause();
+
+            audioElement.currentTime = 0;
+
+            audioElement.src =
+                song.audioSrc;
+
+            /*
+                iPhone等でAudioContextが止まっていた場合
+            */
+
+            if (
+                audioCtx &&
+                audioCtx.state === 'suspended'
+            ) {
+
+                await audioCtx.resume();
+
+            }
+
+
+            /*
+                MP3再生開始
+            */
+
+            await audioElement.play();
+
+
+            /*
+                実際の音源の時間を
+                ゲーム時間として使用する
+            */
+
+            startTime =
+                audioElement.currentTime;
+
+
+        } catch (error) {
+
+            console.error(
+                '音源再生エラー:',
+                error
+            );
+
+            /*
+                再生できない場合は
+                AudioContext時間を使用
+            */
+
+            startTime =
+                audioCtx
+                    ? audioCtx.currentTime
+                    : 0;
+
+        }
+
+    } else {
+
+        /*
+            音源なしの曲
+        */
+
+        startTime =
+            audioCtx
+                ? audioCtx.currentTime
+                : 0;
+
+    }
+
+
+    gameState =
+        'PLAYING';
+
 }
+
+
+/* =========================================================
+   現在の曲時間
+========================================================= */
+
+function getCurrentGameTime() {
+
+    /*
+        MP3が存在する曲
+    */
+
+    if (
+        getCurrentSong().audioSrc
+    ) {
+
+        return audioElement.currentTime;
+
+    }
+
+
+    /*
+        音源なし
+    */
+
+    if (!audioCtx) {
+        return 0;
+    }
+
+
+    return (
+        audioCtx.currentTime -
+        startTime -
+        totalPausedTime
+    );
+
+}
+
+
+/* =========================================================
+   PAUSE
+========================================================= */
 
 function openPauseMenu() {
-    if (gameState !== 'PLAYING') return;
-    gameState = 'PAUSE';
-    pauseStartTime = audioCtx.currentTime;
-    document.getElementById('pause-screen').classList.remove('hidden');
+
+    if (
+        gameState !== 'PLAYING'
+    ) {
+        return;
+    }
+
+
+    gameState =
+        'PAUSE';
+
+
+    pauseStartTime =
+        audioCtx
+            ? audioCtx.currentTime
+            : 0;
+
+
+    /*
+        MP3を止める
+    */
+
+    if (
+        getCurrentSong().audioSrc
+    ) {
+
+        audioElement.pause();
+
+    }
+
+
+    document.getElementById(
+        'pause-screen'
+    ).classList.remove('hidden');
+
 }
 
-function resumeGame() {
-    document.getElementById('pause-screen').classList.add('hidden');
-    totalPausedTime += (audioCtx.currentTime - pauseStartTime);
-    gameState = 'PLAYING';
+
+/* =========================================================
+   再開
+========================================================= */
+
+async function resumeGame() {
+
+    document.getElementById(
+        'pause-screen'
+    ).classList.add('hidden');
+
+
+    if (
+        getCurrentSong().audioSrc
+    ) {
+
+        try {
+
+            await audioElement.play();
+
+        } catch (error) {
+
+            console.error(
+                '再開エラー:',
+                error
+            );
+
+        }
+
+    } else {
+
+        if (
+            audioCtx &&
+            audioCtx.state === 'suspended'
+        ) {
+
+            await audioCtx.resume();
+
+        }
+
+        if (audioCtx) {
+
+            totalPausedTime +=
+                audioCtx.currentTime -
+                pauseStartTime;
+
+        }
+
+    }
+
+
+    gameState =
+        'PLAYING';
+
 }
+
+
+/* =========================================================
+   やりなおし
+========================================================= */
 
 function retryGame() {
-    document.getElementById('pause-screen').classList.add('hidden');
-    startActualGame(songs[currentSongIndex]);
+
+    document.getElementById(
+        'pause-screen'
+    ).classList.add('hidden');
+
+
+    audioElement.pause();
+
+    audioElement.currentTime = 0;
+
+
+    startActualGame(
+        getCurrentSong()
+    );
+
 }
+
+
+/* =========================================================
+   ポーズから曲選択
+========================================================= */
 
 function returnToSelectFromPause() {
-    document.getElementById('pause-screen').classList.add('hidden');
-    document.getElementById('menu-btn').classList.add('hidden');
-    document.getElementById('select-screen').classList.remove('hidden');
-    gameState = 'SELECT';
+
+    audioElement.pause();
+
+    audioElement.currentTime = 0;
+
+
+    document.getElementById(
+        'pause-screen'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'menu-btn'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'select-screen'
+    ).classList.remove('hidden');
+
+
+    gameState =
+        'SELECT';
+
+
     renderSongSelector(false);
+
 }
+
+
+/* =========================================================
+   リザルト
+========================================================= */
 
 function finishGame() {
-    gameState = 'RESULT';
-    document.getElementById('menu-btn').classList.add('hidden');
-    
-    let currentSong = songs[currentSongIndex];
-    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
-    document.getElementById('result-song-title').innerText = currentSong.title;
-    document.getElementById('result-song-artist').innerText = currentSong.artist;
 
-    document.getElementById('final-score').innerText = score;
-    document.getElementById('count-kirari').innerText = judgeCounts.kirari;
-    document.getElementById('count-suteki').innerText = judgeCounts.suteki;
-    document.getElementById('count-ii').innerText = judgeCounts.ii;
-    document.getElementById('count-alara').innerText = judgeCounts.alara;
+    if (
+        gameState === 'RESULT'
+    ) {
+        return;
+    }
 
-    let totalNotes = judgeCounts.kirari + judgeCounts.suteki + judgeCounts.ii + judgeCounts.alara;
-    let accuracyPercent = totalNotes > 0 ? (judgeCounts.kirari / totalNotes) * 100 : 0;
+
+    gameState =
+        'RESULT';
+
+
+    audioElement.pause();
+
+
+    document.getElementById(
+        'menu-btn'
+    ).classList.add('hidden');
+
+
+    let currentSong =
+        getCurrentSong();
+
+
+    document.getElementById(
+        'result-jacket-icon'
+    ).innerText =
+        currentSong.jacket;
+
+
+    document.getElementById(
+        'result-song-title'
+    ).innerText =
+        currentSong.title;
+
+
+    document.getElementById(
+        'result-song-artist'
+    ).innerText =
+        currentSong.artist;
+
+
+    document.getElementById(
+        'final-score'
+    ).innerText =
+        score;
+
+
+    document.getElementById(
+        'count-kirari'
+    ).innerText =
+        judgeCounts.kirari;
+
+
+    document.getElementById(
+        'count-suteki'
+    ).innerText =
+        judgeCounts.suteki;
+
+
+    document.getElementById(
+        'count-ii'
+    ).innerText =
+        judgeCounts.ii;
+
+
+    document.getElementById(
+        'count-alara'
+    ).innerText =
+        judgeCounts.alara;
+
+
+    let totalNotes =
+        judgeCounts.kirari +
+        judgeCounts.suteki +
+        judgeCounts.ii +
+        judgeCounts.alara;
+
+
+    let accuracyPercent =
+        totalNotes > 0
+            ? (
+                judgeCounts.kirari /
+                totalNotes
+            ) * 100
+            : 0;
+
 
     let rank = 'D';
-    if (judgeCounts.suteki === 0 && judgeCounts.ii === 0 && judgeCounts.alara === 0 && totalNotes > 0) {
+
+
+    if (
+        judgeCounts.suteki === 0 &&
+        judgeCounts.ii === 0 &&
+        judgeCounts.alara === 0 &&
+        totalNotes > 0
+    ) {
+
         rank = 'SSS';
-    } else if (judgeCounts.ii === 0 && judgeCounts.alara === 0 && accuracyPercent >= 90) {
+
+    } else if (
+        judgeCounts.ii === 0 &&
+        judgeCounts.alara === 0 &&
+        accuracyPercent >= 90
+    ) {
+
         rank = 'SS';
-    } else if (accuracyPercent >= 80) {
+
+    } else if (
+        accuracyPercent >= 80
+    ) {
+
         rank = 'S';
-    } else if (accuracyPercent >= 60) {
+
+    } else if (
+        accuracyPercent >= 60
+    ) {
+
         rank = 'A';
-    } else if (accuracyPercent >= 40) {
+
+    } else if (
+        accuracyPercent >= 40
+    ) {
+
         rank = 'B';
-    } else if (accuracyPercent >= 20) {
+
+    } else if (
+        accuracyPercent >= 20
+    ) {
+
         rank = 'C';
+
     }
 
-    document.getElementById('result-rank').innerText = rank;
-    saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
 
-    const resultScreen = document.getElementById('result-screen');
-    resultScreen.classList.remove('hidden');
-    resultScreen.style.animation = 'none';
-    resultScreen.offsetHeight; 
-    resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
+    document.getElementById(
+        'result-rank'
+    ).innerText =
+        rank;
+
+
+    saveSongHighScore(
+        currentSong.id,
+        score,
+        accuracyPercent,
+        rank
+    );
+
+
+    const resultScreen =
+        document.getElementById(
+            'result-screen'
+        );
+
+
+    resultScreen.classList.remove(
+        'hidden'
+    );
+
+
+    resultScreen.style.animation =
+        'none';
+
+    resultScreen.offsetHeight;
+
+    resultScreen.style.animation =
+        'screenFadeIn 0.4s ease-out forwards';
+
 }
+
+
+/* =========================================================
+   リザルトから再プレイ
+========================================================= */
 
 function retryFromResult() {
-    document.getElementById('result-screen').classList.add('hidden');
-    startActualGame(songs[currentSongIndex]);
+
+    document.getElementById(
+        'result-screen'
+    ).classList.add('hidden');
+
+
+    startActualGame(
+        getCurrentSong()
+    );
+
 }
+
+
+/* =========================================================
+   曲選択へ
+========================================================= */
 
 function backToSelect() {
-    document.getElementById('result-screen').classList.add('hidden');
-    document.getElementById('select-screen').classList.remove('hidden');
-    gameState = 'SELECT';
+
+    audioElement.pause();
+
+    audioElement.currentTime = 0;
+
+
+    document.getElementById(
+        'result-screen'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'select-screen'
+    ).classList.remove('hidden');
+
+
+    gameState =
+        'SELECT';
+
+
     renderSongSelector(false);
+
 }
+
+
+/* =========================================================
+   スコア表示
+========================================================= */
 
 function scoreBoardUpdate() {
-    document.getElementById('score-num').innerText = score;
+
+    document.getElementById(
+        'score-num'
+    ).innerText =
+        score;
+
 }
 
-canvas.addEventListener('pointerdown', (e) => {
-    if(gameState !== 'PLAYING') return;
 
-    const rect = canvas.getBoundingClientRect();
-    const touchX = e.clientX - rect.left;
-    const touchY = e.clientY - rect.top;
+/* =========================================================
+   ノーツ判定
+========================================================= */
 
-    let touchInfo = {
-        id: e.pointerId,
-        startX: touchX,
-        startY: touchY,
-        currentX: touchX,
-        currentY: touchY,
-        assignedNote: null
-    };
-    activeTouches.set(e.pointerId, touchInfo);
-    canvas.setPointerCapture(e.pointerId);
+canvas.addEventListener(
+    'pointerdown',
+    (e) => {
 
-    let lanes = getLanePositions();
-    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
+        if (
+            gameState !== 'PLAYING'
+        ) {
+            return;
+        }
 
-    for (let i = 0; i < lanes.length; i++) {
-        let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
-        if (distance < targetRadius * 2.2) {
-            for (let note of notes) {
-                if (!note.hit && !note.started) {
-                    if (note.lane === i) {
-                        let diff = Math.abs(currentTime - note.time);
-                        if (diff < 0.4) {
-                            if (note.type === 'tap') {
-                                note.hit = true;
-                                judgeAction(diff, lanes[i].x, lanes[i].y);
-                                spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
-                                playHitSound();
-                                break;
-                            } else if (note.type === 'long') {
-                                note.started = true;
-                                note.holding = true;
-                                note.assignedTouchId = e.pointerId;
-                                touchInfo.assignedNote = note;
-                                score += 100;
-                                scoreBoardUpdate();
-                                spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
-                                playHitSound();
-                                break;
-                            } else if (note.type === 'slidenode') {
-                                note.started = true;
-                                note.holding = true;
-                                note.assignedTouchId = e.pointerId;
-                                touchInfo.assignedNote = note;
-                                spawnParticles(lanes[i].x, lanes[i].y, '#e056fd');
-                                playHitSound();
-                                break;
-                            }
-                        }
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+
+        const touchX =
+            e.clientX -
+            rect.left;
+
+
+        const touchY =
+            e.clientY -
+            rect.top;
+
+
+        let touchInfo = {
+
+            id:
+                e.pointerId,
+
+            startX:
+                touchX,
+
+            startY:
+                touchY,
+
+            currentX:
+                touchX,
+
+            currentY:
+                touchY,
+
+            assignedNote:
+                null
+
+        };
+
+
+        activeTouches.set(
+            e.pointerId,
+            touchInfo
+        );
+
+
+        canvas.setPointerCapture(
+            e.pointerId
+        );
+
+
+        let lanes =
+            getLanePositions();
+
+
+        let currentTime =
+            getCurrentGameTime();
+
+
+        /*
+            5レーンを確認
+        */
+
+        for (
+            let i = 0;
+            i < lanes.length;
+            i++
+        ) {
+
+            let distance =
+                Math.hypot(
+                    touchX -
+                    lanes[i].x,
+
+                    touchY -
+                    lanes[i].y
+                );
+
+
+            if (
+                distance <
+                targetRadius * 2.2
+            ) {
+
+                /*
+                    一番近い未処理ノーツ
+                */
+
+                for (
+                    let note of notes
+                ) {
+
+                    if (
+                        note.hit ||
+                        note.started
+                    ) {
+                        continue;
                     }
+
+
+                    /*
+                        通常ノーツ
+                    */
+
+                    if (
+                        note.lane !== i
+                    ) {
+                        continue;
+                    }
+
+
+                    let diff =
+                        Math.abs(
+                            currentTime -
+                            note.time
+                        );
+
+
+                    if (
+                        diff >= 0.4
+                    ) {
+                        continue;
+                    }
+
+
+                    /*
+                        TAP
+                    */
+
+                    if (
+                        note.type === 'tap'
+                    ) {
+
+                        note.hit = true;
+
+
+                        judgeAction(
+                            diff,
+                            lanes[i].x,
+                            lanes[i].y
+                        );
+
+
+                        spawnParticles(
+                            lanes[i].x,
+                            lanes[i].y,
+                            '#1abc9c'
+                        );
+
+
+                        playHitSound();
+
+
+                        break;
+
+                    }
+
+
+                    /*
+                        LONG
+                    */
+
+                    else if (
+                        note.type === 'long'
+                    ) {
+
+                        note.started =
+                            true;
+
+                        note.holding =
+                            true;
+
+                        note.assignedTouchId =
+                            e.pointerId;
+
+                        note.startJudged =
+                            true;
+
+
+                        touchInfo.assignedNote =
+                            note;
+
+
+                        /*
+                            ロング始点判定
+                        */
+
+                        judgeLongStart(
+                            diff,
+                            lanes[i].x,
+                            lanes[i].y
+                        );
+
+
+                        spawnParticles(
+                            lanes[i].x,
+                            lanes[i].y,
+                            '#f39c12'
+                        );
+
+
+                        playHitSound();
+
+
+                        break;
+
+                    }
+
+
+                    /*
+                        SLIDE
+                    */
+
+                    else if (
+                        note.type === 'slidenode'
+                    ) {
+
+                        note.started =
+                            true;
+
+                        note.holding =
+                            true;
+
+                        note.assignedTouchId =
+                            e.pointerId;
+
+                        note.startJudged =
+                            true;
+
+
+                        touchInfo.assignedNote =
+                            note;
+
+
+                        judgeLongStart(
+                            diff,
+                            lanes[i].x,
+                            lanes[i].y
+                        );
+
+
+                        spawnParticles(
+                            lanes[i].x,
+                            lanes[i].y,
+                            '#e056fd'
+                        );
+
+
+                        playHitSound();
+
+
+                        break;
+
+                    }
+
                 }
+
             }
+
         }
+
     }
-});
+);
 
-canvas.addEventListener('pointermove', (e) => {
-    if (!activeTouches.has(e.pointerId)) return;
-    const rect = canvas.getBoundingClientRect();
-    const touchX = e.clientX - rect.left;
-    const touchY = e.clientY - rect.top;
 
-    let touchInfo = activeTouches.get(e.pointerId);
-    touchInfo.currentX = touchX;
-    touchInfo.currentY = touchY;
+/* =========================================================
+   Pointer Move
+========================================================= */
 
-    if (touchInfo.assignedNote && touchInfo.assignedNote.holding) {
-        let note = touchInfo.assignedNote;
-        if (note.type === 'slidenode') {
-            let lanes = getLanePositions();
-            let endLaneIdx = note.path[note.path.length - 1];
-            let targetLanePos = lanes[endLaneIdx];
+canvas.addEventListener(
+    'pointermove',
+    (e) => {
 
-            if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
-                note.hit = true;
-                note.holding = false;
-                touchInfo.assignedNote = null;
-                score += 300;
-                scoreBoardUpdate();
-                judgeCounts.kirari++;
-                showFloatingText("ｷﾗﾘ!", "#f1c40f", targetLanePos.x, targetLanePos.y - 40);
-                spawnParticles(targetLanePos.x, targetLanePos.y, '#e056fd');
-                playHitSound();
+        if (
+            !activeTouches.has(
+                e.pointerId
+            )
+        ) {
+            return;
+        }
+
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+
+        const touchX =
+            e.clientX -
+            rect.left;
+
+
+        const touchY =
+            e.clientY -
+            rect.top;
+
+
+        let touchInfo =
+            activeTouches.get(
+                e.pointerId
+            );
+
+
+        touchInfo.currentX =
+            touchX;
+
+        touchInfo.currentY =
+            touchY;
+
+
+        if (
+            !touchInfo.assignedNote
+        ) {
+            return;
+        }
+
+
+        let note =
+            touchInfo.assignedNote;
+
+
+        if (
+            !note.holding
+        ) {
+            return;
+        }
+
+
+        /*
+            SLIDE判定
+        */
+
+        if (
+            note.type ===
+            'slidenode'
+        ) {
+
+            let lanes =
+                getLanePositions();
+
+
+            let path =
+                note.path || [
+                    note.lane
+                ];
+
+
+            let endLaneIdx =
+                path[
+                    path.length - 1
+                ];
+
+
+            let targetLanePos =
+                lanes[endLaneIdx];
+
+
+            let distance =
+                Math.hypot(
+                    touchX -
+                    targetLanePos.x,
+
+                    touchY -
+                    targetLanePos.y
+                );
+
+
+            /*
+                終点付近に来たら
+                すぐに成功扱い
+            */
+
+            if (
+                distance <
+                targetRadius * 2.5
+            ) {
+
+                let currentTime =
+                    getCurrentGameTime();
+
+
+                let slideEndTime =
+                    note.time +
+                    note.slideDuration;
+
+
+                /*
+                    時間的にも終点付近
+                */
+
+                if (
+                    currentTime >=
+                    slideEndTime -
+                    0.45
+                ) {
+
+                    note.hit =
+                        true;
+
+                    note.holding =
+                        false;
+
+                    touchInfo.assignedNote =
+                        null;
+
+
+                    score += 300;
+
+
+                    judgeCounts.kirari++;
+
+
+                    showFloatingText(
+                        "ｷﾗﾘ!",
+                        "#f1c40f",
+                        targetLanePos.x,
+                        targetLanePos.y - 40
+                    );
+
+
+                    spawnParticles(
+                        targetLanePos.x,
+                        targetLanePos.y,
+                        '#e056fd'
+                    );
+
+
+                    playHitSound();
+
+
+                    scoreBoardUpdate();
+
+                }
+
             }
-        }
-    }
-});
 
-canvas.addEventListener('pointerup', (e) => { handleTouchEndOrCancel(e); });
-canvas.addEventListener('pointercancel', (e) => { handleTouchEndOrCancel(e); });
+        }
+
+    }
+);
+
+
+/* =========================================================
+   Pointer Up
+========================================================= */
+
+canvas.addEventListener(
+    'pointerup',
+    (e) => {
+
+        handleTouchEndOrCancel(e);
+
+    }
+);
+
+
+canvas.addEventListener(
+    'pointercancel',
+    (e) => {
+
+        handleTouchEndOrCancel(e);
+
+    }
+);
+
+
+/* =========================================================
+   タッチ終了処理
+========================================================= */
 
 function handleTouchEndOrCancel(e) {
-    if (!activeTouches.has(e.pointerId)) return;
-    let touchInfo = activeTouches.get(e.pointerId);
-    let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
-    let lanes = getLanePositions();
 
-    if (touchInfo.assignedNote) {
-        let note = touchInfo.assignedNote;
-        if (note.type === 'long' && note.holding) {
-            let endTime = note.time + note.duration;
-            let diff = Math.abs(currentTime - endTime);
-            let lanePos = lanes[note.lane];
-            
-            if (diff < 0.45) {
-                if (diff < 0.12) {
-                    score += 400;
-                    judgeCounts.kirari++;
-                    showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
-                } else if (diff < 0.28) {
-                    score += 250;
-                    judgeCounts.suteki++;
-                    showFloatingText("ｽﾃｷ!", "#e67e22", lanePos.x, lanePos.y - 40);
-                } else {
-                    score += 150;
-                    judgeCounts.ii++;
-                    showFloatingText("ｲｲ!", "#3498db", lanePos.x, lanePos.y - 40);
-                }
-            } else {
+    if (
+        !activeTouches.has(
+            e.pointerId
+        )
+    ) {
+        return;
+    }
+
+
+    let touchInfo =
+        activeTouches.get(
+            e.pointerId
+        );
+
+
+    let currentTime =
+        getCurrentGameTime();
+
+
+    let lanes =
+        getLanePositions();
+
+
+    /*
+        ロング・スライド
+    */
+
+    if (
+        touchInfo.assignedNote
+    ) {
+
+        let note =
+            touchInfo.assignedNote;
+
+
+        /*
+            LONG
+        */
+
+        if (
+            note.type === 'long' &&
+            note.holding
+        ) {
+
+            let endTime =
+                note.time +
+                note.duration;
+
+
+            let diff =
+                Math.abs(
+                    currentTime -
+                    endTime
+                );
+
+
+            let lanePos =
+                lanes[note.lane];
+
+
+            /*
+                早すぎる離し方
+            */
+
+            if (
+                currentTime <
+                endTime -
+                0.45
+            ) {
+
                 score += 50;
+
                 judgeCounts.alara++;
-                showFloatingText("ｱﾗﾗ", "#95a5a6", lanePos.x, lanePos.y - 40);
+
+
+                showFloatingText(
+                    "ｱﾗﾗ",
+                    "#95a5a6",
+                    lanePos.x,
+                    lanePos.y - 40
+                );
+
             }
-            note.hit = true;
-            note.holding = false;
-            spawnParticles(lanePos.x, lanePos.y, '#f39c12');
-            playHitSound();
-            scoreBoardUpdate();
-        } else if (note.type === 'slidenode' && note.holding) {
-            let endLaneIdx = note.path[note.path.length - 1];
-            let targetLanePos = lanes[endLaneIdx];
-            if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
-                note.hit = true;
-                score += 200;
+
+            /*
+                正常な終点
+            */
+
+            else if (
+                diff < 0.12
+            ) {
+
+                score += 400;
+
+                judgeCounts.kirari++;
+
+
+                showFloatingText(
+                    "ｷﾗﾘ!",
+                    "#f1c40f",
+                    lanePos.x,
+                    lanePos.y - 40
+                );
+
+            }
+
+            else if (
+                diff < 0.28
+            ) {
+
+                score += 250;
+
                 judgeCounts.suteki++;
-                showFloatingText("ｽﾃｷ!", "#e67e22", targetLanePos.x, targetLanePos.y - 40);
-                spawnParticles(targetLanePos.x, targetLanePos.y, '#e056fd');
-            } else {
-                note.hit = true;
+
+
+                showFloatingText(
+                    "ｽﾃｷ!",
+                    "#e67e22",
+                    lanePos.x,
+                    lanePos.y - 40
+                );
+
+            }
+
+            else if (
+                diff < 0.45
+            ) {
+
+                score += 150;
+
+                judgeCounts.ii++;
+
+
+                showFloatingText(
+                    "ｲｲ!",
+                    "#3498db",
+                    lanePos.x,
+                    lanePos.y - 40
+                );
+
+            }
+
+            else {
+
+                score += 50;
+
                 judgeCounts.alara++;
-                showFloatingText("ｱﾗﾗ", "#95a5a6", targetLanePos.x, targetLanePos.y - 40);
+
+
+                showFloatingText(
+                    "ｱﾗﾗ",
+                    "#95a5a6",
+                    lanePos.x,
+                    lanePos.y - 40
+                );
+
             }
+
+
+            note.hit =
+                true;
+
+            note.holding =
+                false;
+
+
+            spawnParticles(
+                lanePos.x,
+                lanePos.y,
+                '#f39c12'
+            );
+
+
+            playHitSound();
+
+
             scoreBoardUpdate();
+
         }
-    } else {
-        for (let note of notes) {
-            if (!note.hit && note.type === 'flick') {
-                let diff = Math.abs(currentTime - note.time);
-                if (diff < 0.4) {
-                    let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
-                    if (dist > 15) {
-                        note.hit = true;
-                        score += 350;
-                        judgeCounts.kirari++;
-                        let lanePos = lanes[note.lane];
-                        showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
-                        spawnParticles(lanePos.x, lanePos.y, '#9b59b6');
-                        playHitSound();
-                        break;
-                    }
-                }
+
+
+        /*
+            SLIDE
+        */
+
+        else if (
+            note.type === 'slidenode' &&
+            note.holding
+        ) {
+
+            let path =
+                note.path || [
+                    note.lane
+                ];
+
+
+            let endLaneIdx =
+                path[
+                    path.length - 1
+                ];
+
+
+            let targetLanePos =
+                lanes[endLaneIdx];
+
+
+            let distance =
+                Math.hypot(
+                    touchInfo.currentX -
+                    targetLanePos.x,
+
+                    touchInfo.currentY -
+                    targetLanePos.y
+                );
+
+
+            let slideEndTime =
+                note.time +
+                note.slideDuration;
+
+
+            let timeDiff =
+                Math.abs(
+                    currentTime -
+                    slideEndTime
+                );
+
+
+            if (
+                distance <
+                targetRadius * 2.5 &&
+                timeDiff <
+                0.45
+            ) {
+
+                note.hit =
+                    true;
+
+                note.holding =
+                    false;
+
+
+                score += 300;
+
+                judgeCounts.kirari++;
+
+
+                showFloatingText(
+                    "ｷﾗﾘ!",
+                    "#f1c40f",
+                    targetLanePos.x,
+                    targetLanePos.y - 40
+                );
+
+
+                spawnParticles(
+                    targetLanePos.x,
+                    targetLanePos.y,
+                    '#e056fd'
+                );
+
+
+                playHitSound();
+
+            } else {
+
+                note.hit =
+                    true;
+
+                note.holding =
+                    false;
+
+
+                judgeCounts.alara++;
+
+
+                showFloatingText(
+                    "ｱﾗﾗ",
+                    "#95a5a6",
+                    targetLanePos.x,
+                    targetLanePos.y - 40
+                );
+
             }
+
+
+            scoreBoardUpdate();
+
         }
+
     }
 
-    try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
-    activeTouches.delete(e.pointerId);
+
+    /*
+        フリック
+    */
+
+    else {
+
+        for (
+            let note of notes
+        ) {
+
+            if (
+                note.hit
+            ) {
+                continue;
+            }
+
+
+            if (
+                note.type !== 'flick'
+            ) {
+                continue;
+            }
+
+
+            let diff =
+                Math.abs(
+                    currentTime -
+                    note.time
+                );
+
+
+            if (
+                diff >= 0.4
+            ) {
+                continue;
+            }
+
+
+            let dist =
+                Math.hypot(
+                    touchInfo.currentX -
+                    touchInfo.startX,
+
+                    touchInfo.currentY -
+                    touchInfo.startY
+                );
+
+
+            if (
+                dist > 15
+            ) {
+
+                note.hit =
+                    true;
+
+
+                score += 350;
+
+                judgeCounts.kirari++;
+
+
+                let lanePos =
+                    lanes[note.lane];
+
+
+                showFloatingText(
+                    "ｷﾗﾘ!",
+                    "#f1c40f",
+                    lanePos.x,
+                    lanePos.y - 40
+                );
+
+
+                spawnParticles(
+                    lanePos.x,
+                    lanePos.y,
+                    '#9b59b6'
+                );
+
+
+                playHitSound();
+
+
+                scoreBoardUpdate();
+
+
+                break;
+
+            }
+
+        }
+
+    }
+
+
+    try {
+
+        canvas.releasePointerCapture(
+            e.pointerId
+        );
+
+    } catch (err) {}
+
+
+    activeTouches.delete(
+        e.pointerId
+    );
+
 }
 
-function judgeAction(diff, x, y) {
-    if (diff < 0.09) {
+
+/* =========================================================
+   通常ノーツ判定
+========================================================= */
+
+function judgeAction(
+    diff,
+    x,
+    y
+) {
+
+    if (
+        diff < 0.09
+    ) {
+
         score += 300;
+
         judgeCounts.kirari++;
-        showFloatingText("ｷﾗﾘ!", "#f1c40f", x, y - 40);
-    } else if (diff < 0.22) {
-        score += 200;
-        judgeCounts.suteki++;
-        showFloatingText("ｽﾃｷ!", "#e67e22", x, y - 40);
-    } else {
-        score += 100;
-        judgeCounts.ii++;
-        showFloatingText("ｲｲ!", "#3498db", x, y - 40);
+
+
+        showFloatingText(
+            "ｷﾗﾘ!",
+            "#f1c40f",
+            x,
+            y - 40
+        );
+
     }
+
+    else if (
+        diff < 0.22
+    ) {
+
+        score += 200;
+
+        judgeCounts.suteki++;
+
+
+        showFloatingText(
+            "ｽﾃｷ!",
+            "#e67e22",
+            x,
+            y - 40
+        );
+
+    }
+
+    else {
+
+        score += 100;
+
+        judgeCounts.ii++;
+
+
+        showFloatingText(
+            "ｲｲ!",
+            "#3498db",
+            x,
+            y - 40
+        );
+
+    }
+
+
     scoreBoardUpdate();
+
 }
 
-window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+/* =========================================================
+   ロング・スライド始点判定
+========================================================= */
+
+function judgeLongStart(
+    diff,
+    x,
+    y
+) {
+
+    if (
+        diff < 0.09
+    ) {
+
+        score += 150;
+
+        judgeCounts.kirari++;
+
+
+        showFloatingText(
+            "ｷﾗﾘ!",
+            "#f1c40f",
+            x,
+            y - 40
+        );
+
+    }
+
+    else if (
+        diff < 0.22
+    ) {
+
+        score += 100;
+
+        judgeCounts.suteki++;
+
+
+        showFloatingText(
+            "ｽﾃｷ!",
+            "#e67e22",
+            x,
+            y - 40
+        );
+
+    }
+
+    else {
+
+        score += 50;
+
+        judgeCounts.ii++;
+
+
+        showFloatingText(
+            "ｲｲ!",
+            "#3498db",
+            x,
+            y - 40
+        );
+
+    }
+
+
+    scoreBoardUpdate();
+
+}
+
+
+/* =========================================================
+   右クリック禁止
+========================================================= */
+
+window.addEventListener(
+    'contextmenu',
+    (e) => {
+        e.preventDefault();
+    }
+);
+
+
+/* =========================================================
+   補助音
+========================================================= */
 
 function playMelodyTone(freq) {
-    if (!audioCtx) return;
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+    if (
+        !audioCtx ||
+        !freq
+    ) {
+        return;
+    }
+
+
+    let osc =
+        audioCtx.createOscillator();
+
+
+    let gain =
+        audioCtx.createGain();
+
+
+    osc.type =
+        'triangle';
+
+
+    osc.frequency.setValueAtTime(
+        freq,
+        audioCtx.currentTime
+    );
+
+
+    gain.gain.setValueAtTime(
+        0.04,
+        audioCtx.currentTime
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + 0.2
+    );
+
+
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+
+    gain.connect(
+        audioCtx.destination
+    );
+
+
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.35);
+
+    osc.stop(
+        audioCtx.currentTime + 0.2
+    );
+
 }
+
+
+/* =========================================================
+   判定音
+========================================================= */
 
 function playHitSound() {
-    if (!audioCtx) return;
-    let osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+    if (!audioCtx) {
+        return;
+    }
+
+
+    let osc =
+        audioCtx.createOscillator();
+
+
+    let gain =
+        audioCtx.createGain();
+
+
+    osc.type =
+        'sine';
+
+
+    osc.frequency.setValueAtTime(
+        587.33,
+        audioCtx.currentTime
+    );
+
+
+    gain.gain.setValueAtTime(
+        0.08,
+        audioCtx.currentTime
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioCtx.currentTime + 0.1
+    );
+
+
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+
+    gain.connect(
+        audioCtx.destination
+    );
+
+
     osc.start();
-    osc.stop(audioCtx.currentTime + 0.1);
+
+    osc.stop(
+        audioCtx.currentTime + 0.1
+    );
+
 }
 
-function showFloatingText(text, color, x, y) {
+
+/* =========================================================
+   判定文字
+========================================================= */
+
+function showFloatingText(
+    text,
+    color,
+    x,
+    y
+) {
+
     floatingTexts.push({
+
         text: text,
+
         color: color,
+
         x: x,
+
         y: y,
+
         timer: 25,
+
         maxTime: 25
+
     });
+
 }
+
+
+/* =========================================================
+   ゲームループ
+========================================================= */
+
+let animTimer = 0;
+
 
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
     animTimer += 0.05;
 
-    let centerX = canvas.width / 2;
-    let girlY = canvas.height * 0.3 - 70; 
-    let lanes = getLanePositions();
 
-    let spawnOffsetY = 75;
+    let centerX =
+        canvas.width / 2;
 
-    if (gameState === 'PLAYING') {
-        let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
-        let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
 
-        if (songs[currentSongIndex].id === 'donguri') {
-            for (let m of scheduledMelodyNotes) {
-                if (!m.played && currentTime >= m.time) {
-                    playMelodyTone(m.freq);
-                    m.played = true;
-                }
+    let girlY =
+        canvas.height * 0.3 -
+        70;
+
+
+    let lanes =
+        getLanePositions();
+
+
+    let spawnOffsetY =
+        75;
+
+
+    if (
+        gameState === 'PLAYING'
+    ) {
+
+        let currentTime =
+            getCurrentGameTime();
+
+
+        let effectiveNoteSpeed =
+            baseNoteSpeed *
+            noteSpeedMultiplier;
+
+
+        /*
+            sample.jsの音符に合わせて
+            補助音を鳴らす
+        */
+
+        for (
+            let m of scheduledMelodyNotes
+        ) {
+
+            if (
+                !m.played &&
+                currentTime >= m.time
+            ) {
+
+                playMelodyTone(
+                    m.freq
+                );
+
+                m.played =
+                    true;
+
             }
+
         }
 
-        if (currentTime >= songDuration) {
+
+        /*
+            MP3が終了したらリザルト
+        */
+
+        if (
+            currentTime >=
+            songDuration
+        ) {
+
             finishGame();
+
         }
 
-        let girlFloatY = Math.sin(animTimer * 2) * 4;
-        
-        // --- 描いた女の子のイラストを描画 ---
-        let girlWidth = 110;  // 女の子の幅
-        let girlHeight = 110; // 女の子の高さ
-        if (girlImg.complete && girlImg.naturalWidth !== 0) {
+
+        /*
+            女の子
+        */
+
+        let girlFloatY =
+            Math.sin(
+                animTimer * 2
+            ) * 4;
+
+
+        let girlWidth = 110;
+
+        let girlHeight = 110;
+
+
+        if (
+            girlImg.complete &&
+            girlImg.naturalWidth !== 0
+        ) {
+
             ctx.drawImage(
-                girlImg, 
-                centerX - girlWidth / 2, 
-                girlY + girlFloatY - girlHeight / 2 + 15, 
-                girlWidth, 
+
+                girlImg,
+
+                centerX -
+                girlWidth / 2,
+
+                girlY +
+                girlFloatY -
+                girlHeight / 2 +
+                15,
+
+                girlWidth,
+
                 girlHeight
+
             );
+
         } else {
-            // 画像が読み込まれていない場合の仮表示
-            ctx.fillStyle = "#f5d0c5";
+
+            ctx.fillStyle =
+                "#f5d0c5";
+
+
             ctx.beginPath();
-            ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
+
+
+            ctx.arc(
+                centerX,
+                girlY +
+                girlFloatY +
+                15,
+                45,
+                0,
+                Math.PI * 2
+            );
+
+
             ctx.fill();
+
         }
 
-        for (let i = 0; i < lanes.length; i++) {
-            let x = lanes[i].x;
-            let y = lanes[i].y;
-            let currentRadius = targetRadius;
 
-            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-            ctx.strokeStyle = "#d4c5b9";
+        /*
+            判定ライン
+        */
+
+        for (
+            let i = 0;
+            i < lanes.length;
+            i++
+        ) {
+
+            let x =
+                lanes[i].x;
+
+            let y =
+                lanes[i].y;
+
+
+            let currentRadius =
+                targetRadius;
+
+
+            ctx.fillStyle =
+                "rgba(255, 255, 255, 0.9)";
+
+
+            ctx.strokeStyle =
+                "#d4c5b9";
+
+
             ctx.lineWidth = 3;
+
+
             ctx.beginPath();
-            ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
+
+
+            ctx.arc(
+                x,
+                y,
+                currentRadius,
+                0,
+                Math.PI * 2
+            );
+
+
             ctx.fill();
+
             ctx.stroke();
 
-            ctx.strokeStyle = "#e8dfd1";
+
+            ctx.strokeStyle =
+                "#e8dfd1";
+
+
             ctx.lineWidth = 2;
+
+
             ctx.beginPath();
-            ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
+
+
+            ctx.arc(
+                x,
+                y,
+                currentRadius * 0.55,
+                0,
+                Math.PI * 2
+            );
+
+
             ctx.stroke();
+
         }
 
-        for (let note of notes) {
-            if (note.hit) continue;
 
-            if (note.type === 'flick') {
-                let target = lanes[note.lane];
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let progress = (currentTime - (note.time - travelTime)) / travelTime;
-                if (progress >= 0 && progress <= 1.2) {
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
-                    let x = startSpawnX + (target.x - startSpawnX) * progress;
-                    let y = startSpawnY + (target.y - startSpawnY) * progress;
+        /*
+            ノーツ
+        */
 
-                    ctx.fillStyle = "#9b59b6";
-                    ctx.strokeStyle = "#ffffff";
+        for (
+            let note of notes
+        ) {
+
+            if (
+                note.hit
+            ) {
+                continue;
+            }
+
+
+            /* =================================================
+               FLICK
+            ================================================= */
+
+            if (
+                note.type === 'flick'
+            ) {
+
+                let target =
+                    lanes[note.lane];
+
+
+                let travelTime =
+                    baseNoteSpeed /
+                    effectiveNoteSpeed;
+
+
+                let progress =
+                    (
+                        currentTime -
+                        (
+                            note.time -
+                            travelTime
+                        )
+                    ) /
+                    travelTime;
+
+
+                if (
+                    progress >= 0 &&
+                    progress <= 1.2
+                ) {
+
+                    let startSpawnX =
+                        centerX;
+
+                    let startSpawnY =
+                        girlY +
+                        spawnOffsetY;
+
+
+                    let x =
+                        startSpawnX +
+                        (
+                            target.x -
+                            startSpawnX
+                        ) *
+                        progress;
+
+
+                    let y =
+                        startSpawnY +
+                        (
+                            target.y -
+                            startSpawnY
+                        ) *
+                        progress;
+
+
+                    ctx.fillStyle =
+                        "#9b59b6";
+
+
+                    ctx.strokeStyle =
+                        "#ffffff";
+
+
                     ctx.lineWidth = 3;
+
+
                     ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
+
+
+                    ctx.arc(
+                        x,
+                        y,
+                        16,
+                        0,
+                        Math.PI * 2
+                    );
+
+
                     ctx.fill();
+
                     ctx.stroke();
 
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText("◆", x, y);
+
+                    ctx.fillStyle =
+                        "#ffffff";
+
+
+                    ctx.font =
+                        "bold 13px sans-serif";
+
+
+                    ctx.textAlign =
+                        "center";
+
+
+                    ctx.textBaseline =
+                        "middle";
+
+
+                    ctx.fillText(
+                        "◆",
+                        x,
+                        y
+                    );
+
                 }
-                if (progress > 1.2 && !note.hit) {
-                    note.hit = true;
+
+
+                if (
+                    progress > 1.2 &&
+                    !note.hit
+                ) {
+
+                    note.hit =
+                        true;
+
+
                     judgeCounts.alara++;
-                    showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+
+
+                    showFloatingText(
+                        "ｱﾗﾗ",
+                        "#95a5a6",
+                        target.x,
+                        target.y - 40
+                    );
+
                 }
+
             }
-            else if (note.type === 'slidenode') {
-                let path = note.path;
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let progress = (currentTime - (note.time - travelTime)) / travelTime;
-                if (progress >= 0 && progress <= 1.5) {
-                    let startPos = lanes[path[0]];
-                    let endPos = lanes[path[path.length - 1]];
 
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
 
-                    let startX = startSpawnX + (startPos.x - startSpawnX) * progress;
-                    let startY = startSpawnY + (startPos.y - startSpawnY) * progress;
-                    let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
-                    let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
+            /* =================================================
+               SLIDE
+            ================================================= */
 
-                    let curveSign = (note.direction === 'left') ? -1 : 1;
-                    let midX = (startX + endX) / 2;
-                    let midY = (startY + endY) / 2 - (15 * curveSign);
-                    let controlX = midX;
-                    let controlY = midY + 45 * progress;
+            else if (
+                note.type ===
+                'slidenode'
+            ) {
 
-                    ctx.strokeStyle = "rgba(224, 86, 253, 0.9)";
+                let path =
+                    note.path || [
+                        note.lane
+                    ];
+
+
+                let travelTime =
+                    baseNoteSpeed /
+                    effectiveNoteSpeed;
+
+
+                let progress =
+                    (
+                        currentTime -
+                        (
+                            note.time -
+                            travelTime
+                        )
+                    ) /
+                    travelTime;
+
+
+                if (
+                    progress >= 0 &&
+                    progress <= 1.5
+                ) {
+
+                    let startPos =
+                        lanes[path[0]];
+
+
+                    let endPos =
+                        lanes[
+                            path[
+                                path.length - 1
+                            ]
+                        ];
+
+
+                    let startSpawnX =
+                        centerX;
+
+
+                    let startSpawnY =
+                        girlY +
+                        spawnOffsetY;
+
+
+                    let startX =
+                        startSpawnX +
+                        (
+                            startPos.x -
+                            startSpawnX
+                        ) *
+                        progress;
+
+
+                    let startY =
+                        startSpawnY +
+                        (
+                            startPos.y -
+                            startSpawnY
+                        ) *
+                        progress;
+
+
+                    let endX =
+                        startSpawnX +
+                        (
+                            endPos.x -
+                            startSpawnX
+                        ) *
+                        progress;
+
+
+                    let endY =
+                        startSpawnY +
+                        (
+                            endPos.y -
+                            startSpawnY
+                        ) *
+                        progress;
+
+
+                    let curveSign =
+                        (
+                            note.direction ===
+                            'left'
+                        )
+                            ? -1
+                            : 1;
+
+
+                    let midX =
+                        (
+                            startX +
+                            endX
+                        ) / 2;
+
+
+                    let midY =
+                        (
+                            startY +
+                            endY
+                        ) / 2 -
+                        (
+                            15 *
+                            curveSign
+                        );
+
+
+                    let controlX =
+                        midX;
+
+
+                    let controlY =
+                        midY +
+                        45 *
+                        progress;
+
+
+                    ctx.strokeStyle =
+                        "rgba(224, 86, 253, 0.9)";
+
+
                     ctx.lineWidth = 14;
-                    ctx.lineCap = "round";
+
+                    ctx.lineCap =
+                        "round";
+
+
                     ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+
+
+                    ctx.moveTo(
+                        startX,
+                        startY
+                    );
+
+
+                    ctx.quadraticCurveTo(
+
+                        controlX,
+                        controlY,
+
+                        endX,
+                        endY
+
+                    );
+
+
                     ctx.stroke();
 
-                    ctx.fillStyle = "#e056fd";
-                    ctx.strokeStyle = "#fff";
+
+                    /*
+                        終点
+                    */
+
+                    ctx.fillStyle =
+                        "#e056fd";
+
+
+                    ctx.strokeStyle =
+                        "#fff";
+
+
                     ctx.lineWidth = 3;
+
+
                     ctx.beginPath();
-                    ctx.arc(endX, endY, 15, 0, Math.PI * 2);
+
+
+                    ctx.arc(
+                        endX,
+                        endY,
+                        15,
+                        0,
+                        Math.PI * 2
+                    );
+
+
                     ctx.fill();
+
                     ctx.stroke();
 
-                    ctx.fillStyle = "#e056fd";
-                    ctx.strokeStyle = "#fff";
+
+                    /*
+                        始点
+                    */
+
+                    ctx.fillStyle =
+                        "#e056fd";
+
+
+                    ctx.strokeStyle =
+                        "#fff";
+
+
                     ctx.lineWidth = 3;
+
+
                     ctx.beginPath();
-                    ctx.arc(startX, startY, 16, 0, Math.PI * 2);
+
+
+                    ctx.arc(
+                        startX,
+                        startY,
+                        16,
+                        0,
+                        Math.PI * 2
+                    );
+
+
                     ctx.fill();
+
                     ctx.stroke();
 
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    let arrowText = (note.direction === 'right') ? "▶︎" : "◀︎";
-                    ctx.fillText(arrowText, startX, startY - 1);
+
+                    /*
+                        矢印
+                    */
+
+                    ctx.fillStyle =
+                        "#ffffff";
+
+
+                    ctx.font =
+                        "bold 13px sans-serif";
+
+
+                    ctx.textAlign =
+                        "center";
+
+
+                    ctx.textBaseline =
+                        "middle";
+
+
+                    let arrowText =
+                        (
+                            note.direction ===
+                            'right'
+                        )
+                            ? "▶︎"
+                            : "◀︎";
+
+
+                    ctx.fillText(
+                        arrowText,
+                        startX,
+                        startY - 1
+                    );
+
                 }
-                if (progress > 1.5 && !note.hit) {
-                    note.hit = true;
+
+
+                if (
+                    progress > 1.5 &&
+                    !note.hit
+                ) {
+
+                    note.hit =
+                        true;
+
+
                     judgeCounts.alara++;
-                    let endPos = lanes[path[path.length - 1]];
-                    showFloatingText("ｱﾗﾗ", "#95a5a6", endPos.x, endPos.y - 40);
+
+
+                    let endPos =
+                        lanes[
+                            path[
+                                path.length - 1
+                            ]
+                        ];
+
+
+                    showFloatingText(
+                        "ｱﾗﾗ",
+                        "#95a5a6",
+                        endPos.x,
+                        endPos.y - 40
+                    );
+
                 }
+
             }
-            else if (note.type === 'long') {
-                let target = lanes[note.lane];
-                let endTime = note.time + note.duration;
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let headProg = (currentTime - (note.time - travelTime)) / travelTime;
-                let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
 
-                if (headProg >= 0 && tailProg <= 1.2) {
-                    let headX, headY, tailX, tailY;
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
 
-                    if (headProg >= 1.0 || note.started) {
-                        headX = target.x;
-                        headY = target.y;
+            /* =================================================
+               LONG
+            ================================================= */
+
+            else if (
+                note.type === 'long'
+            ) {
+
+                let target =
+                    lanes[note.lane];
+
+
+                let endTime =
+                    note.time +
+                    note.duration;
+
+
+                let travelTime =
+                    baseNoteSpeed /
+                    effectiveNoteSpeed;
+
+
+                let headProg =
+                    (
+                        currentTime -
+                        (
+                            note.time -
+                            travelTime
+                        )
+                    ) /
+                    travelTime;
+
+
+                let tailProg =
+                    (
+                        currentTime -
+                        (
+                            endTime -
+                            travelTime
+                        )
+                    ) /
+                    travelTime;
+
+
+                if (
+                    headProg >= 0 &&
+                    tailProg <= 1.2
+                ) {
+
+                    let headX;
+
+                    let headY;
+
+                    let tailX;
+
+                    let tailY;
+
+
+                    let startSpawnX =
+                        centerX;
+
+
+                    let startSpawnY =
+                        girlY +
+                        spawnOffsetY;
+
+
+                    /*
+                        頭
+                    */
+
+                    if (
+                        headProg >= 1.0 ||
+                        note.started
+                    ) {
+
+                        headX =
+                            target.x;
+
+                        headY =
+                            target.y;
+
                     } else {
-                        let pHead = Math.max(0, headProg);
-                        headX = startSpawnX + (target.x - startSpawnX) * pHead;
-                        headY = startSpawnY + (target.y - startSpawnY) * pHead;
+
+                        let pHead =
+                            Math.max(
+                                0,
+                                headProg
+                            );
+
+
+                        headX =
+                            startSpawnX +
+                            (
+                                target.x -
+                                startSpawnX
+                            ) *
+                            pHead;
+
+
+                        headY =
+                            startSpawnY +
+                            (
+                                target.y -
+                                startSpawnY
+                            ) *
+                            pHead;
+
                     }
 
-                    if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
-                        tailX = target.x;
-                        tailY = target.y;
+
+                    /*
+                        尻尾
+                    */
+
+                    if (
+                        tailProg >= 1.0 ||
+                        (
+                            note.started &&
+                            currentTime >=
+                            endTime
+                        )
+                    ) {
+
+                        tailX =
+                            target.x;
+
+                        tailY =
+                            target.y;
+
                     } else {
-                        let pTail = Math.max(0, tailProg);
-                        tailX = startSpawnX + (target.x - startSpawnX) * pTail;
-                        tailY = startSpawnY + (target.y - startSpawnY) * pTail;
+
+                        let pTail =
+                            Math.max(
+                                0,
+                                tailProg
+                            );
+
+
+                        tailX =
+                            startSpawnX +
+                            (
+                                target.x -
+                                startSpawnX
+                            ) *
+                            pTail;
+
+
+                        tailY =
+                            startSpawnY +
+                            (
+                                target.y -
+                                startSpawnY
+                            ) *
+                            pTail;
+
                     }
 
-                    if (headProg >= 0) {
-                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
+
+                    /*
+                        ロング本体
+                    */
+
+                    if (
+                        headProg >= 0
+                    ) {
+
+                        ctx.strokeStyle =
+                            "rgba(243, 156, 18, 0.65)";
+
+
                         ctx.lineWidth = 12;
-                        ctx.lineCap = "round";
+
+
+                        ctx.lineCap =
+                            "round";
+
+
                         ctx.beginPath();
-                        ctx.moveTo(tailX, tailY);
-                        ctx.lineTo(headX, headY);
+
+
+                        ctx.moveTo(
+                            tailX,
+                            tailY
+                        );
+
+
+                        ctx.lineTo(
+                            headX,
+                            headY
+                        );
+
+
                         ctx.stroke();
+
                     }
 
-                    if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
-                        ctx.fillStyle = "#f39c12";
-                        ctx.strokeStyle = "#ffffff";
+
+                    /*
+                        尻尾
+                    */
+
+                    if (
+                        tailProg >= 0 &&
+                        tailProg <= 1.0 &&
+                        currentTime <
+                        endTime
+                    ) {
+
+                        ctx.fillStyle =
+                            "#f39c12";
+
+
+                        ctx.strokeStyle =
+                            "#ffffff";
+
+
                         ctx.lineWidth = 3;
+
+
                         ctx.beginPath();
-                        ctx.arc(tailX, tailY, 15, 0, Math.PI * 2);
+
+
+                        ctx.arc(
+                            tailX,
+                            tailY,
+                            15,
+                            0,
+                            Math.PI * 2
+                        );
+
+
                         ctx.fill();
+
                         ctx.stroke();
+
                     }
 
-                    if (!note.holding && headProg <= 1.2) {
-                        ctx.fillStyle = "#f39c12";
-                        ctx.strokeStyle = "#ffffff";
+
+                    /*
+                        頭
+                    */
+
+                    if (
+                        !note.holding &&
+                        headProg <= 1.2
+                    ) {
+
+                        ctx.fillStyle =
+                            "#f39c12";
+
+
+                        ctx.strokeStyle =
+                            "#ffffff";
+
+
                         ctx.lineWidth = 3;
+
+
                         ctx.beginPath();
-                        ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+
+
+                        ctx.arc(
+                            headX,
+                            headY,
+                            16,
+                            0,
+                            Math.PI * 2
+                        );
+
+
                         ctx.fill();
+
                         ctx.stroke();
-                    } else if (note.holding) {
-                        if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
-                        
-                        if (currentTime >= endTime + 0.35 && !note.hit) {
-                            note.hit = true;
-                            note.holding = false;
-                            judgeCounts.alara++;
-                            showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+
+                    }
+
+
+                    /*
+                        押している最中
+                    */
+
+                    else if (
+                        note.holding
+                    ) {
+
+                        /*
+                            少量の持続スコア
+                        */
+
+                        if (
+                            Math.random() <
+                            0.15
+                        ) {
+
+                            score += 1;
+
+                            scoreBoardUpdate();
+
                         }
+
+
+                        /*
+                            終点を大きく超えたら
+                            自動Miss
+                        */
+
+                        if (
+                            currentTime >=
+                            endTime + 0.45 &&
+                            !note.hit
+                        ) {
+
+                            note.hit =
+                                true;
+
+                            note.holding =
+                                false;
+
+
+                            judgeCounts.alara++;
+
+
+                            showFloatingText(
+                                "ｱﾗﾗ",
+                                "#95a5a6",
+                                target.x,
+                                target.y - 40
+                            );
+
+                        }
+
                     }
+
                 }
+
             }
+
+
+            /* =================================================
+               TAP
+            ================================================= */
+
             else {
-                let target = lanes[note.lane];
-                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-                let progress = (currentTime - (note.time - travelTime)) / travelTime;
-                if (progress >= 0 && progress <= 1.2) {
-                    let startSpawnX = centerX;
-                    let startSpawnY = girlY + spawnOffsetY;
-                    let x = startSpawnX + (target.x - startSpawnX) * progress;
-                    let y = startSpawnY + (target.y - startSpawnY) * progress;
+
+                let target =
+                    lanes[note.lane];
+
+
+                let travelTime =
+                    baseNoteSpeed /
+                    effectiveNoteSpeed;
+
+
+                let progress =
+                    (
+                        currentTime -
+                        (
+                            note.time -
+                            travelTime
+                        )
+                    ) /
+                    travelTime;
+
+
+                if (
+                    progress >= 0 &&
+                    progress <= 1.2
+                ) {
+
+                    let startSpawnX =
+                        centerX;
+
+
+                    let startSpawnY =
+                        girlY +
+                        spawnOffsetY;
+
+
+                    let x =
+                        startSpawnX +
+                        (
+                            target.x -
+                            startSpawnX
+                        ) *
+                        progress;
+
+
+                    let y =
+                        startSpawnY +
+                        (
+                            target.y -
+                            startSpawnY
+                        ) *
+                        progress;
+
+
                     ctx.lineWidth = 3;
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.fillStyle = "#1abc9c";
+
+                    ctx.strokeStyle =
+                        "#ffffff";
+
+
+                    ctx.fillStyle =
+                        "#1abc9c";
+
+
                     ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
+
+
+                    ctx.arc(
+                        x,
+                        y,
+                        16,
+                        0,
+                        Math.PI * 2
+                    );
+
+
                     ctx.fill();
+
                     ctx.stroke();
+
                 }
-                if (progress > 1.2 && !note.hit) {
-                    note.hit = true;
+
+
+                /*
+                    Miss
+                */
+
+                if (
+                    progress > 1.2 &&
+                    !note.hit
+                ) {
+
+                    note.hit =
+                        true;
+
+
                     judgeCounts.alara++;
-                    showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+
+
+                    showFloatingText(
+                        "ｱﾗﾗ",
+                        "#95a5a6",
+                        target.x,
+                        target.y - 40
+                    );
+
                 }
+
             }
+
         }
+
     }
 
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.decay;
 
-        if (p.alpha <= 0) {
-            particles.splice(i, 1);
+    /* =====================================================
+       パーティクル
+    ===================================================== */
+
+    for (
+        let i =
+            particles.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        let p =
+            particles[i];
+
+
+        p.x +=
+            p.vx;
+
+        p.y +=
+            p.vy;
+
+        p.alpha -=
+            p.decay;
+
+
+        if (
+            p.alpha <= 0
+        ) {
+
+            particles.splice(
+                i,
+                1
+            );
+
             continue;
+
         }
 
+
         ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
+
+
+        ctx.globalAlpha =
+            p.alpha;
+
+
+        ctx.fillStyle =
+            p.color;
+
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.radius,
+            0,
+            Math.PI * 2
+        );
+
+
         ctx.fill();
+
+
         ctx.restore();
+
     }
 
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        let ft = floatingTexts[i];
+
+    /* =====================================================
+       判定文字
+    ===================================================== */
+
+    for (
+        let i =
+            floatingTexts.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        let ft =
+            floatingTexts[i];
+
+
         ft.timer--;
-        let progressRate = 1 - (ft.timer / ft.maxTime);
-        let floatY = -Math.sin(progressRate * Math.PI) * 25;
-        let alpha = ft.timer < 8 ? (ft.timer / 8) : 1.0;
-        let scale = progressRate < 0.2 ? (0.8 + progressRate * 1.0) : 1.0;
+
+
+        let progressRate =
+            1 -
+            (
+                ft.timer /
+                ft.maxTime
+            );
+
+
+        let floatY =
+            -Math.sin(
+                progressRate *
+                Math.PI
+            ) *
+            25;
+
+
+        let alpha =
+            ft.timer < 8
+                ? ft.timer / 8
+                : 1.0;
+
+
+        let scale =
+            progressRate < 0.2
+                ? (
+                    0.8 +
+                    progressRate
+                )
+                : 1.0;
+
 
         ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.translate(ft.x, ft.y + floatY);
-        ctx.scale(scale, scale);
 
-        ctx.fillStyle = ft.color;
-        ctx.font = "bold 22px 'RocknRoll One', sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+
+        ctx.globalAlpha =
+            alpha;
+
+
+        ctx.translate(
+            ft.x,
+            ft.y + floatY
+        );
+
+
+        ctx.scale(
+            scale,
+            scale
+        );
+
+
+        ctx.fillStyle =
+            ft.color;
+
+
+        ctx.font =
+            "bold 22px 'RocknRoll One', sans-serif";
+
+
+        ctx.textAlign =
+            "center";
+
+
+        ctx.textBaseline =
+            "middle";
+
+
         ctx.lineWidth = 4;
-        ctx.strokeStyle = "#ffffff";
-        ctx.strokeText(ft.text, 0, 0);
-        ctx.fillText(ft.text, 0, 0);
+
+
+        ctx.strokeStyle =
+            "#ffffff";
+
+
+        ctx.strokeText(
+            ft.text,
+            0,
+            0
+        );
+
+
+        ctx.fillText(
+            ft.text,
+            0,
+            0
+        );
+
+
         ctx.restore();
 
-        if (ft.timer <= 0) {
-            floatingTexts.splice(i, 1);
+
+        if (
+            ft.timer <= 0
+        ) {
+
+            floatingTexts.splice(
+                i,
+                1
+            );
+
         }
+
     }
 
-    requestAnimationFrame(gameLoop);
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
 }
 
+
+/* =========================================================
+   ゲーム開始
+========================================================= */
+
 gameLoop();
+
+
+/* =========================================================
+   デバッグ用
+========================================================= */
+
+console.log(
+    '絵本風リズムゲーム起動'
+);
+
+console.log(
+    '登録曲数:',
+    songs.length
+);
+
+if (
+    window.sample
+) {
+
+    console.log(
+        'sample.js読み込み成功:',
+        window.sample
+    );
+
+} else {
+
+    console.warn(
+        'sample.jsが見つかりません'
+    );
+
+}
+
 </script>
 
 </body>
