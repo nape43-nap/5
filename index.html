@@ -1128,7 +1128,7 @@ canvas.addEventListener('pointerdown', (e) => {
                                 note.holding = true;
                                 note.activePointerId = e.pointerId;
                                 activeTouches.get(e.pointerId).assignedNote = note;
-                                spawnParticles(lanes[i].x, lanes[i].y, '#f1c40f');
+                                spawnParticles(lanes[i].x, lanes[i].y, '#e056fd');
                                 playHitSound();
                             }
                             break;
@@ -1165,7 +1165,7 @@ canvas.addEventListener('pointermove', (e) => {
                 scoreBoardUpdate();
                 judgeCounts.kirari++;
                 showFeedback("ｷﾗﾘ!", "#f1c40f");
-                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#e056fd');
                 playHitSound();
             }
         }
@@ -1208,7 +1208,7 @@ function handleTouchEndOrCancel(e) {
                 score += 200;
                 judgeCounts.suteki++;
                 showFeedback("ｽﾃｷ!", "#e67e22");
-                spawnParticles(targetLanePos.x, targetLanePos.y, '#f1c40f');
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#e056fd');
             } else {
                 note.hit = true;
                 judgeCounts.alara++;
@@ -1403,16 +1403,14 @@ function gameLoop() {
                     let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
                     let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
 
-                    // 判定ラインの形（下に向かってアーチ＝谷型）に沿うように制御点の高さを調整
-                    // progressが進むにつれて（奥から手前へ）、下方向（+方向）に膨らむようにプラスのオフセットに修正
                     let curveSign = (note.direction === 'left') ? -1 : 1;
                     let midX = (startX + endX) / 2;
                     let midY = (startY + endY) / 2 - (15 * curveSign);
                     let controlX = midX;
                     let controlY = midY + 45 * progress;
 
-                    // 黄色い帯（カーブ）の描画
-                    ctx.strokeStyle = "rgba(241, 196, 15, 0.85)";
+                    // スライドノーツの帯の色を濃いめのピンクに変更 (#e056fd)
+                    ctx.strokeStyle = "rgba(224, 86, 253, 0.9)";
                     ctx.lineWidth = 14;
                     ctx.lineCap = "round";
                     ctx.beginPath();
@@ -1420,8 +1418,8 @@ function gameLoop() {
                     ctx.quadraticCurveTo(controlX, controlY, endX, endY);
                     ctx.stroke();
 
-                    // 終点の丸を描画
-                    ctx.fillStyle = "#f1c40f";
+                    // 終点の丸 (濃いピンク)
+                    ctx.fillStyle = "#e056fd";
                     ctx.strokeStyle = "#fff";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -1429,8 +1427,8 @@ function gameLoop() {
                     ctx.fill();
                     ctx.stroke();
 
-                    // 始点の丸を描画
-                    ctx.fillStyle = "#f1c40f";
+                    // 始点の丸 (濃いピンク)
+                    ctx.fillStyle = "#e056fd";
                     ctx.strokeStyle = "#fff";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -1438,9 +1436,9 @@ function gameLoop() {
                     ctx.fill();
                     ctx.stroke();
 
-                    // 始点に左右の矢印を表示
+                    // 始点の矢印 (ハッキリ見やすいように白太字)
                     ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 12px sans-serif";
+                    ctx.font = "bold 13px sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     let arrowText = (note.direction === 'right') ? "▶︎" : "◀︎";
