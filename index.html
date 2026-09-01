@@ -2741,12 +2741,24 @@ async function confirmSelectedSong() {
         selectedSong;
 
 
+    /*
+        -----------------------------------------------------
+        選択画面を閉じる
+        -----------------------------------------------------
+    */
+
     document.getElementById(
         "select-screen"
     ).classList.add(
         "hidden"
     );
 
+
+    /*
+        -----------------------------------------------------
+        クレジット画面
+        -----------------------------------------------------
+    */
 
     document.getElementById(
         "credit-song-title"
@@ -2763,7 +2775,7 @@ async function confirmSelectedSong() {
 
 
     /*
-        絵文字 / 画像
+        ジャケット
     */
 
     const creditJacket =
@@ -2814,6 +2826,12 @@ async function confirmSelectedSong() {
     }
 
 
+    /*
+        -----------------------------------------------------
+        READY画面表示
+        -----------------------------------------------------
+    */
+
     document.getElementById(
         "credit-screen"
     ).classList.remove(
@@ -2826,7 +2844,14 @@ async function confirmSelectedSong() {
 
 
     /*
+        -----------------------------------------------------
         AudioContext準備
+        -----------------------------------------------------
+        
+        AudioContextはここでは
+        ゲーム時計として使用しません。
+        
+        ブラウザの音声再生準備だけ行います。
     */
 
     if (
@@ -2846,12 +2871,26 @@ async function confirmSelectedSong() {
         "suspended"
     ) {
 
-        await audioCtx.resume();
+        try {
+
+            await audioCtx.resume();
+
+        } catch (
+            error
+        ) {
+
+            console.warn(
+                "AudioContext resume失敗:",
+                error
+            );
+        }
     }
 
 
     /*
+        -----------------------------------------------------
         READY 3秒
+        -----------------------------------------------------
     */
 
     setTimeout(
@@ -2885,17 +2924,32 @@ async function startActualGame(
 
 
     /*
+        -----------------------------------------------------
         前の音源停止
+        -----------------------------------------------------
     */
 
     if (
         musicAudio
     ) {
 
-        musicAudio.pause();
+        try {
 
-        musicAudio.currentTime =
-            0;
+            musicAudio.pause();
+
+            musicAudio.currentTime =
+                0;
+
+        } catch (
+            error
+        ) {
+
+            console.warn(
+                "前の音源停止エラー:",
+                error
+            );
+        }
+
 
         musicAudio =
             null;
@@ -2903,7 +2957,9 @@ async function startActualGame(
 
 
     /*
+        -----------------------------------------------------
         譜面読み込み
+        -----------------------------------------------------
     */
 
     let externalData =
@@ -2951,8 +3007,9 @@ async function startActualGame(
 
 
     /*
-        chart.jsのデータを
-        currentSongにも反映
+        -----------------------------------------------------
+        chart.jsのデータをcurrentSongへ反映
+        -----------------------------------------------------
     */
 
     if (
@@ -3020,7 +3077,9 @@ async function startActualGame(
 
 
     /*
+        -----------------------------------------------------
         MP3
+        -----------------------------------------------------
     */
 
     musicAudio =
@@ -3050,7 +3109,9 @@ async function startActualGame(
 
 
     /*
+        -----------------------------------------------------
         ゲーム初期化
+        -----------------------------------------------------
     */
 
     score =
@@ -3070,18 +3131,26 @@ async function startActualGame(
 
     judgeCounts = {
 
-        kirari: 0,
+        kirari:
+            0,
 
-        suteki: 0,
+        suteki:
+            0,
 
-        ii: 0,
+        ii:
+            0,
 
-        alara: 0
+        alara:
+            0
     };
 
 
     scoreBoardUpdate();
 
+
+    /*
+        READY画面を閉じる
+    */
 
     document.getElementById(
         "credit-screen"
@@ -3089,6 +3158,10 @@ async function startActualGame(
         "hidden"
     );
 
+
+    /*
+        メニューボタン表示
+    */
 
     document.getElementById(
         "menu-btn"
@@ -3098,7 +3171,9 @@ async function startActualGame(
 
 
     /*
-        AudioContext
+        -----------------------------------------------------
+        AudioContext準備
+        -----------------------------------------------------
     */
 
     if (
@@ -3118,35 +3193,149 @@ async function startActualGame(
         "suspended"
     ) {
 
-        await audioCtx.resume();
+        try {
+
+            await audioCtx.resume();
+
+        } catch (
+            error
+        ) {
+
+            console.warn(
+                "AudioContext resume失敗:",
+                error
+            );
+        }
     }
 
 
     /*
-        ゲーム時計開始
+        -----------------------------------------------------
+        MP3読み込み準備
+        -----------------------------------------------------
+        
+        「ゲーム時計だけ進んでいるのに
+         音楽がまだ鳴っていない」
+        
+        という状態を防ぎます。
     */
 
-    startTime =
-        audioCtx.currentTime;
+    try {
+
+        await new Promise(
+            (
+                resolve,
+                reject
+            ) => {
+
+                /*
+                    すでに再生可能なら
+                    そのまま進む
+                */
+
+                if (
+                    musicAudio.readyState >=
+                    3
+                ) {
+
+                    resolve();
+
+                    return;
+                }
 
 
-    gameState =
-        "PLAYING";
+                const onReady =
+                    () => {
+
+                        cleanup();
+
+                        resolve();
+                    };
+
+
+                const onError =
+                    () => {
+
+                        cleanup();
+
+                        reject(
+                            new Error(
+                                "MP3の読み込みに失敗しました"
+                            )
+                        );
+                    };
+
+
+                const cleanup =
+                    () => {
+
+                        musicAudio.removeEventListener(
+                            "canplaythrough",
+                            onReady
+                        );
+
+                        musicAudio.removeEventListener(
+                            "error",
+                            onError
+                        );
+                    };
+
+
+                musicAudio.addEventListener(
+                    "canplaythrough",
+                    onReady
+                );
+
+
+                musicAudio.addEventListener(
+                    "error",
+                    onError
+                );
+
+
+                /*
+                    読み込み開始
+                */
+
+                musicAudio.load();
+            }
+        );
+
+    } catch (
+        error
+    ) {
+
+        console.warn(
+            "MP3準備失敗:",
+            error
+        );
+
+
+        alert(
+            "音源を読み込めませんでした。\n\n" +
+            song.audioSrc
+        );
+
+
+        returnToSelectFromPause();
+
+        return;
+    }
 
 
     /*
-        MP3再生
+        -----------------------------------------------------
+        ここが超重要
+        -----------------------------------------------------
+        
+        ゲーム時計を先に開始しません。
+        
+        まずMP3を再生します。
     */
 
     try {
 
         await musicAudio.play();
-
-
-        console.log(
-            "MP3再生開始:",
-            song.audioSrc
-        );
 
     } catch (
         error
@@ -3156,7 +3345,69 @@ async function startActualGame(
             "MP3再生に失敗:",
             error
         );
+
+
+        alert(
+            "音楽を再生できませんでした。\n\n" +
+            "もう一度曲を選択してください。"
+        );
+
+
+        returnToSelectFromPause();
+
+        return;
     }
+
+
+    /*
+        -----------------------------------------------------
+        MP3再生開始
+        -----------------------------------------------------
+        
+        ここからゲーム開始。
+        
+        今後のゲーム時間は
+        musicAudio.currentTime
+        を使用します。
+    */
+
+    startTime =
+        performance.now();
+
+
+    totalPausedTime =
+        0;
+
+
+    pauseStartTime =
+        0;
+
+
+    gameState =
+        "PLAYING";
+
+
+    console.log(
+        "================================"
+    );
+
+    console.log(
+        "ゲーム開始"
+    );
+
+    console.log(
+        "MP3:",
+        song.audioSrc
+    );
+
+    console.log(
+        "MP3 currentTime:",
+        musicAudio.currentTime
+    );
+
+    console.log(
+        "================================"
+    );
 }
 
 
