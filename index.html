@@ -692,9 +692,8 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// 女の子のイラスト画像を読み込む設定
 const girlImg = new Image();
-girlImg.src = 'girl.png'; // ファイル名が異なる場合はここを変更してください
+girlImg.src = 'girl.png';
 
 let gameState = 'SELECT';
 let score = 0;
@@ -1318,6 +1317,22 @@ function showFloatingText(text, color, x, y) {
     });
 }
 
+function drawMusicalNoteIcon(x, y, color, symbol) {
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x, y, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 14px 'RocknRoll One', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(symbol, x, y);
+}
+
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     animTimer += 0.05;
@@ -1325,7 +1340,6 @@ function gameLoop() {
     let centerX = canvas.width / 2;
     let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
-
     let spawnOffsetY = 75;
 
     if (gameState === 'PLAYING') {
@@ -1347,9 +1361,9 @@ function gameLoop() {
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
         
-        // --- 描いた女の子のイラストを描画 ---
-        let girlWidth = 110;  // 女の子の幅
-        let girlHeight = 110; // 女の子の高さ
+        // --- 140pxに大きめにした女の子のイラストを描画 ---
+        let girlWidth = 140;  
+        let girlHeight = 140; 
         if (girlImg.complete && girlImg.naturalWidth !== 0) {
             ctx.drawImage(
                 girlImg, 
@@ -1359,10 +1373,9 @@ function gameLoop() {
                 girlHeight
             );
         } else {
-            // 画像が読み込まれていない場合の仮表示
             ctx.fillStyle = "#f5d0c5";
             ctx.beginPath();
-            ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
+            ctx.arc(centerX, girlY + girlFloatY + 15, 55, 0, Math.PI * 2);
             ctx.fill();
         }
 
@@ -1398,20 +1411,7 @@ function gameLoop() {
                     let startSpawnY = girlY + spawnOffsetY;
                     let x = startSpawnX + (target.x - startSpawnX) * progress;
                     let y = startSpawnY + (target.y - startSpawnY) * progress;
-
-                    ctx.fillStyle = "#9b59b6";
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText("◆", x, y);
+                    drawMusicalNoteIcon(x, y, "#9b59b6", "🎶");
                 }
                 if (progress > 1.2 && !note.hit) {
                     note.hit = true;
@@ -1449,28 +1449,8 @@ function gameLoop() {
                     ctx.quadraticCurveTo(controlX, controlY, endX, endY);
                     ctx.stroke();
 
-                    ctx.fillStyle = "#e056fd";
-                    ctx.strokeStyle = "#fff";
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(endX, endY, 15, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = "#e056fd";
-                    ctx.strokeStyle = "#fff";
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(startX, startY, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "bold 13px sans-serif";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    let arrowText = (note.direction === 'right') ? "▶︎" : "◀︎";
-                    ctx.fillText(arrowText, startX, startY - 1);
+                    drawMusicalNoteIcon(endX, endY, "#e056fd", "♪");
+                    drawMusicalNoteIcon(startX, startY, "#e056fd", "♫");
                 }
                 if (progress > 1.5 && !note.hit) {
                     note.hit = true;
@@ -1520,23 +1500,11 @@ function gameLoop() {
                     }
 
                     if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
-                        ctx.fillStyle = "#f39c12";
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(tailX, tailY, 15, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
+                        drawMusicalNoteIcon(tailX, tailY, "#f39c12", "♪");
                     }
 
                     if (!note.holding && headProg <= 1.2) {
-                        ctx.fillStyle = "#f39c12";
-                        ctx.strokeStyle = "#ffffff";
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(headX, headY, 16, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
+                        drawMusicalNoteIcon(headX, headY, "#f39c12", "♫");
                     } else if (note.holding) {
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
                         
@@ -1558,13 +1526,9 @@ function gameLoop() {
                     let startSpawnY = girlY + spawnOffsetY;
                     let x = startSpawnX + (target.x - startSpawnX) * progress;
                     let y = startSpawnY + (target.y - startSpawnY) * progress;
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = "#ffffff";
-                    ctx.fillStyle = "#1abc9c";
-                    ctx.beginPath();
-                    ctx.arc(x, y, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
+                    
+                    // --- 音符型のノーツを描画 ---
+                    drawMusicalNoteIcon(x, y, "#1abc9c", "♪");
                 }
                 if (progress > 1.2 && !note.hit) {
                     note.hit = true;
