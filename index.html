@@ -1347,9 +1347,9 @@ function gameLoop() {
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
         
-        // --- 描いた女の子のイラストを描画 ---
-        let girlWidth = 110;  // 女の子の幅
-        let girlHeight = 110; // 女の子の高さ
+        // --- 女の子のサイズを150pxに変更 ---
+        let girlWidth = 150;  // 幅を150pxに拡大
+        let girlHeight = 150; // 高さを150pxに拡大
         if (girlImg.complete && girlImg.naturalWidth !== 0) {
             ctx.drawImage(
                 girlImg, 
@@ -1362,7 +1362,7 @@ function gameLoop() {
             // 画像が読み込まれていない場合の仮表示
             ctx.fillStyle = "#f5d0c5";
             ctx.beginPath();
-            ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
+            ctx.arc(centerX, girlY + girlFloatY + 15, 60, 0, Math.PI * 2);
             ctx.fill();
         }
 
