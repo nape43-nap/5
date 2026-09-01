@@ -57,8 +57,14 @@
             width: 100%;
             margin-top: 10px;
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
+            transition: background-color 0.2s;
         }
         .btn:active { transform: scale(0.97); }
+        .btn-copy {
+            background-color: #b5c496;
+            box-shadow: 0 4px 12px rgba(181, 196, 150, 0.4);
+            margin-top: 10px;
+        }
         textarea {
             width: 100%;
             height: 200px;
@@ -124,6 +130,8 @@
     <button class="btn" onclick="convertMidi()">譜面データ(.js)を生成する</button>
 
     <textarea id="outputResult" placeholder="ここに生成されたコードが表示されます..." readonly></textarea>
+    
+    <button class="btn btn-copy" onclick="copyCode()">生成されたコードをコピーする</button>
 </div>
 
 <script>
@@ -152,7 +160,6 @@ async function convertMidi() {
             }
 
             // オクターブ内の音程 (0=C, 1=C#, 2=D, ...) からレーン(0〜4)を決定
-            // C, D, E, F, G をそれぞれレーン 0, 1, 2, 3, 4 に割り当てる
             let semitone = midiNote % 12;
             let lane = 0;
             if (semitone === 0) lane = 0;      // C
@@ -161,7 +168,6 @@ async function convertMidi() {
             else if (semitone === 5) lane = 3; // F
             else if (semitone === 7) lane = 4; // G
             else {
-                // シャープやフラットなどは一番近いレーンに丸める
                 lane = Math.min(4, Math.floor(semitone / 2.5));
             }
 
@@ -177,8 +183,6 @@ async function convertMidi() {
             // 音域によるノーツ種類の分岐 (C3=48, C4=60, C5=72)
             if (midiNote >= 72 && midiNote < 84) {
                 // C5〜G5帯：ピンクのスライド (slidenode)
-                type = 'slidenode';
-                // スライドの軌跡(path)を簡易的に現在レーンから隣への動きとして生成
                 let nextLane = (lane < 4) ? lane + 1 : lane - 1;
                 noteData.type = 'slidenode';
                 noteData.path = [lane, nextLane];
@@ -192,10 +196,9 @@ async function convertMidi() {
                     noteData.type = 'long';
                     noteData.duration = parseFloat(duration.toFixed(3));
                 } else {
-                    noteData.type = 'path' in noteData ? noteData.type : 'tap';
+                    noteData.type = 'tap';
                 }
             } else {
-                // その他の音域はデフォルトでタップ扱い
                 noteData.type = (duration > 0.25) ? 'long' : 'tap';
                 if (noteData.type === 'long') noteData.duration = parseFloat(duration.toFixed(3));
             }
@@ -220,6 +223,21 @@ async function convertMidi() {
     const outputCode = `window.${songData.id} = ${JSON.stringify(songData, null, 2)};`;
     document.getElementById('outputResult').value = outputCode;
     alert('譜面データの生成が完了しました！');
+}
+
+function copyCode() {
+    const textarea = document.getElementById('outputResult');
+    if (!textarea.value) {
+        alert('コピーするコードがありません。先に譜面データを生成してください。');
+        return;
+    }
+
+    navigator.clipboard.writeText(textarea.value).then(() => {
+        alert('コードをクリップボードにコピーしました！');
+    }).catch(err => {
+        alert('コピーに失敗しました。手動で選択してコピーしてください。');
+        console.error(err);
+    });
 }
 </script>
 
