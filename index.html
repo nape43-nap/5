@@ -709,8 +709,8 @@ let totalPausedTime = 0;
 
 let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
 
-// songlist.js から window.registeredSongFiles を読み込み、なければデフォルト曲を使用する
-const songs = window.registeredSongFiles || [
+// songlist.js から安全に曲データを読み込む（未定義対策済み）
+const songs = (window.registeredSongFiles && window.registeredSongFiles.length > 0) ? window.registeredSongFiles : [
     { id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0 },
     { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
     { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 }
@@ -734,6 +734,7 @@ function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
 
 function updateSelectorHighScoreDisplay() {
     let song = songs[currentSongIndex];
+    if (!song) return;
     let hsData = getSongHighScore(song.id);
     document.getElementById('selector-highscore').innerText = hsData.score;
     document.getElementById('selector-rank').innerText = hsData.rank;
@@ -794,11 +795,16 @@ function renderSongSelector(animating = false) {
         card.style.opacity = opacity;
         card.style.zIndex = zIndex;
 
+        // undefinedが出ないようにフォールバックを追加
+        let jacket = song.jacket || '🎵';
+        let title = song.title || 'タイトル未設定';
+        let artist = song.artist || 'アーティスト名なし';
+
         card.innerHTML = `
-            <div class="song-jacket">${song.jacket}</div>
+            <div class="song-jacket">${jacket}</div>
             <div class="song-info">
-                <div class="song-title">${song.title}</div>
-                <div class="song-artist">${song.artist}</div>
+                <div class="song-title">${title}</div>
+                <div class="song-artist">${artist}</div>
             </div>
         `;
         viewport.appendChild(card);
@@ -970,12 +976,13 @@ let activeTouches = new Map();
 
 function confirmSelectedSong() {
     let selectedSong = songs[currentSongIndex];
-    songDuration = selectedSong.duration;
+    if (!selectedSong) return;
+    songDuration = selectedSong.duration || 15.0;
 
     document.getElementById('select-screen').classList.add('hidden');
-    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
-    document.getElementById('credit-song-title').innerText = selectedSong.title;
-    document.getElementById('credit-song-artist').innerText = selectedSong.artist;
+    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket || '🎵';
+    document.getElementById('credit-song-title').innerText = selectedSong.title || 'タイトル未設定';
+    document.getElementById('credit-song-artist').innerText = selectedSong.artist || '';
     document.getElementById('credit-screen').classList.remove('hidden');
     gameState = 'CREDIT';
 
@@ -1034,9 +1041,9 @@ function finishGame() {
     document.getElementById('menu-btn').classList.add('hidden');
     
     let currentSong = songs[currentSongIndex];
-    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
-    document.getElementById('result-song-title').innerText = currentSong.title;
-    document.getElementById('result-song-artist').innerText = currentSong.artist;
+    document.getElementById('result-jacket-icon').innerText = currentSong.jacket || '🎵';
+    document.getElementById('result-song-title').innerText = currentSong.title || 'タイトル未設定';
+    document.getElementById('result-song-artist').innerText = currentSong.artist || '';
 
     document.getElementById('final-score').innerText = score;
     document.getElementById('count-kirari').innerText = judgeCounts.kirari;
@@ -1335,7 +1342,8 @@ function gameLoop() {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
 
-        if (songs[currentSongIndex].id === 'donguri') {
+        let currentSong = songs[currentSongIndex];
+        if (currentSong && currentSong.id === 'donguri') {
             for (let m of scheduledMelodyNotes) {
                 if (!m.played && currentTime >= m.time) {
                     playMelodyTone(m.freq);
