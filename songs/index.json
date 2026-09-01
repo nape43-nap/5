@@ -1,8 +1,32 @@
 {
   "songs": [
-    "sample",
-    "donguri-korokoro",
-    "oshiro-no-menuetto",
-    "hoshi-furu-mori"
+    {
+      "id": "sample",
+      "title": "サンプル曲",
+      "artist": "Sample Artist",
+      "difficulty": "EASY",
+      "level": 3
+    },
+    {
+      "id": "donguri-korokoro",
+      "title": "どんぐりころころ",
+      "artist": "文部省唱歌",
+      "difficulty": "NORMAL",
+      "level": 5
+    },
+    {
+      "id": "oshiro-no-menuetto",
+      "title": "お城のメヌエット",
+      "artist": "Royal Orchestra",
+      "difficulty": "HARD",
+      "level": 8
+    },
+    {
+      "id": "hoshi-furu-mori",
+      "title": "星降る森の舞踏会",
+      "artist": "Silky Night",
+      "difficulty": "EXPERT",
+      "level": 12
+    }
   ]
 }
