@@ -79,7 +79,7 @@
             padding: 10px;
             border-radius: 10px;
             margin-bottom: 15px;
-            line-height: 1.5;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -89,11 +89,11 @@
     <h1>MIDI 譜面コンバーター</h1>
     
     <div class="note-rule">
-        <strong>📌 MIDI音程の割り当てルール:</strong><br>
-        ・ <strong>C3 〜 G3 (長さなし)</strong>：タップノーツ<br>
-        ・ <strong>C3 〜 G3 (長さあり)</strong>：ロングノーツ（オレンジのまっすぐな帯）<br>
-        ・ <strong>C4 〜 G4</strong>：フリックノーツ (◆)<br>
-        ・ <strong>C5 〜</strong>：黄色の横帯ノーツ（弧を描く帯）
+        <strong>📌 MIDI音程の割り当てルール (C4基準):</strong><br>
+        ・ <strong>C3 〜 G3 (48〜55)</strong>：タップ or ロングノーツ（短ければタップ、長ければロング）<br>
+        ・ <strong>C4 〜 G4 (60〜67)</strong>：フリックノーツ (◆)<br>
+        ・ <strong>C5 〜 G5 (72〜79)</strong>：ピンクのスライド（自動で複数レーンを繋ぐpathを生成）<br>
+        ※ レーン（0〜4）は各オクターブ内のC, D, E, F, G（白鍵の5つ）に対応します。
     </div>
 
     <div class="form-group">
@@ -151,31 +151,60 @@ async function convertMidi() {
                 maxTime = Math.ceil(time + duration + 2);
             }
 
-            let lane = Math.floor(((midiNote % 12) / 12) * 5);
-            if (lane > 4) lane = 4;
-
-            let type = 'tap';
-            if (midiNote >= 72) {
-                // C5以上：黄色の横帯ノーツ
-                type = 'yellow_band';
-            } else if (midiNote >= 60 && midiNote < 72) {
-                // C4以上：フリック
-                type = 'flick';
-            } else if (duration > 0.25) {
-                // C3付近で長さがある音：通常のロングノーツ（まっすぐな帯）
-                type = 'long';
+            // オクターブ内の音程 (0=C, 1=C#, 2=D, ...) からレーン(0〜4)を決定
+            // C, D, E, F, G をそれぞれレーン 0, 1, 2, 3, 4 に割り当てる
+            let semitone = midiNote % 12;
+            let lane = 0;
+            if (semitone === 0) lane = 0;      // C
+            else if (semitone === 2) lane = 1; // D
+            else if (semitone === 4) lane = 2; // E
+            else if (semitone === 5) lane = 3; // F
+            else if (semitone === 7) lane = 4; // G
+            else {
+                // シャープやフラットなどは一番近いレーンに丸める
+                lane = Math.min(4, Math.floor(semitone / 2.5));
             }
 
-            chartNotes.push({
+            let type = 'tap';
+            let noteData = {
                 time: parseFloat(time.toFixed(3)),
                 lane: lane,
-                type: type,
-                duration: (type === 'long' || type === 'yellow_band') ? parseFloat(duration.toFixed(3)) : 0,
+                type: 'tap',
+                duration: 0,
                 noteName: note.name
-            });
+            };
+
+            // 音域によるノーツ種類の分岐 (C3=48, C4=60, C5=72)
+            if (midiNote >= 72 && midiNote < 84) {
+                // C5〜G5帯：ピンクのスライド (slidenode)
+                type = 'slidenode';
+                // スライドの軌跡(path)を簡易的に現在レーンから隣への動きとして生成
+                let nextLane = (lane < 4) ? lane + 1 : lane - 1;
+                noteData.type = 'slidenode';
+                noteData.path = [lane, nextLane];
+                noteData.direction = (nextLane > lane) ? 'right' : 'left';
+            } else if (midiNote >= 60 && midiNote < 72) {
+                // C4〜G4帯：フリック
+                noteData.type = 'flick';
+            } else if (midiNote >= 48 && midiNote < 60) {
+                // C3〜G3帯：タップ or ロング
+                if (duration > 0.25) {
+                    noteData.type = 'long';
+                    noteData.duration = parseFloat(duration.toFixed(3));
+                } else {
+                    noteData.type = 'path' in noteData ? noteData.type : 'tap';
+                }
+            } else {
+                // その他の音域はデフォルトでタップ扱い
+                noteData.type = (duration > 0.25) ? 'long' : 'tap';
+                if (noteData.type === 'long') noteData.duration = parseFloat(duration.toFixed(3));
+            }
+
+            chartNotes.push(noteData);
         });
     });
 
+    // 時間順にソート
     chartNotes.sort((a, b) => a.time - b.time);
 
     const songData = {
