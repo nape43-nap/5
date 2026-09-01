@@ -1,0 +1,57 @@
+{
+  "id": "sample",
+  "title": "サンプル曲",
+  "artist": "Sample Artist",
+  "audio": "sample.mp3",
+  "jacket": "🎵",
+
+  "charts": {
+    "easy": {
+      "level": 2,
+      "notes": [
+        {
+          "time": 1.0,
+          "lane": 2,
+          "type": "tap"
+        }
+      ]
+    },
+
+    "normal": {
+      "level": 5,
+      "notes": [
+        {
+          "time": 1.0,
+          "lane": 2,
+          "type": "tap"
+        },
+        {
+          "time": 1.5,
+          "lane": 1,
+          "type": "tap"
+        }
+      ]
+    },
+
+    "hard": {
+      "level": 8,
+      "notes": [
+        {
+          "time": 1.0,
+          "lane": 2,
+          "type": "tap"
+        },
+        {
+          "time": 1.5,
+          "lane": 1,
+          "type": "tap"
+        },
+        {
+          "time": 2.0,
+          "lane": 3,
+          "type": "flick"
+        }
+      ]
+    }
+  }
+}
