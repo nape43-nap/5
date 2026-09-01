@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>絵本風リズムゲーム</title>
+    <title>絵本風リズムゲーム </title>
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
     <style>
         body {
@@ -552,6 +552,14 @@
             accent-color: #d4a373;
             cursor: pointer;
         }
+        .x-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .x-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -579,9 +587,9 @@
     </div>
 
     <div id="credit-screen" class="screen hidden">
-        <div class="credit-jacket-large" id="credit-jacket-icon">🎵</div>
-        <div class="credit-title" id="credit-song-title">タイトル</div>
-        <div class="credit-artist" id="credit-song-artist">アーティスト</div>
+        <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
+        <div class="credit-title" id="credit-song-title">どんぐりころころ</div>
+        <div class="credit-artist" id="credit-song-artist">文部省唱歌 / 童謡</div>
         <div class="ready-text en-font">READY...♪</div>
     </div>
 
@@ -614,7 +622,13 @@
                 <p><strong>📖 遊び方</strong></p>
                 <ul>
                     <li>画面奥から流れてくるノーツが丸い判定枠に重なるタイミングに合わせてタップ！</li>
+                    <li><strong>◆ (フリーズ/フリック)</strong>：指で素早くスワイプ・弾く</li>
+                    <li><strong>ロングノーツ</strong>：終点まで指を押し続ける</li>
                 </ul>
+                <br>
+                <p><strong>🎨 クレジット</strong></p>
+                <p>開発・制作：あなたのお名前</p>
+                <p>公式X（旧Twitter）：<a href="https://twitter.com/" target="_blank" class="x-link">@YourXAccount</a></p>
             </div>
 
             <button class="pause-btn primary" onclick="closeConfigModal()">とじる</button>
@@ -626,10 +640,10 @@
             <div class="rank-badge" id="result-rank">S</div>
             
             <div class="result-song-header">
-                <div class="result-jacket-small" id="result-jacket-icon">🎵</div>
+                <div class="result-jacket-small" id="result-jacket-icon">🌰</div>
                 <div class="result-song-meta">
-                    <div class="result-title-text" id="result-song-title">タイトル</div>
-                    <div class="result-artist-text" id="result-artist-text">アーティスト</div>
+                    <div class="result-title-text" id="result-song-title">どんぐりころころ</div>
+                    <div class="result-artist-text" id="result-song-artist">文部省唱歌 / 童謡</div>
                 </div>
             </div>
 
@@ -667,51 +681,7 @@
     <canvas id="gameCanvas"></canvas>
 </div>
 
-<!-- 曲のID一覧（目次）を読み込む -->
-<script src="songlist.js"></script>
-
 <script>
-// 1曲ごとのファイルを読み込んで登録するための仕組み
-window.songDatabase = {};
-
-let songs = [];
-
-// 起動時に songIds に登録されているすべての曲ファイルを自動で読み込む
-function loadAllSongs(callback) {
-    let ids = window.songIds || [];
-    if (ids.length === 0) {
-        songs = [{ id: 'sample', title: 'サンプル曲', artist: 'わし', jacket: '🎵', duration: 15.0, chart: [] }];
-        if (callback) callback();
-        return;
-    }
-
-    let loadedCount = 0;
-    ids.forEach(id => {
-        let script = document.createElement('script');
-        script.src = `assets/songs/${id}.js`; // 各曲のファイルパス
-        script.onload = () => {
-            // window[id] 形式で定義されたデータをデータベースに格納
-            if (window[id] && !window.songDatabase[id]) {
-                window.songDatabase[id] = { id: id, ...window[id] };
-            }
-            loadedCount++;
-            if (loadedCount === ids.length) {
-                songs = ids.map(i => window.songDatabase[i]).filter(Boolean);
-                if (callback) callback();
-            }
-        };
-        script.onerror = () => {
-            loadedCount++;
-            console.warn(`曲ファイルが見つかりません: ${id}.js`);
-            if (loadedCount === ids.length) {
-                songs = ids.map(i => window.songDatabase[i]).filter(Boolean);
-                if (callback) callback();
-            }
-        };
-        document.head.appendChild(script);
-    });
-}
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -722,13 +692,13 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+// 女の子のイラスト画像を読み込む設定
 const girlImg = new Image();
-girlImg.src = 'girl.png';
+girlImg.src = 'girl.png'; // ファイル名が異なる場合はここを変更してください
 
 let gameState = 'SELECT';
 let score = 0;
 let audioCtx = null;
-let currentAudio = null; // 音源再生用
 let startTime = 0;
 let songDuration = 18.0; 
 
@@ -736,6 +706,12 @@ let pauseStartTime = 0;
 let totalPausedTime = 0;
 
 let noteSpeedMultiplier = parseFloat(localStorage.getItem('rhythm_game_speed')) || 1.0;
+
+const songs = [
+    { id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0 },
+    { id: 'easy', title: 'お城のメヌエット', artist: 'Royal Orchestra', jacket: '🏰', duration: 12.0 },
+    { id: 'normal', title: '星降る森の舞踏会', artist: 'Silky Night', jacket: '✨', duration: 12.5 }
+];
 let currentSongIndex = 0;
 
 function getSongHighScore(songId) {
@@ -755,7 +731,6 @@ function saveSongHighScore(songId, newScore, newAccuracy, newRank) {
 
 function updateSelectorHighScoreDisplay() {
     let song = songs[currentSongIndex];
-    if (!song) return;
     let hsData = getSongHighScore(song.id);
     document.getElementById('selector-highscore').innerText = hsData.score;
     document.getElementById('selector-rank').innerText = hsData.rank;
@@ -783,6 +758,7 @@ let isDragging = false;
 const itemHeight = 75;
 
 let judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
+
 const targetRadius = 32; 
 const baseNoteSpeed = 2.8;   
 
@@ -790,12 +766,9 @@ function renderSongSelector(animating = false) {
     const viewport = document.getElementById('song-viewport');
     viewport.innerHTML = '';
 
-    if (songs.length === 0) return;
-
     for (let i = -2; i <= 2; i++) {
         let targetIdx = (currentSongIndex + i + songs.length * 10) % songs.length;
         let song = songs[targetIdx];
-        if (!song) continue;
 
         let card = document.createElement('div');
         card.className = 'song-card';
@@ -818,15 +791,11 @@ function renderSongSelector(animating = false) {
         card.style.opacity = opacity;
         card.style.zIndex = zIndex;
 
-        let jacket = song.jacket || '🎵';
-        let title = song.title || 'タイトル未設定';
-        let artist = song.artist || 'アーティスト名なし';
-
         card.innerHTML = `
-            <div class="song-jacket">${jacket}</div>
+            <div class="song-jacket">${song.jacket}</div>
             <div class="song-info">
-                <div class="song-title">${title}</div>
-                <div class="song-artist">${artist}</div>
+                <div class="song-title">${song.title}</div>
+                <div class="song-artist">${song.artist}</div>
             </div>
         `;
         viewport.appendChild(card);
@@ -836,7 +805,7 @@ function renderSongSelector(animating = false) {
 
 const viewportEl = document.getElementById('song-viewport');
 viewportEl.addEventListener('pointerdown', (e) => {
-    if (gameState !== 'SELECT' || songs.length === 0) return;
+    if (gameState !== 'SELECT') return;
     isDragging = true;
     dragStartY = e.clientY;
     dragCurrentOffset = 0;
@@ -845,7 +814,7 @@ viewportEl.addEventListener('pointerdown', (e) => {
 });
 
 viewportEl.addEventListener('pointermove', (e) => {
-    if (!isDragging || gameState !== 'SELECT' || songs.length === 0) return;
+    if (!isDragging || gameState !== 'SELECT') return;
     let diffY = e.clientY - dragStartY;
     dragCurrentOffset = diffY;
     
@@ -877,6 +846,24 @@ function handleDragEnd(e) {
 viewportEl.addEventListener('pointerup', handleDragEnd);
 viewportEl.addEventListener('pointercancel', handleDragEnd);
 
+renderSongSelector(false);
+
+function getLanePositions() {
+    let positions = [];
+    let centerX = canvas.width / 2;
+    let baseY = canvas.height * 0.62; 
+    let totalWidth = canvas.width * 0.76; 
+    let spacing = totalWidth / 4;
+
+    for (let i = 0; i < 5; i++) {
+        let x = centerX - (totalWidth / 2) + (spacing * i);
+        let offsetY = -Math.pow((i - 2), 2) * 12 + 25; 
+        let y = baseY + offsetY;
+        positions.push({ x: x, y: y });
+    }
+    return positions;
+}
+
 let notes = [];
 let particles = [];
 let scheduledMelodyNotes = [];
@@ -887,7 +874,8 @@ function spawnParticles(x, y, color) {
         let angle = Math.random() * Math.PI * 2;
         let speed = 2 + Math.random() * 4;
         particles.push({
-            x: x, y: y,
+            x: x,
+            y: y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             radius: 3 + Math.random() * 4,
@@ -899,57 +887,97 @@ function spawnParticles(x, y, color) {
 }
 
 const NOTE_FREQS = {
-    'C3': 130.81, 'E3': 164.81, 'G3': 196.00,
     'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
     'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
 };
 
-function generateChart(songObj) {
+function generateChart(type) {
     notes = [];
     particles = [];
     scheduledMelodyNotes = [];
     floatingTexts = [];
-    
-    songDuration = songObj.duration || 15.0;
-    let chartData = songObj.chart || [];
+    let chartData = [];
+
+    if (type === 'donguri') {
+        const melodySeq = [
+            { time: 1.0, noteName: 'G4', lane: 2, type: 'tap' },
+            { time: 1.5, noteName: 'E4', lane: 1, type: 'tap' },
+            { time: 2.0, noteName: 'G4', lane: 3, type: 'tap' },
+            { time: 2.5, noteName: 'E4', lane: 1, type: 'tap' },
+            { time: 3.0, noteName: 'C5', lane: 4, type: 'tap' },
+            { time: 3.5, noteName: 'A4', lane: 0, type: 'tap' },
+            { time: 4.0, noteName: 'G4', lane: 2, type: 'tap' },
+            
+            { time: 5.5, noteName: 'C5', lane: 0, type: 'tap' },
+            { time: 5.5, noteName: 'C5', lane: 4, type: 'tap' },
+            { time: 6.2, noteName: 'A4', lane: 1, type: 'tap' },
+            { time: 6.8, noteName: 'G4', lane: 3, type: 'tap' },
+            { time: 7.5, noteName: 'E4', lane: 2, type: 'long', duration: 1.5 },
+            
+            { time: 10.0, noteName: 'G4', lane: 0, type: 'flick' },
+            { time: 10.6, noteName: 'A4', lane: 1, type: 'tap' },
+            { time: 11.2, noteName: 'C5', lane: 2, type: 'tap' },
+            { time: 11.8, noteName: 'D4', lane: 3, type: 'tap' },
+            { time: 12.5, noteName: 'C5', lane: 4, type: 'flick' }
+        ];
+
+        chartData = melodySeq;
+        scheduledMelodyNotes = melodySeq.map(m => ({ time: m.time, freq: NOTE_FREQS[m.noteName], played: false }));
+        songDuration = 15.0;
+
+    } else if (type === 'easy') {
+        chartData = [
+            { time: 1.5, lane: 0, type: 'tap' },
+            { time: 3.0, lane: 4, type: 'flick' },
+            { time: 4.5, lane: 1, type: 'tap' },
+            { time: 4.5, lane: 3, type: 'tap' },
+            { time: 7.0, lane: 2, type: 'long', duration: 1.5 },
+            { time: 8.5, lane: 0, type: 'tap' },
+            { time: 8.5, lane: 4, type: 'flick' },
+            { time: 10.0, lane: 2, type: 'tap' }
+        ];
+        songDuration = 12.0;
+    } else {
+        chartData = [
+            { time: 1.0, lane: 0, type: 'flick' },
+            { time: 1.0, lane: 4, type: 'flick' },
+            { time: 2.5, lane: 1, type: 'slidenode', path: [1, 2, 3], pathTime: 1.5, direction: 'right' },
+            { time: 5.0, lane: 3, type: 'slidenode', path: [3, 2, 1], pathTime: 1.5, direction: 'left' },
+            { time: 6.0, lane: 0, type: 'long', duration: 2.0 },
+            { time: 6.0, lane: 4, type: 'long', duration: 2.0 },
+            { time: 9.5, lane: 2, type: 'tap' },
+            { time: 11.0, lane: 1, type: 'flick' },
+            { time: 11.0, lane: 3, type: 'flick' }
+        ];
+        songDuration = 13.0;
+    }
 
     notes = chartData.map(n => ({
         ...n,
         hit: false,       
         holding: false,   
-        started: false
+        started: false,
+        activePointerId: null,
+        assignedTouchId: null
     }));
-
-    scheduledMelodyNotes = chartData
-        .filter(n => n.noteName && NOTE_FREQS[n.noteName])
-        .map(n => ({ time: n.time, freq: NOTE_FREQS[n.noteName], played: false }));
 }
 
+let animTimer = 0;
 let activeTouches = new Map();
 
 function confirmSelectedSong() {
     let selectedSong = songs[currentSongIndex];
-    if (!selectedSong) return;
+    songDuration = selectedSong.duration;
 
     document.getElementById('select-screen').classList.add('hidden');
-    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket || '🎵';
-    document.getElementById('credit-song-title').innerText = selectedSong.title || 'タイトル未設定';
-    document.getElementById('credit-song-artist').innerText = selectedSong.artist || '';
+    document.getElementById('credit-jacket-icon').innerText = selectedSong.jacket;
+    document.getElementById('credit-song-title').innerText = selectedSong.title;
+    document.getElementById('credit-song-artist').innerText = selectedSong.artist;
     document.getElementById('credit-screen').classList.remove('hidden');
     gameState = 'CREDIT';
 
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    // 音源が指定されている場合は事前にロード・準備
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-    }
-    if (selectedSong.audioSrc) {
-        currentAudio = new Audio(selectedSong.audioSrc);
-        currentAudio.load();
     }
 
     setTimeout(() => {
@@ -967,15 +995,8 @@ function startActualGame(song) {
     judgeCounts = { kirari: 0, suteki: 0, ii: 0, alara: 0 };
     scoreBoardUpdate();
     
-    generateChart(song);
+    generateChart(song.id);
     startTime = audioCtx.currentTime;
-
-    // 音源の再生開始
-    if (currentAudio) {
-        currentAudio.currentTime = 0;
-        currentAudio.play().catch(e => console.log("音声再生エラー:", e));
-    }
-
     gameState = 'PLAYING';
 }
 
@@ -983,33 +1004,23 @@ function openPauseMenu() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSE';
     pauseStartTime = audioCtx.currentTime;
-    if (currentAudio) currentAudio.pause();
     document.getElementById('pause-screen').classList.remove('hidden');
 }
 
 function resumeGame() {
     document.getElementById('pause-screen').classList.add('hidden');
     totalPausedTime += (audioCtx.currentTime - pauseStartTime);
-    if (currentAudio) currentAudio.play().catch(e => {});
     gameState = 'PLAYING';
 }
 
 function retryGame() {
     document.getElementById('pause-screen').classList.add('hidden');
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-    }
     startActualGame(songs[currentSongIndex]);
 }
 
 function returnToSelectFromPause() {
     document.getElementById('pause-screen').classList.add('hidden');
     document.getElementById('menu-btn').classList.add('hidden');
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-    }
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -1018,14 +1029,11 @@ function returnToSelectFromPause() {
 function finishGame() {
     gameState = 'RESULT';
     document.getElementById('menu-btn').classList.add('hidden');
-    if (currentAudio) {
-        currentAudio.pause();
-    }
     
     let currentSong = songs[currentSongIndex];
-    document.getElementById('result-jacket-icon').innerText = currentSong.jacket || '🎵';
-    document.getElementById('result-song-title').innerText = currentSong.title || 'タイトル未設定';
-    document.getElementById('result-artist-text').innerText = currentSong.artist || '';
+    document.getElementById('result-jacket-icon').innerText = currentSong.jacket;
+    document.getElementById('result-song-title').innerText = currentSong.title;
+    document.getElementById('result-song-artist').innerText = currentSong.artist;
 
     document.getElementById('final-score').innerText = score;
     document.getElementById('count-kirari').innerText = judgeCounts.kirari;
@@ -1054,7 +1062,11 @@ function finishGame() {
     document.getElementById('result-rank').innerText = rank;
     saveSongHighScore(currentSong.id, score, accuracyPercent, rank);
 
-    document.getElementById('result-screen').classList.remove('hidden');
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.classList.remove('hidden');
+    resultScreen.style.animation = 'none';
+    resultScreen.offsetHeight; 
+    resultScreen.style.animation = 'screenFadeIn 0.4s ease-out forwards';
 }
 
 function retryFromResult() {
@@ -1085,7 +1097,8 @@ canvas.addEventListener('pointerdown', (e) => {
         startX: touchX,
         startY: touchY,
         currentX: touchX,
-        currentY: touchY
+        currentY: touchY,
+        assignedNote: null
     };
     activeTouches.set(e.pointerId, touchInfo);
     canvas.setPointerCapture(e.pointerId);
@@ -1101,10 +1114,28 @@ canvas.addEventListener('pointerdown', (e) => {
                     if (note.lane === i) {
                         let diff = Math.abs(currentTime - note.time);
                         if (diff < 0.4) {
-                            if (note.type === 'tap' || note.type === 'slidenode') {
+                            if (note.type === 'tap') {
                                 note.hit = true;
                                 judgeAction(diff, lanes[i].x, lanes[i].y);
-                                spawnParticles(lanes[i].x, lanes[i].y, '#16a085');
+                                spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
+                                playHitSound();
+                                break;
+                            } else if (note.type === 'long') {
+                                note.started = true;
+                                note.holding = true;
+                                note.assignedTouchId = e.pointerId;
+                                touchInfo.assignedNote = note;
+                                score += 100;
+                                scoreBoardUpdate();
+                                spawnParticles(lanes[i].x, lanes[i].y, '#f39c12');
+                                playHitSound();
+                                break;
+                            } else if (note.type === 'slidenode') {
+                                note.started = true;
+                                note.holding = true;
+                                note.assignedTouchId = e.pointerId;
+                                touchInfo.assignedNote = note;
+                                spawnParticles(lanes[i].x, lanes[i].y, '#e056fd');
                                 playHitSound();
                                 break;
                             }
@@ -1119,9 +1150,33 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointermove', (e) => {
     if (!activeTouches.has(e.pointerId)) return;
     const rect = canvas.getBoundingClientRect();
+    const touchX = e.clientX - rect.left;
+    const touchY = e.clientY - rect.top;
+
     let touchInfo = activeTouches.get(e.pointerId);
-    touchInfo.currentX = e.clientX - rect.left;
-    touchInfo.currentY = e.clientY - rect.top;
+    touchInfo.currentX = touchX;
+    touchInfo.currentY = touchY;
+
+    if (touchInfo.assignedNote && touchInfo.assignedNote.holding) {
+        let note = touchInfo.assignedNote;
+        if (note.type === 'slidenode') {
+            let lanes = getLanePositions();
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
+
+            if (Math.hypot(touchX - targetLanePos.x, touchY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                note.holding = false;
+                touchInfo.assignedNote = null;
+                score += 300;
+                scoreBoardUpdate();
+                judgeCounts.kirari++;
+                showFloatingText("ｷﾗﾘ!", "#f1c40f", targetLanePos.x, targetLanePos.y - 40);
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#e056fd');
+                playHitSound();
+            }
+        }
+    }
 });
 
 canvas.addEventListener('pointerup', (e) => { handleTouchEndOrCancel(e); });
@@ -1133,20 +1188,69 @@ function handleTouchEndOrCancel(e) {
     let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
     let lanes = getLanePositions();
 
-    for (let note of notes) {
-        if (!note.hit && note.type === 'flick') {
-            let diff = Math.abs(currentTime - note.time);
-            if (diff < 0.4) {
-                let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
-                if (dist > 15) {
-                    note.hit = true;
-                    score += 350;
+    if (touchInfo.assignedNote) {
+        let note = touchInfo.assignedNote;
+        if (note.type === 'long' && note.holding) {
+            let endTime = note.time + note.duration;
+            let diff = Math.abs(currentTime - endTime);
+            let lanePos = lanes[note.lane];
+            
+            if (diff < 0.45) {
+                if (diff < 0.12) {
+                    score += 400;
                     judgeCounts.kirari++;
-                    let lanePos = lanes[note.lane];
                     showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
-                    spawnParticles(lanePos.x, lanePos.y, '#3498db');
-                    playHitSound();
-                    break;
+                } else if (diff < 0.28) {
+                    score += 250;
+                    judgeCounts.suteki++;
+                    showFloatingText("ｽﾃｷ!", "#e67e22", lanePos.x, lanePos.y - 40);
+                } else {
+                    score += 150;
+                    judgeCounts.ii++;
+                    showFloatingText("ｲｲ!", "#3498db", lanePos.x, lanePos.y - 40);
+                }
+            } else {
+                score += 50;
+                judgeCounts.alara++;
+                showFloatingText("ｱﾗﾗ", "#95a5a6", lanePos.x, lanePos.y - 40);
+            }
+            note.hit = true;
+            note.holding = false;
+            spawnParticles(lanePos.x, lanePos.y, '#f39c12');
+            playHitSound();
+            scoreBoardUpdate();
+        } else if (note.type === 'slidenode' && note.holding) {
+            let endLaneIdx = note.path[note.path.length - 1];
+            let targetLanePos = lanes[endLaneIdx];
+            if (Math.hypot(touchInfo.currentX - targetLanePos.x, touchInfo.currentY - targetLanePos.y) < targetRadius * 2.5) {
+                note.hit = true;
+                score += 200;
+                judgeCounts.suteki++;
+                showFloatingText("ｽﾃｷ!", "#e67e22", targetLanePos.x, targetLanePos.y - 40);
+                spawnParticles(targetLanePos.x, targetLanePos.y, '#e056fd');
+            } else {
+                note.hit = true;
+                judgeCounts.alara++;
+                showFloatingText("ｱﾗﾗ", "#95a5a6", targetLanePos.x, targetLanePos.y - 40);
+            }
+            scoreBoardUpdate();
+        }
+    } else {
+        for (let note of notes) {
+            if (!note.hit && note.type === 'flick') {
+                let diff = Math.abs(currentTime - note.time);
+                if (diff < 0.4) {
+                    let dist = Math.hypot(touchInfo.currentX - touchInfo.startX, touchInfo.currentY - touchInfo.startY);
+                    if (dist > 15) {
+                        note.hit = true;
+                        score += 350;
+                        judgeCounts.kirari++;
+                        let lanePos = lanes[note.lane];
+                        showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
+                        spawnParticles(lanePos.x, lanePos.y, '#9b59b6');
+                        playHitSound();
+                        break;
+                    }
                 }
             }
         }
@@ -1154,21 +1258,6 @@ function handleTouchEndOrCancel(e) {
 
     try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
     activeTouches.delete(e.pointerId);
-}
-
-function getLanePositions() {
-    let positions = [];
-    let centerX = canvas.width / 2;
-    let baseY = canvas.height * 0.62; 
-    let totalWidth = canvas.width * 0.76; 
-    let spacing = totalWidth / 4;
-
-    for (let i = 0; i < 5; i++) {
-        let x = centerX - (totalWidth / 2) + (spacing * i);
-        let offsetY = -Math.pow((i - 2), 2) * 12 + 25; 
-        positions.push({ x: x, y: baseY + offsetY });
-    }
-    return positions;
 }
 
 function judgeAction(diff, x, y) {
@@ -1219,10 +1308,16 @@ function playHitSound() {
 }
 
 function showFloatingText(text, color, x, y) {
-    floatingTexts.push({ text: text, color: color, x: x, y: y, timer: 25, maxTime: 25 });
+    floatingTexts.push({
+        text: text,
+        color: color,
+        x: x,
+        y: y,
+        timer: 25,
+        maxTime: 25
+    });
 }
 
-let animTimer = 0;
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     animTimer += 0.05;
@@ -1230,14 +1325,14 @@ function gameLoop() {
     let centerX = canvas.width / 2;
     let girlY = canvas.height * 0.3 - 70; 
     let lanes = getLanePositions();
+
     let spawnOffsetY = 75;
 
     if (gameState === 'PLAYING') {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
 
-        // 音源がない場合のフォールバック電子音
-        if (!currentAudio) {
+        if (songs[currentSongIndex].id === 'donguri') {
             for (let m of scheduledMelodyNotes) {
                 if (!m.played && currentTime >= m.time) {
                     playMelodyTone(m.freq);
@@ -1251,61 +1346,246 @@ function gameLoop() {
         }
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
-        let girlWidth = 150, girlHeight = 150;
+        
+        // --- 描いた女の子のイラストを描画 ---
+        let girlWidth = 110;  // 女の子の幅
+        let girlHeight = 110; // 女の子の高さ
         if (girlImg.complete && girlImg.naturalWidth !== 0) {
-            ctx.drawImage(girlImg, centerX - girlWidth / 2, girlY + girlFloatY - girlHeight / 2 + 15, girlWidth, girlHeight);
+            ctx.drawImage(
+                girlImg, 
+                centerX - girlWidth / 2, 
+                girlY + girlFloatY - girlHeight / 2 + 15, 
+                girlWidth, 
+                girlHeight
+            );
+        } else {
+            // 画像が読み込まれていない場合の仮表示
+            ctx.fillStyle = "#f5d0c5";
+            ctx.beginPath();
+            ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         for (let i = 0; i < lanes.length; i++) {
+            let x = lanes[i].x;
+            let y = lanes[i].y;
+            let currentRadius = targetRadius;
+
             ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
             ctx.strokeStyle = "#d4c5b9";
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(lanes[i].x, lanes[i].y, targetRadius, 0, Math.PI * 2);
+            ctx.arc(x, y, currentRadius, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
+
+            ctx.strokeStyle = "#e8dfd1";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, currentRadius * 0.55, 0, Math.PI * 2);
             ctx.stroke();
         }
 
         for (let note of notes) {
             if (note.hit) continue;
-            let target = lanes[note.lane];
-            let travelTime = baseNoteSpeed / effectiveNoteSpeed;
-            let progress = (currentTime - (note.time - travelTime)) / travelTime;
 
-            if (progress >= 0 && progress <= 1.2) {
-                let startSpawnX = centerX;
-                let startSpawnY = girlY + spawnOffsetY;
-                let x = startSpawnX + (target.x - startSpawnX) * progress;
-                let y = startSpawnY + (target.y - startSpawnY) * progress;
+            if (note.type === 'flick') {
+                let target = lanes[note.lane];
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
+                if (progress >= 0 && progress <= 1.2) {
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+                    let x = startSpawnX + (target.x - startSpawnX) * progress;
+                    let y = startSpawnY + (target.y - startSpawnY) * progress;
 
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = "#ffffff";
-                ctx.fillStyle = (note.type === 'flick') ? "#3498db" : "#16a085";
-                ctx.beginPath();
-                ctx.arc(x, y, 16, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
+                    ctx.fillStyle = "#9b59b6";
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
 
-                if (note.type === 'flick') {
                     ctx.fillStyle = "#ffffff";
                     ctx.font = "bold 13px sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     ctx.fillText("◆", x, y);
                 }
+                if (progress > 1.2 && !note.hit) {
+                    note.hit = true;
+                    judgeCounts.alara++;
+                    showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+                }
             }
-            if (progress > 1.2 && !note.hit) {
-                note.hit = true;
-                judgeCounts.alara++;
-                showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+            else if (note.type === 'slidenode') {
+                let path = note.path;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
+                if (progress >= 0 && progress <= 1.5) {
+                    let startPos = lanes[path[0]];
+                    let endPos = lanes[path[path.length - 1]];
+
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+
+                    let startX = startSpawnX + (startPos.x - startSpawnX) * progress;
+                    let startY = startSpawnY + (startPos.y - startSpawnY) * progress;
+                    let endX = startSpawnX + (endPos.x - startSpawnX) * progress;
+                    let endY = startSpawnY + (endPos.y - startSpawnY) * progress;
+
+                    let curveSign = (note.direction === 'left') ? -1 : 1;
+                    let midX = (startX + endX) / 2;
+                    let midY = (startY + endY) / 2 - (15 * curveSign);
+                    let controlX = midX;
+                    let controlY = midY + 45 * progress;
+
+                    ctx.strokeStyle = "rgba(224, 86, 253, 0.9)";
+                    ctx.lineWidth = 14;
+                    ctx.lineCap = "round";
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#e056fd";
+                    ctx.strokeStyle = "#fff";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(endX, endY, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#e056fd";
+                    ctx.strokeStyle = "#fff";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 13px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    let arrowText = (note.direction === 'right') ? "▶︎" : "◀︎";
+                    ctx.fillText(arrowText, startX, startY - 1);
+                }
+                if (progress > 1.5 && !note.hit) {
+                    note.hit = true;
+                    judgeCounts.alara++;
+                    let endPos = lanes[path[path.length - 1]];
+                    showFloatingText("ｱﾗﾗ", "#95a5a6", endPos.x, endPos.y - 40);
+                }
+            }
+            else if (note.type === 'long') {
+                let target = lanes[note.lane];
+                let endTime = note.time + note.duration;
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let headProg = (currentTime - (note.time - travelTime)) / travelTime;
+                let tailProg = (currentTime - (endTime - travelTime)) / travelTime;
+
+                if (headProg >= 0 && tailProg <= 1.2) {
+                    let headX, headY, tailX, tailY;
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+
+                    if (headProg >= 1.0 || note.started) {
+                        headX = target.x;
+                        headY = target.y;
+                    } else {
+                        let pHead = Math.max(0, headProg);
+                        headX = startSpawnX + (target.x - startSpawnX) * pHead;
+                        headY = startSpawnY + (target.y - startSpawnY) * pHead;
+                    }
+
+                    if (tailProg >= 1.0 || (note.started && currentTime >= endTime)) {
+                        tailX = target.x;
+                        tailY = target.y;
+                    } else {
+                        let pTail = Math.max(0, tailProg);
+                        tailX = startSpawnX + (target.x - startSpawnX) * pTail;
+                        tailY = startSpawnY + (target.y - startSpawnY) * pTail;
+                    }
+
+                    if (headProg >= 0) {
+                        ctx.strokeStyle = "rgba(243, 156, 18, 0.65)";
+                        ctx.lineWidth = 12;
+                        ctx.lineCap = "round";
+                        ctx.beginPath();
+                        ctx.moveTo(tailX, tailY);
+                        ctx.lineTo(headX, headY);
+                        ctx.stroke();
+                    }
+
+                    if (tailProg >= 0 && tailProg <= 1.0 && currentTime < endTime) {
+                        ctx.fillStyle = "#f39c12";
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(tailX, tailY, 15, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+
+                    if (!note.holding && headProg <= 1.2) {
+                        ctx.fillStyle = "#f39c12";
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (note.holding) {
+                        if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
+                        
+                        if (currentTime >= endTime + 0.35 && !note.hit) {
+                            note.hit = true;
+                            note.holding = false;
+                            judgeCounts.alara++;
+                            showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+                        }
+                    }
+                }
+            }
+            else {
+                let target = lanes[note.lane];
+                let travelTime = baseNoteSpeed / effectiveNoteSpeed;
+                let progress = (currentTime - (note.time - travelTime)) / travelTime;
+                if (progress >= 0 && progress <= 1.2) {
+                    let startSpawnX = centerX;
+                    let startSpawnY = girlY + spawnOffsetY;
+                    let x = startSpawnX + (target.x - startSpawnX) * progress;
+                    let y = startSpawnY + (target.y - startSpawnY) * progress;
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = "#ffffff";
+                    ctx.fillStyle = "#1abc9c";
+                    ctx.beginPath();
+                    ctx.arc(x, y, 16, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                if (progress > 1.2 && !note.hit) {
+                    note.hit = true;
+                    judgeCounts.alara++;
+                    showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
+                }
             }
         }
     }
 
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.alpha -= p.decay;
-        if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+        }
+
         ctx.save();
         ctx.globalAlpha = p.alpha;
         ctx.fillStyle = p.color;
@@ -1321,10 +1601,13 @@ function gameLoop() {
         let progressRate = 1 - (ft.timer / ft.maxTime);
         let floatY = -Math.sin(progressRate * Math.PI) * 25;
         let alpha = ft.timer < 8 ? (ft.timer / 8) : 1.0;
+        let scale = progressRate < 0.2 ? (0.8 + progressRate * 1.0) : 1.0;
 
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.translate(ft.x, ft.y + floatY);
+        ctx.scale(scale, scale);
+
         ctx.fillStyle = ft.color;
         ctx.font = "bold 22px 'RocknRoll One', sans-serif";
         ctx.textAlign = "center";
@@ -1335,20 +1618,15 @@ function gameLoop() {
         ctx.fillText(ft.text, 0, 0);
         ctx.restore();
 
-        if (ft.timer <= 0) floatingTexts.splice(i, 1);
+        if (ft.timer <= 0) {
+            floatingTexts.splice(i, 1);
+        }
     }
 
     requestAnimationFrame(gameLoop);
 }
 
-// すべての曲ファイルを非同期で読み込んでからゲームを初期化
-loadAllSongs(() => {
-    if (songs.length === 0) {
-        songs = [{ id: 'sample', title: 'サンプル曲', artist: 'わし', jacket: '🎵', duration: 15.0, chart: [] }];
-    }
-    renderSongSelector(false);
-    gameLoop();
-});
+gameLoop();
 </script>
 
 </body>
