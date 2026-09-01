@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, user-scalable=no"
+>
 
 <title>絵本風リズムゲーム</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
+<link
+    href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap"
+    rel="stylesheet"
+>
 
 <style>
 
@@ -15,14 +24,18 @@
 }
 
 body {
+
     margin: 0;
     padding: 0;
 
     background: #fdfbf7;
 
-    font-family: 'RocknRoll One', sans-serif;
+    font-family:
+        'RocknRoll One',
+        sans-serif;
 
     display: flex;
+
     justify-content: center;
     align-items: center;
 
@@ -32,13 +45,18 @@ body {
     overflow: hidden;
 
     touch-action: none;
+
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
 }
 
 .en-font {
-    font-family: 'Darumadrop One', cursive, sans-serif;
+
+    font-family:
+        'Darumadrop One',
+        cursive,
+        sans-serif;
 }
 
 #game-container {
@@ -53,16 +71,21 @@ body {
 
     background: #fffdf9;
 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    box-shadow:
+        0 10px 30px
+        rgba(0,0,0,0.05);
 
     border-radius: 20px;
 
     overflow: hidden;
 
-    border: 8px solid #f0e6d2;
+    border:
+        8px solid
+        #f0e6d2;
 }
 
 canvas {
+
     display: block;
 
     width: 100%;
@@ -79,7 +102,8 @@ canvas {
     width: 100%;
     height: 100%;
 
-    background: rgba(253,251,247,0.98);
+    background:
+        rgba(253,251,247,0.98);
 
     display: flex;
 
@@ -94,6 +118,7 @@ canvas {
 }
 
 .hidden {
+
     display: none !important;
 }
 
@@ -110,7 +135,8 @@ h1 {
 
 .btn {
 
-    background-color: #e3c4a8;
+    background-color:
+        #e3c4a8;
 
     color: #fff;
 
@@ -124,14 +150,19 @@ h1 {
 
     cursor: pointer;
 
-    box-shadow: 0 4px 15px rgba(227,196,168,0.4);
+    box-shadow:
+        0 4px 15px
+        rgba(227,196,168,0.4);
 
     margin-top: 15px;
 
-    font-family: 'RocknRoll One', sans-serif;
+    font-family:
+        'RocknRoll One',
+        sans-serif;
 }
 
 .btn:active {
+
     transform: scale(0.95);
 }
 
@@ -145,7 +176,9 @@ h1 {
 
     background: #fff;
 
-    border: 2.5px solid #f0e6d2;
+    border:
+        2.5px solid
+        #f0e6d2;
 
     color: #7c6f64;
 
@@ -224,7 +257,9 @@ h1 {
 
     background: #fff;
 
-    border: 3px solid #f0e6d2;
+    border:
+        3px solid
+        #f0e6d2;
 
     padding: 12px 15px;
 
@@ -236,7 +271,9 @@ h1 {
 
     gap: 15px;
 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.02);
 
     pointer-events: none;
 }
@@ -265,6 +302,16 @@ h1 {
     font-size: 24px;
 
     flex-shrink: 0;
+
+    overflow: hidden;
+}
+
+.song-jacket img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
 }
 
 .song-info {
@@ -316,7 +363,9 @@ h1 {
 
     background: #fff;
 
-    border: 2.5px solid #f0e6d2;
+    border:
+        2.5px solid
+        #f0e6d2;
 
     padding: 4px 8px;
 
@@ -338,7 +387,9 @@ h1 {
 
     background: #fdfbf7;
 
-    border: 2px solid #e3c4a8;
+    border:
+        2px solid
+        #e3c4a8;
 
     border-radius: 50%;
 
@@ -384,7 +435,9 @@ h1 {
 
     background: #fff;
 
-    border: 4px solid #f0e6d2;
+    border:
+        4px solid
+        #f0e6d2;
 
     display: flex;
 
@@ -394,6 +447,16 @@ h1 {
     font-size: 60px;
 
     margin-bottom: 20px;
+
+    overflow: hidden;
+}
+
+.credit-jacket-large img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
 }
 
 .credit-title {
@@ -451,11 +514,15 @@ h1 {
 
     background: #fff;
 
-    border: 3px solid #f0e6d2;
+    border:
+        3px solid
+        #f0e6d2;
 
     border-radius: 20px;
 
-    box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+    box-shadow:
+        0 6px 20px
+        rgba(0,0,0,0.05);
 }
 
 .pause-panel {
@@ -491,7 +558,9 @@ h1 {
 
     color: #7c6f64;
 
-    border: 2px solid #f0e6d2;
+    border:
+        2px solid
+        #f0e6d2;
 
     padding: 12px;
 
@@ -499,7 +568,9 @@ h1 {
 
     border-radius: 25px;
 
-    font-family: 'RocknRoll One', sans-serif;
+    font-family:
+        'RocknRoll One',
+        sans-serif;
 
     font-weight: bold;
 }
@@ -541,7 +612,9 @@ h1 {
 
     background: #fffcf7;
 
-    border: 2px solid #f5efe6;
+    border:
+        2px solid
+        #f5efe6;
 
     padding: 12px;
 
@@ -639,6 +712,16 @@ input[type="range"] {
     align-items: center;
 
     font-size: 22px;
+
+    overflow: hidden;
+}
+
+.result-jacket-small img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
 }
 
 .result-song-meta {
@@ -745,7 +828,9 @@ input[type="range"] {
 
     color: #fff;
 
-    font-family: 'RocknRoll One', sans-serif;
+    font-family:
+        'RocknRoll One',
+        sans-serif;
 }
 
 .result-btn.sub {
@@ -754,367 +839,486 @@ input[type="range"] {
 
     color: #7c6f64;
 
-    border: 2px solid #f0e6d2;
+    border:
+        2px solid
+        #f0e6d2;
 }
 
 </style>
+
 </head>
+
 
 <body>
 
 <div id="game-container">
 
-    <div id="score-board">
-        スコア: <span id="score-num">0</span>
-    </div>
+
+<div id="score-board">
+
+    スコア:
+    <span id="score-num">
+        0
+    </span>
+
+</div>
+
+
+<button
+    id="menu-btn"
+    class="hidden"
+    onclick="openPauseMenu()"
+>
+    ⚙️
+</button>
+
+
+<!-- =====================================================
+     曲選択
+===================================================== -->
+
+<div
+    id="select-screen"
+    class="screen"
+>
 
     <button
-        id="menu-btn"
-        class="hidden"
-        onclick="openPauseMenu()">
+        id="selector-config-btn"
+        onclick="openConfigModal()"
+    >
         ⚙️
     </button>
 
 
-    <!-- =========================
-         曲選択
-    ========================== -->
+    <h1 class="en-font">
+        MUSIC SELECT
+    </h1>
+
 
     <div
-        id="select-screen"
-        class="screen">
+        class="song-selector-container"
+    >
 
-        <button
-            id="selector-config-btn"
-            onclick="openConfigModal()">
-            ⚙️
-        </button>
+        <div
+            class="song-list-viewport"
+            id="song-viewport"
+        >
+        </div>
 
-        <h1 class="en-font">
-            MUSIC SELECT
-        </h1>
 
-        <div class="song-selector-container">
+        <div class="cloud-highscore">
 
             <div
-                class="song-list-viewport"
-                id="song-viewport">
+                class="cloud-rank-box"
+                id="selector-rank"
+            >
+                -
             </div>
 
-            <div class="cloud-highscore">
+
+            <div class="cloud-info">
 
                 <div
-                    class="cloud-rank-box"
-                    id="selector-rank">
-                    -
-                </div>
-
-                <div class="cloud-info">
-
-                    <div class="cloud-label en-font">
-                        HIGH SCORE
-                    </div>
-
-                    <div
-                        class="cloud-score-val"
-                        id="selector-highscore">
-                        0
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <button
-            class="btn"
-            onclick="confirmSelectedSong()">
-            決定
-        </button>
-
-    </div>
-
-
-    <!-- =========================
-         READY画面
-    ========================== -->
-
-    <div
-        id="credit-screen"
-        class="screen hidden">
-
-        <div
-            class="credit-jacket-large"
-            id="credit-jacket-icon">
-            🎵
-        </div>
-
-        <div
-            class="credit-title"
-            id="credit-song-title">
-        </div>
-
-        <div
-            class="credit-artist"
-            id="credit-song-artist">
-        </div>
-
-        <div class="ready-text en-font">
-            READY...♪
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         PAUSE
-    ========================== -->
-
-    <div
-        id="pause-screen"
-        class="screen hidden"
-        style="background:rgba(253,251,247,0.9);z-index:30;">
-
-        <div class="pause-panel">
-
-            <div class="pause-title en-font">
-                PAUSE
-            </div>
-
-            <button
-                class="pause-btn primary"
-                onclick="resumeGame()">
-                つづける
-            </button>
-
-            <button
-                class="pause-btn"
-                onclick="retryGame()">
-                やりなおす
-            </button>
-
-            <button
-                class="pause-btn"
-                onclick="returnToSelectFromPause()">
-                曲選択へもどる
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         CONFIG
-    ========================== -->
-
-    <div
-        id="config-screen"
-        class="screen hidden"
-        style="background:rgba(253,251,247,0.92);z-index:40;">
-
-        <div class="modal-panel">
-
-            <div class="modal-title en-font">
-                CONFIG / INFO
-            </div>
-
-            <div class="setting-item">
-
-                <div class="setting-label">
-
-                    <span>
-                        ノーツの速さ
-                    </span>
-
-                    <span
-                        id="speed-val-text"
-                        style="color:#d4a373;">
-                        1.0倍
-                    </span>
-
-                </div>
-
-                <div class="setting-range-container">
-
-                    <span style="font-size:11px;color:#b8aea1;">
-                        0.5x
-                    </span>
-
-                    <input
-                        type="range"
-                        id="speed-range"
-                        min="0.5"
-                        max="10"
-                        step="0.5"
-                        value="1"
-                        oninput="onSpeedChange(this.value)"
-                    >
-
-                    <span style="font-size:11px;color:#b8aea1;">
-                        10x
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div class="modal-body">
-
-                <p>
-                    <strong>📖 遊び方</strong>
-                </p>
-
-                <ul>
-
-                    <li>
-                        ノーツが判定枠に重なるタイミングでタップ
-                    </li>
-
-                    <li>
-                        ◆ フリックは素早く弾く
-                    </li>
-
-                    <li>
-                        ロングは終点まで押し続ける
-                    </li>
-
-                    <li>
-                        スライドは終点まで指を移動
-                    </li>
-
-                </ul>
-
-            </div>
-
-            <button
-                class="pause-btn primary"
-                onclick="closeConfigModal()">
-                とじる
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================
-         RESULT
-    ========================== -->
-
-    <div
-        id="result-screen"
-        class="screen hidden">
-
-        <div class="result-panel">
-
-            <div
-                class="rank-badge"
-                id="result-rank">
-                S
-            </div>
-
-            <div class="result-song-header">
-
-                <div
-                    class="result-jacket-small"
-                    id="result-jacket-icon">
-                    🎵
-                </div>
-
-                <div class="result-song-meta">
-
-                    <div
-                        class="result-title-text"
-                        id="result-song-title">
-                    </div>
-
-                    <div
-                        class="result-artist-text"
-                        id="result-song-artist">
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="result-score-container">
-
-                <div style="font-size:11px;color:#a89f91;">
-                    SCORE
+                    class="cloud-label en-font"
+                >
+                    HIGH SCORE
                 </div>
 
                 <div
-                    class="result-score-val"
-                    id="final-score">
+                    class="cloud-score-val"
+                    id="selector-highscore"
+                >
                     0
                 </div>
 
             </div>
 
-            <div class="judge-stats">
+        </div>
 
-                <div class="judge-row">
-                    <span class="stat-label-kirari">
-                        ｷﾗﾘ!
-                    </span>
-                    <span id="count-kirari">
-                        0
-                    </span>
+    </div>
+
+
+    <button
+        class="btn"
+        onclick="confirmSelectedSong()"
+    >
+        決定
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     READY
+===================================================== -->
+
+<div
+    id="credit-screen"
+    class="screen hidden"
+>
+
+    <div
+        class="credit-jacket-large"
+        id="credit-jacket-icon"
+    >
+        🎵
+    </div>
+
+
+    <div
+        class="credit-title"
+        id="credit-song-title"
+    >
+    </div>
+
+
+    <div
+        class="credit-artist"
+        id="credit-song-artist"
+    >
+    </div>
+
+
+    <div class="ready-text en-font">
+        READY...♪
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     PAUSE
+===================================================== -->
+
+<div
+    id="pause-screen"
+    class="screen hidden"
+    style="
+        background:rgba(253,251,247,0.9);
+        z-index:30;
+    "
+>
+
+    <div class="pause-panel">
+
+        <div class="pause-title en-font">
+            PAUSE
+        </div>
+
+
+        <button
+            class="pause-btn primary"
+            onclick="resumeGame()"
+        >
+            つづける
+        </button>
+
+
+        <button
+            class="pause-btn"
+            onclick="retryGame()"
+        >
+            やりなおす
+        </button>
+
+
+        <button
+            class="pause-btn"
+            onclick="returnToSelectFromPause()"
+        >
+            曲選択へもどる
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     CONFIG
+===================================================== -->
+
+<div
+    id="config-screen"
+    class="screen hidden"
+    style="
+        background:rgba(253,251,247,0.92);
+        z-index:40;
+    "
+>
+
+    <div class="modal-panel">
+
+        <div class="modal-title en-font">
+            CONFIG / INFO
+        </div>
+
+
+        <div class="setting-item">
+
+            <div class="setting-label">
+
+                <span>
+                    ノーツの速さ
+                </span>
+
+                <span
+                    id="speed-val-text"
+                    style="color:#d4a373;"
+                >
+                    1.0倍
+                </span>
+
+            </div>
+
+
+            <div
+                class="setting-range-container"
+            >
+
+                <span
+                    style="
+                        font-size:11px;
+                        color:#b8aea1;
+                    "
+                >
+                    0.5x
+                </span>
+
+
+                <input
+                    type="range"
+                    id="speed-range"
+                    min="0.5"
+                    max="10"
+                    step="0.5"
+                    value="1"
+                    oninput="onSpeedChange(this.value)"
+                >
+
+
+                <span
+                    style="
+                        font-size:11px;
+                        color:#b8aea1;
+                    "
+                >
+                    10x
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <p>
+                <strong>
+                    📖 遊び方
+                </strong>
+            </p>
+
+            <ul>
+
+                <li>
+                    ノーツが判定枠に重なるタイミングでタップ
+                </li>
+
+                <li>
+                    ◆ フリックは素早く弾く
+                </li>
+
+                <li>
+                    ロングは終点まで押し続ける
+                </li>
+
+                <li>
+                    スライドは終点まで指を移動
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <button
+            class="pause-btn primary"
+            onclick="closeConfigModal()"
+        >
+            とじる
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     RESULT
+===================================================== -->
+
+<div
+    id="result-screen"
+    class="screen hidden"
+>
+
+    <div class="result-panel">
+
+        <div
+            class="rank-badge"
+            id="result-rank"
+        >
+            S
+        </div>
+
+
+        <div
+            class="result-song-header"
+        >
+
+            <div
+                class="result-jacket-small"
+                id="result-jacket-icon"
+            >
+                🎵
+            </div>
+
+
+            <div class="result-song-meta">
+
+                <div
+                    class="result-title-text"
+                    id="result-song-title"
+                >
                 </div>
 
-                <div class="judge-row">
-                    <span class="stat-label-suteki">
-                        ｽﾃｷ!
-                    </span>
-                    <span id="count-suteki">
-                        0
-                    </span>
-                </div>
 
-                <div class="judge-row">
-                    <span class="stat-label-ii">
-                        ｲｲ!
-                    </span>
-                    <span id="count-ii">
-                        0
-                    </span>
-                </div>
-
-                <div class="judge-row">
-                    <span class="stat-label-alara">
-                        ｱﾗﾗ
-                    </span>
-                    <span id="count-alara">
-                        0
-                    </span>
+                <div
+                    class="result-artist-text"
+                    id="result-song-artist"
+                >
                 </div>
 
             </div>
 
         </div>
 
-        <div class="result-btn-container">
 
-            <button
-                class="result-btn sub"
-                onclick="retryFromResult()">
-                もう一度
-            </button>
+        <div
+            class="result-score-container"
+        >
 
-            <button
-                class="result-btn"
-                onclick="backToSelect()">
-                曲選択へ
-            </button>
+            <div
+                style="
+                    font-size:11px;
+                    color:#a89f91;
+                "
+            >
+                SCORE
+            </div>
+
+
+            <div
+                class="result-score-val"
+                id="final-score"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="judge-stats">
+
+            <div class="judge-row">
+
+                <span
+                    class="stat-label-kirari"
+                >
+                    ｷﾗﾘ!
+                </span>
+
+                <span id="count-kirari">
+                    0
+                </span>
+
+            </div>
+
+
+            <div class="judge-row">
+
+                <span
+                    class="stat-label-suteki"
+                >
+                    ｽﾃｷ!
+                </span>
+
+                <span id="count-suteki">
+                    0
+                </span>
+
+            </div>
+
+
+            <div class="judge-row">
+
+                <span
+                    class="stat-label-ii"
+                >
+                    ｲｲ!
+                </span>
+
+                <span id="count-ii">
+                    0
+                </span>
+
+            </div>
+
+
+            <div class="judge-row">
+
+                <span
+                    class="stat-label-alara"
+                >
+                    ｱﾗﾗ
+                </span>
+
+                <span id="count-alara">
+                    0
+                </span>
+
+            </div>
 
         </div>
 
     </div>
 
 
-    <canvas id="gameCanvas"></canvas>
+    <div class="result-btn-container">
+
+        <button
+            class="result-btn sub"
+            onclick="retryFromResult()"
+        >
+            もう一度
+        </button>
+
+
+        <button
+            class="result-btn"
+            onclick="backToSelect()"
+        >
+            曲選択へ
+        </button>
+
+    </div>
+
+</div>
+
+
+<canvas id="gameCanvas"></canvas>
+
 
 </div>
 
@@ -1126,7 +1330,9 @@ input[type="range"] {
 ========================================================= */
 
 const canvas =
-    document.getElementById("gameCanvas");
+    document.getElementById(
+        "gameCanvas"
+    );
 
 const ctx =
     canvas.getContext("2d");
@@ -1204,8 +1410,10 @@ let noteSpeedMultiplier =
         )
     ) || 1.0;
 
+
 const baseNoteSpeed =
     2.8;
+
 
 const targetRadius =
     32;
@@ -1213,21 +1421,13 @@ const targetRadius =
 
 /* =========================================================
    曲データ
-   ★ここには曲名を書かない
-   songs/index.jsonから読み込む
 ========================================================= */
 
 let songs = [];
 
 let currentSongIndex = 0;
 
-
-/* =========================================================
-   現在の曲
-========================================================= */
-
-let currentSong =
-    null;
+let currentSong = null;
 
 
 /* =========================================================
@@ -1244,12 +1444,15 @@ async function loadSongIndex() {
                 Date.now()
             );
 
+
         if (!response.ok) {
 
             throw new Error(
-                "songs/index.json を読み込めません"
+                "songs/index.json HTTP " +
+                response.status
             );
         }
+
 
         const data =
             await response.json();
@@ -1266,28 +1469,12 @@ async function loadSongIndex() {
         }
 
 
-        /*
-            現在の形式
-
-            {
-                "songs": [
-                    "sample",
-                    "donguri-korokoro",
-                    "oshiro-no-menuetto",
-                    "hoshi-furu-mori"
-                ]
-            }
-
-            をそのまま使えるようにする。
-        */
-
-
         songs =
             data.songs.map(
                 item => {
 
                     /*
-                        文字列の場合
+                        文字列形式
                     */
 
                     if (
@@ -1312,41 +1499,46 @@ async function loadSongIndex() {
                             chartFile:
                                 "songs/" +
                                 item +
-                                "/chart.js"
+                                "/chart.js",
+
+                            difficulty: "",
+
+                            level: ""
                         };
                     }
 
 
                     /*
-                        将来、index.jsonを
-                        オブジェクト形式にした場合にも対応
+                        オブジェクト形式
                     */
+
+                    const id =
+                        item.id ||
+                        item.name;
+
 
                     return {
 
-                        id:
-                            item.id || item.name,
+                        id: id,
 
                         title:
                             item.title ||
-                            item.id ||
-                            item.name,
+                            id,
 
                         artist:
-                            item.artist || "",
+                            item.artist ||
+                            "",
 
                         jacket:
-                            item.jacket || "🎵",
+                            item.jacket ||
+                            "🎵",
 
                         audioSrc:
                             item.audio ||
                             item.audioSrc ||
                             (
                                 "songs/" +
-                                (
-                                    item.id ||
-                                    item.name
-                                ) +
+                                id +
                                 "/audio.mp3"
                             ),
 
@@ -1355,23 +1547,40 @@ async function loadSongIndex() {
                             item.chartFile ||
                             (
                                 "songs/" +
-                                (
-                                    item.id ||
-                                    item.name
-                                ) +
+                                id +
                                 "/chart.js"
                             ),
 
+                        difficulty:
+                            item.difficulty ||
+                            "",
+
+                        level:
+                            item.level ??
+                            "",
+
                         difficulties:
-                            item.difficulties || null
+                            item.difficulties ||
+                            null
                     };
                 }
             );
 
 
         console.log(
-            "曲一覧読み込み成功:",
+            "================================"
+        );
+
+        console.log(
+            "曲一覧読み込み成功"
+        );
+
+        console.log(
             songs
+        );
+
+        console.log(
+            "================================"
         );
 
 
@@ -1398,7 +1607,7 @@ async function loadSongIndex() {
 
         alert(
             "曲一覧を読み込めませんでした。\n\n" +
-            "songs/index.json を確認してください。"
+            error.message
         );
     }
 }
@@ -1422,6 +1631,10 @@ async function loadExternalChart(song) {
     return new Promise(
         (resolve, reject) => {
 
+            /*
+                前回のscriptを削除
+            */
+
             const oldScript =
                 document.getElementById(
                     "external-chart-script"
@@ -1429,30 +1642,44 @@ async function loadExternalChart(song) {
 
 
             if (oldScript) {
+
                 oldScript.remove();
             }
 
 
             /*
-                chart.js側が
-
-                window.chart = {
-                    title: "...",
-                    chart: [...]
-                }
-
-                または
-
-                window.sample = ...
-
-                のどちらでも
-                ある程度対応する。
+                古いデータを消去
             */
 
-            window.chart = null;
+            window.chart =
+                null;
 
-            window.sample = null;
+            window.sample =
+                null;
 
+
+            /*
+                曲IDから
+                songData_xxx
+                を作る
+
+                sample
+                ↓
+                songData_sample
+            */
+
+            const songDataName =
+                "songData_" +
+                song.id;
+
+
+            window[songDataName] =
+                null;
+
+
+            /*
+                script作成
+            */
 
             const script =
                 document.createElement(
@@ -1470,17 +1697,62 @@ async function loadExternalChart(song) {
                 Date.now();
 
 
+            /*
+                読み込み成功
+            */
+
             script.onload =
                 () => {
+
+                    console.log(
+                        "chart.js読み込み成功:",
+                        song.chartFile
+                    );
+
+
+                    /*
+                        現在の形式
+
+                        window.songData_sample
+                    */
+
+                    const songData =
+                        window[
+                            songDataName
+                        ];
+
+
+                    if (
+                        songData
+                    ) {
+
+                        console.log(
+                            "曲データ読み込み成功:",
+                            songData
+                        );
+
+
+                        resolve(
+                            songData
+                        );
+
+                        return;
+                    }
+
+
+                    /*
+                        旧形式
+                    */
 
                     if (
                         window.chart
                     ) {
 
                         console.log(
-                            "譜面読み込み成功:",
+                            "window.chart形式で読み込み成功:",
                             window.chart
                         );
+
 
                         resolve(
                             window.chart
@@ -1489,15 +1761,20 @@ async function loadExternalChart(song) {
                         return;
                     }
 
+
+                    /*
+                        旧sample形式
+                    */
 
                     if (
                         window.sample
                     ) {
 
                         console.log(
-                            "旧形式譜面読み込み成功:",
+                            "window.sample形式で読み込み成功:",
                             window.sample
                         );
+
 
                         resolve(
                             window.sample
@@ -1509,18 +1786,25 @@ async function loadExternalChart(song) {
 
                     reject(
                         new Error(
-                            "chart.js に譜面データがありません"
+                            "chart.js は読み込めましたが、\n" +
+                            songDataName +
+                            " が見つかりません。"
                         )
                     );
                 };
 
+
+            /*
+                読み込み失敗
+            */
 
             script.onerror =
                 () => {
 
                     reject(
                         new Error(
-                            "譜面ファイルを読み込めません:\n" +
+                            "譜面ファイルを読み込めません。\n\n" +
+                            "読み込み先:\n" +
                             song.chartFile
                         )
                     );
@@ -1548,6 +1832,7 @@ let floatingTexts = [];
 
 let activeTouches =
     new Map();
+
 
 let judgeCounts = {
 
@@ -1587,11 +1872,18 @@ function calculateChartEndTime(
     ) {
 
         let endTime =
-            Number(note.time) || 0;
+            Number(
+                note.time
+            ) || 0;
 
+
+        /*
+            LONG
+        */
 
         if (
-            note.type === "long"
+            note.type ===
+            "long"
         ) {
 
             endTime +=
@@ -1601,14 +1893,23 @@ function calculateChartEndTime(
         }
 
 
+        /*
+            SLIDE
+        */
+
         if (
-            note.type === "slidenode"
+            note.type ===
+                "slidenode" ||
+
+            note.type ===
+                "slide"
         ) {
 
             endTime +=
                 Number(
                     note.slideDuration ||
                     note.pathTime ||
+                    note.duration ||
                     0
                 );
         }
@@ -1648,8 +1949,15 @@ function generateChart(
 
 
     if (
-        !chartData
+        !Array.isArray(
+            chartData
+        )
     ) {
+
+        console.error(
+            "chartDataが配列ではありません:",
+            chartData
+        );
 
         chartData = [];
     }
@@ -1657,32 +1965,62 @@ function generateChart(
 
     notes =
         chartData.map(
-            note => ({
+            note => {
 
-                ...note,
+                let normalizedType =
+                    note.type ||
+                    "tap";
 
-                time:
-                    Number(
-                        note.time
-                    ) || 0,
 
-                duration:
-                    Number(
-                        note.duration
-                    ) || 0,
+                /*
+                    slide → slidenode
+                */
 
-                hit:
-                    false,
+                if (
+                    normalizedType ===
+                    "slide"
+                ) {
 
-                holding:
-                    false,
+                    normalizedType =
+                        "slidenode";
+                }
 
-                started:
-                    false,
 
-                assignedTouchId:
-                    null
-            })
+                return {
+
+                    ...note,
+
+                    time:
+                        Number(
+                            note.time
+                        ) || 0,
+
+                    lane:
+                        Number(
+                            note.lane
+                        ) || 0,
+
+                    type:
+                        normalizedType,
+
+                    duration:
+                        Number(
+                            note.duration
+                        ) || 0,
+
+                    hit:
+                        false,
+
+                    holding:
+                        false,
+
+                    started:
+                        false,
+
+                    assignedTouchId:
+                        null
+                };
+            }
         );
 
 
@@ -1696,9 +2034,48 @@ function generateChart(
         chartEndTime;
 
 
+    /*
+        chart.js側にdurationがあれば
+        そちらも考慮
+    */
+
+    if (
+        currentSong &&
+        currentSong.chartDuration
+    ) {
+
+        songDuration =
+            Math.max(
+                songDuration,
+                currentSong.chartDuration
+            );
+    }
+
+
+    console.log(
+        "================================"
+    );
+
+    console.log(
+        "譜面生成成功"
+    );
+
+    console.log(
+        "ノーツ数:",
+        notes.length
+    );
+
     console.log(
         "譜面終了時間:",
         songDuration
+    );
+
+    console.log(
+        notes
+    );
+
+    console.log(
+        "================================"
     );
 }
 
@@ -1889,6 +2266,49 @@ function updateSelectorHighScoreDisplay() {
 }
 
 
+function createJacketHTML(
+    jacket
+) {
+
+    if (
+        typeof jacket ===
+        "string" &&
+
+        (
+            jacket.endsWith(
+                ".png"
+            ) ||
+
+            jacket.endsWith(
+                ".jpg"
+            ) ||
+
+            jacket.endsWith(
+                ".jpeg"
+            ) ||
+
+            jacket.endsWith(
+                ".webp"
+            )
+        )
+    ) {
+
+        return `
+            <img
+                src="${jacket}"
+                onerror="
+                    this.style.display='none';
+                    this.parentElement.innerText='🎵';
+                "
+            >
+        `;
+    }
+
+
+    return jacket || "🎵";
+}
+
+
 function renderSongSelector() {
 
     const viewport =
@@ -1897,12 +2317,11 @@ function renderSongSelector() {
         );
 
 
-    if (
-        !viewport
-    ) return;
+    if (!viewport) return;
 
 
-    viewport.innerHTML = "";
+    viewport.innerHTML =
+        "";
 
 
     if (
@@ -1929,7 +2348,9 @@ function renderSongSelector() {
 
 
         const song =
-            songs[targetIdx];
+            songs[
+                targetIdx
+            ];
 
 
         const card =
@@ -1967,7 +2388,6 @@ function renderSongSelector() {
         const scale =
             Math.max(
                 0.75,
-
                 1 -
                 Math.abs(
                     normY
@@ -1979,7 +2399,6 @@ function renderSongSelector() {
         const opacity =
             Math.max(
                 0.15,
-
                 1 -
                 Math.abs(
                     normY
@@ -2006,14 +2425,19 @@ function renderSongSelector() {
 
 
         if (
-            song.difficulties
+            song.difficulty
         ) {
 
             difficultyText =
-                Object.keys(
-                    song.difficulties
-                ).join(
-                    " / "
+                song.difficulty +
+                (
+                    song.level !== "" &&
+                    song.level !== null
+                    ?
+                    " ★" +
+                    song.level
+                    :
+                    ""
                 );
         }
 
@@ -2021,17 +2445,27 @@ function renderSongSelector() {
         card.innerHTML = `
 
             <div class="song-jacket">
-                ${song.jacket || "🎵"}
+                ${
+                    createJacketHTML(
+                        song.jacket
+                    )
+                }
             </div>
 
             <div class="song-info">
 
                 <div class="song-title">
-                    ${song.title || song.id}
+                    ${
+                        song.title ||
+                        song.id
+                    }
                 </div>
 
                 <div class="song-artist">
-                    ${song.artist || ""}
+                    ${
+                        song.artist ||
+                        ""
+                    }
                 </div>
 
                 ${
@@ -2315,13 +2749,6 @@ async function confirmSelectedSong() {
 
 
     document.getElementById(
-        "credit-jacket-icon"
-    ).innerText =
-        selectedSong.jacket ||
-        "🎵";
-
-
-    document.getElementById(
         "credit-song-title"
     ).innerText =
         selectedSong.title ||
@@ -2335,6 +2762,58 @@ async function confirmSelectedSong() {
         "";
 
 
+    /*
+        絵文字 / 画像
+    */
+
+    const creditJacket =
+        document.getElementById(
+            "credit-jacket-icon"
+        );
+
+
+    if (
+        typeof selectedSong.jacket ===
+        "string" &&
+
+        (
+            selectedSong.jacket.endsWith(
+                ".png"
+            ) ||
+
+            selectedSong.jacket.endsWith(
+                ".jpg"
+            ) ||
+
+            selectedSong.jacket.endsWith(
+                ".jpeg"
+            ) ||
+
+            selectedSong.jacket.endsWith(
+                ".webp"
+            )
+        )
+    ) {
+
+        creditJacket.innerHTML =
+            `
+            <img
+                src="${selectedSong.jacket}"
+                onerror="
+                    this.style.display='none';
+                    this.parentElement.innerText='🎵';
+                "
+            >
+            `;
+
+    } else {
+
+        creditJacket.innerText =
+            selectedSong.jacket ||
+            "🎵";
+    }
+
+
     document.getElementById(
         "credit-screen"
     ).classList.remove(
@@ -2345,6 +2824,10 @@ async function confirmSelectedSong() {
     gameState =
         "CREDIT";
 
+
+    /*
+        AudioContext準備
+    */
 
     if (
         !audioCtx
@@ -2366,6 +2849,10 @@ async function confirmSelectedSong() {
         await audioCtx.resume();
     }
 
+
+    /*
+        READY 3秒
+    */
 
     setTimeout(
         () => {
@@ -2435,13 +2922,25 @@ async function startActualGame(
     ) {
 
         console.error(
+            "================================"
+        );
+
+        console.error(
+            "譜面読み込み失敗"
+        );
+
+        console.error(
             error
+        );
+
+        console.error(
+            "================================"
         );
 
 
         alert(
             "譜面ファイルを読み込めませんでした。\n\n" +
-            song.chartFile
+            error.message
         );
 
 
@@ -2451,9 +2950,61 @@ async function startActualGame(
     }
 
 
+    /*
+        chart.jsのデータを
+        currentSongにも反映
+    */
+
     if (
         externalData
     ) {
+
+        if (
+            externalData.audioSrc
+        ) {
+
+            song.audioSrc =
+                externalData.audioSrc;
+        }
+
+
+        if (
+            externalData.duration
+        ) {
+
+            song.chartDuration =
+                Number(
+                    externalData.duration
+                );
+        }
+
+
+        if (
+            externalData.jacket
+        ) {
+
+            song.jacket =
+                externalData.jacket;
+        }
+
+
+        if (
+            externalData.title
+        ) {
+
+            song.title =
+                externalData.title;
+        }
+
+
+        if (
+            externalData.artist
+        ) {
+
+            song.artist =
+                externalData.artist;
+        }
+
 
         generateChart(
             externalData.chart ||
@@ -2546,6 +3097,10 @@ async function startActualGame(
     );
 
 
+    /*
+        AudioContext
+    */
+
     if (
         !audioCtx
     ) {
@@ -2567,6 +3122,10 @@ async function startActualGame(
     }
 
 
+    /*
+        ゲーム時計開始
+    */
+
     startTime =
         audioCtx.currentTime;
 
@@ -2576,8 +3135,7 @@ async function startActualGame(
 
 
     /*
-        MP3が短くても
-        ゲーム時計は止めない
+        MP3再生
     */
 
     try {
@@ -2719,6 +3277,13 @@ function returnToSelectFromPause() {
 
 
     document.getElementById(
+        "result-screen"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
         "select-screen"
     ).classList.remove(
         "hidden"
@@ -2768,11 +3333,52 @@ function finishGame() {
         ];
 
 
-    document.getElementById(
-        "result-jacket-icon"
-    ).innerText =
-        song.jacket ||
-        "🎵";
+    const resultJacket =
+        document.getElementById(
+            "result-jacket-icon"
+        );
+
+
+    if (
+        typeof song.jacket ===
+        "string" &&
+
+        (
+            song.jacket.endsWith(
+                ".png"
+            ) ||
+
+            song.jacket.endsWith(
+                ".jpg"
+            ) ||
+
+            song.jacket.endsWith(
+                ".jpeg"
+            ) ||
+
+            song.jacket.endsWith(
+                ".webp"
+            )
+        )
+    ) {
+
+        resultJacket.innerHTML =
+            `
+            <img
+                src="${song.jacket}"
+                onerror="
+                    this.style.display='none';
+                    this.parentElement.innerText='🎵';
+                "
+            >
+            `;
+
+    } else {
+
+        resultJacket.innerText =
+            song.jacket ||
+            "🎵";
+    }
 
 
     document.getElementById(
@@ -3196,6 +3802,7 @@ canvas.addEventListener(
 
             const distance =
                 Math.hypot(
+
                     touchX -
                     lanes[i].x,
 
@@ -3227,6 +3834,7 @@ canvas.addEventListener(
 
                     const diff =
                         Math.abs(
+
                             currentTime -
                             note.time
                         );
@@ -3237,6 +3845,10 @@ canvas.addEventListener(
                         0.4
                     ) continue;
 
+
+                    /*
+                        TAP
+                    */
 
                     if (
                         note.type ===
@@ -3264,6 +3876,10 @@ canvas.addEventListener(
                         break;
                     }
 
+
+                    /*
+                        LONG
+                    */
 
                     if (
                         note.type ===
@@ -3302,9 +3918,16 @@ canvas.addEventListener(
                     }
 
 
+                    /*
+                        SLIDE
+                    */
+
                     if (
                         note.type ===
-                        "slidenode"
+                            "slidenode" ||
+
+                        note.type ===
+                            "slide"
                     ) {
 
                         note.started =
@@ -3336,6 +3959,10 @@ canvas.addEventListener(
     }
 );
 
+
+/* =========================================================
+   pointermove
+========================================================= */
 
 canvas.addEventListener(
     "pointermove",
@@ -3387,7 +4014,10 @@ canvas.addEventListener(
 
             if (
                 note.type ===
-                "slidenode"
+                    "slidenode" ||
+
+                note.type ===
+                    "slide"
             ) {
 
                 const lanes =
@@ -3414,14 +4044,16 @@ canvas.addEventListener(
 
 
                 if (
+                    target &&
                     Math.hypot(
+
                         touchX -
                         target.x,
 
                         touchY -
                         target.y
-                    )
-                    <
+
+                    ) <
                     targetRadius *
                     2.5
                 ) {
@@ -3519,6 +4151,10 @@ function handleTouchEndOrCancel(
             touchInfo.assignedNote;
 
 
+        /*
+            LONG終了
+        */
+
         if (
             note.type ===
             "long" &&
@@ -3532,6 +4168,7 @@ function handleTouchEndOrCancel(
 
             const diff =
                 Math.abs(
+
                     currentTime -
                     endTime
                 );
@@ -3606,9 +4243,18 @@ function handleTouchEndOrCancel(
         }
 
 
+        /*
+            SLIDE終了
+        */
+
         else if (
-            note.type ===
-            "slidenode" &&
+            (
+                note.type ===
+                    "slidenode" ||
+
+                note.type ===
+                    "slide"
+            ) &&
             note.holding
         ) {
 
@@ -3689,7 +4335,7 @@ function handleTouchEndOrCancel(
     } else {
 
         /*
-            フリック
+            FLICK
         */
 
         for (
@@ -3705,6 +4351,7 @@ function handleTouchEndOrCancel(
 
             const diff =
                 Math.abs(
+
                     currentTime -
                     note.time
                 );
@@ -3843,8 +4490,7 @@ function gameLoop() {
 
 
         /*
-            MP3ではなく
-            譜面時間で終了
+            譜面終了
         */
 
         if (
@@ -3877,6 +4523,7 @@ function gameLoop() {
         const girlWidth =
             110;
 
+
         const girlHeight =
             110;
 
@@ -3899,6 +4546,7 @@ function gameLoop() {
                 15,
 
                 girlWidth,
+
                 girlHeight
             );
 
@@ -3922,7 +4570,6 @@ function gameLoop() {
                 45,
 
                 0,
-
                 Math.PI * 2
             );
 
@@ -3943,6 +4590,7 @@ function gameLoop() {
 
             const x =
                 lanes[i].x;
+
 
             const y =
                 lanes[i].y;
@@ -3966,13 +4614,11 @@ function gameLoop() {
             ctx.arc(
 
                 x,
-
                 y,
 
                 targetRadius,
 
                 0,
-
                 Math.PI * 2
             );
 
@@ -3996,14 +4642,12 @@ function gameLoop() {
             ctx.arc(
 
                 x,
-
                 y,
 
                 targetRadius *
                 0.55,
 
                 0,
-
                 Math.PI * 2
             );
 
@@ -4069,6 +4713,7 @@ function gameLoop() {
                     const startX =
                         centerX;
 
+
                     const startY =
                         girlY +
                         spawnOffsetY;
@@ -4110,13 +4755,11 @@ function gameLoop() {
                     ctx.arc(
 
                         x,
-
                         y,
 
                         16,
 
                         0,
-
                         Math.PI * 2
                     );
 
@@ -4177,6 +4820,7 @@ function gameLoop() {
                     const startX =
                         centerX;
 
+
                     const startY =
                         girlY +
                         spawnOffsetY;
@@ -4218,13 +4862,11 @@ function gameLoop() {
                     ctx.arc(
 
                         x,
-
                         y,
 
                         16,
 
                         0,
-
                         Math.PI * 2
                     );
 
@@ -4324,6 +4966,7 @@ function gameLoop() {
                     const startX =
                         centerX;
 
+
                     const startY =
                         girlY +
                         spawnOffsetY;
@@ -4413,6 +5056,10 @@ function gameLoop() {
                     }
 
 
+                    /*
+                        ロング本体
+                    */
+
                     ctx.strokeStyle =
                         "rgba(243,156,18,0.65)";
 
@@ -4465,13 +5112,11 @@ function gameLoop() {
                     ctx.arc(
 
                         headX,
-
                         headY,
 
                         16,
 
                         0,
-
                         Math.PI * 2
                     );
 
@@ -4487,7 +5132,8 @@ function gameLoop() {
 
                     if (
                         tailProg >= 0 &&
-                        currentTime < endTime
+                        currentTime <
+                        endTime
                     ) {
 
                         ctx.beginPath();
@@ -4496,13 +5142,11 @@ function gameLoop() {
                         ctx.arc(
 
                             tailX,
-
                             tailY,
 
                             15,
 
                             0,
-
                             Math.PI * 2
                         );
 
@@ -4558,7 +5202,10 @@ function gameLoop() {
 
             else if (
                 note.type ===
-                "slidenode"
+                    "slidenode" ||
+
+                note.type ===
+                    "slide"
             ) {
 
                 const path =
@@ -4596,6 +5243,12 @@ function gameLoop() {
                                 path.length - 1
                             ]
                         ];
+
+
+                    if (
+                        !startPos ||
+                        !endPos
+                    ) continue;
 
 
                     const startSpawnX =
@@ -4691,13 +5344,11 @@ function gameLoop() {
                     ctx.arc(
 
                         startX,
-
                         startY,
 
                         16,
 
                         0,
-
                         Math.PI * 2
                     );
 
@@ -4713,13 +5364,11 @@ function gameLoop() {
                     ctx.arc(
 
                         endX,
-
                         endY,
 
                         15,
 
                         0,
-
                         Math.PI * 2
                     );
 
@@ -4755,7 +5404,6 @@ function gameLoop() {
                         "▶︎",
 
                         startX,
-
                         startY
                     );
                 }
@@ -4781,12 +5429,15 @@ function gameLoop() {
                         ];
 
 
-                    showFloatingText(
-                        "ｱﾗﾗ",
-                        "#95a5a6",
-                        endPos.x,
-                        endPos.y - 40
-                    );
+                    if (endPos) {
+
+                        showFloatingText(
+                            "ｱﾗﾗ",
+                            "#95a5a6",
+                            endPos.x,
+                            endPos.y - 40
+                        );
+                    }
                 }
             }
         }
@@ -4851,13 +5502,11 @@ function gameLoop() {
         ctx.arc(
 
             p.x,
-
             p.y,
 
             p.radius,
 
             0,
-
             Math.PI * 2
         );
 
@@ -4993,6 +5642,7 @@ function gameLoop() {
 window.addEventListener(
     "contextmenu",
     e => {
+
         e.preventDefault();
     }
 );
@@ -5009,4 +5659,5 @@ gameLoop();
 </script>
 
 </body>
+
 </html>
