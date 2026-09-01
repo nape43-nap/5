@@ -1615,24 +1615,56 @@ async function loadSongIndex() {
 
 /* =========================================================
    外部JS譜面読み込み
+   songs/曲ID/chart.js に自動対応
 ========================================================= */
 
 async function loadExternalChart(song) {
 
-    if (
-        !song ||
-        !song.chartFile
-    ) {
+    if (!song || !song.id) {
+
+        console.error(
+            "loadExternalChart: song または song.id がありません",
+            song
+        );
 
         return null;
     }
 
 
+    /*
+        -----------------------------------------------------
+        譜面ファイルの場所を決定
+        -----------------------------------------------------
+
+        index.json に chartFile があればそれを使用。
+
+        なければ、
+
+        songs/sample/chart.js
+        songs/donguri-korokoro/chart.js
+
+        のように自動生成。
+    */
+
+    const chartFile =
+        song.chartFile ||
+        `songs/${song.id}/chart.js`;
+
+
+    console.log(
+        "譜面読み込み開始:",
+        chartFile
+    );
+
+
     return new Promise(
         (resolve, reject) => {
 
+
             /*
-                前回のscriptを削除
+                -------------------------------------------------
+                前回読み込んだ chart.js を削除
+                -------------------------------------------------
             */
 
             const oldScript =
@@ -1648,7 +1680,9 @@ async function loadExternalChart(song) {
 
 
             /*
-                古いデータを消去
+                -------------------------------------------------
+                古いデータをクリア
+                -------------------------------------------------
             */
 
             window.chart =
@@ -1659,13 +1693,23 @@ async function loadExternalChart(song) {
 
 
             /*
-                曲IDから
-                songData_xxx
-                を作る
+                -------------------------------------------------
+                今回の曲用データ名
+                -------------------------------------------------
 
                 sample
                 ↓
                 songData_sample
+
+                donguri-korokoro
+                ↓
+                songData_donguri-korokoro
+
+                ただし、
+
+                window["songData_donguri-korokoro"]
+
+                のようにブラケット記法なら問題ありません。
             */
 
             const songDataName =
@@ -1673,12 +1717,20 @@ async function loadExternalChart(song) {
                 song.id;
 
 
-            window[songDataName] =
+            /*
+                読み込み前に一旦消す
+            */
+
+            window[
+                songDataName
+            ] =
                 null;
 
 
             /*
-                script作成
+                -------------------------------------------------
+                script生成
+                -------------------------------------------------
             */
 
             const script =
@@ -1691,29 +1743,54 @@ async function loadExternalChart(song) {
                 "external-chart-script";
 
 
+            /*
+                キャッシュ対策
+            */
+
             script.src =
-                song.chartFile +
+                chartFile +
                 "?t=" +
                 Date.now();
 
 
             /*
+                -------------------------------------------------
                 読み込み成功
+                -------------------------------------------------
             */
 
             script.onload =
                 () => {
 
                     console.log(
-                        "chart.js読み込み成功:",
-                        song.chartFile
+                        "================================"
+                    );
+
+                    console.log(
+                        "chart.js読み込み成功"
+                    );
+
+                    console.log(
+                        "読み込み先:",
+                        chartFile
+                    );
+
+                    console.log(
+                        "探しているデータ:",
+                        songDataName
+                    );
+
+                    console.log(
+                        "================================"
                     );
 
 
                     /*
-                        現在の形式
+                        -------------------------------------------------
+                        ① 正式形式
 
                         window.songData_sample
+                        -------------------------------------------------
                     */
 
                     const songData =
@@ -1732,16 +1809,66 @@ async function loadExternalChart(song) {
                         );
 
 
+                        /*
+                            audioSrcがchart.jsにある場合
+                            曲データへ反映
+                        */
+
+                        if (
+                            songData.audioSrc
+                        ) {
+
+                            song.audioSrc =
+                                songData.audioSrc;
+                        }
+
+
+                        /*
+                            duration
+                        */
+
+                        if (
+                            songData.duration
+                        ) {
+
+                            song.chartDuration =
+                                Number(
+                                    songData.duration
+                                );
+                        }
+
+
+                        console.log(
+                            "音源:",
+                            song.audioSrc
+                        );
+
+
+                        console.log(
+                            "譜面数:",
+                            Array.isArray(
+                                songData.chart
+                            )
+                            ?
+                            songData.chart.length
+                            :
+                            0
+                        );
+
+
                         resolve(
                             songData
                         );
+
 
                         return;
                     }
 
 
                     /*
-                        旧形式
+                        -------------------------------------------------
+                        ② window.chart形式
+                        -------------------------------------------------
                     */
 
                     if (
@@ -1758,12 +1885,15 @@ async function loadExternalChart(song) {
                             window.chart
                         );
 
+
                         return;
                     }
 
 
                     /*
-                        旧sample形式
+                        -------------------------------------------------
+                        ③ window.sample形式
+                        -------------------------------------------------
                     */
 
                     if (
@@ -1780,36 +1910,191 @@ async function loadExternalChart(song) {
                             window.sample
                         );
 
+
                         return;
                     }
 
 
+                    /*
+                        -------------------------------------------------
+                        ④ chart.js内のデータを自動検索
+                        
+                        念のための保険。
+
+                        window.songData_xxx
+                        という形式なら、IDが多少違っても
+                        見つけられるようにする。
+                        -------------------------------------------------
+                    */
+
+                    let foundData =
+                        null;
+
+
+                    const prefix =
+                        "songData_";
+
+
+                    for (
+                        const key of
+                        Object.keys(
+                            window
+                        )
+                    ) {
+
+                        if (
+                            key.startsWith(
+                                prefix
+                            )
+                        ) {
+
+                            const value =
+                                window[key];
+
+
+                            if (
+                                value &&
+                                typeof value ===
+                                "object" &&
+                                Array.isArray(
+                                    value.chart
+                                )
+                            ) {
+
+                                foundData =
+                                    value;
+
+
+                                console.log(
+                                    "songDataを自動検出:",
+                                    key
+                                );
+
+
+                                break;
+                            }
+                        }
+                    }
+
+
+                    if (
+                        foundData
+                    ) {
+
+                        /*
+                            自動検出したデータを
+                            現在の曲へ反映
+                        */
+
+                        if (
+                            foundData.audioSrc
+                        ) {
+
+                            song.audioSrc =
+                                foundData.audioSrc;
+                        }
+
+
+                        if (
+                            foundData.duration
+                        ) {
+
+                            song.chartDuration =
+                                Number(
+                                    foundData.duration
+                                );
+                        }
+
+
+                        resolve(
+                            foundData
+                        );
+
+
+                        return;
+                    }
+
+
+                    /*
+                        -------------------------------------------------
+                        ⑤ どうしても見つからない
+                        -------------------------------------------------
+                    */
+
+                    console.error(
+                        "chart.jsは読み込めましたが、曲データが見つかりません。"
+                    );
+
+
+                    console.error(
+                        "探していた名前:",
+                        songDataName
+                    );
+
+
+                    console.error(
+                        "現在のsong:",
+                        song
+                    );
+
+
                     reject(
                         new Error(
+
                             "chart.js は読み込めましたが、\n" +
+
                             songDataName +
-                            " が見つかりません。"
+
+                            " が見つかりません。\n\n" +
+
+                            "読み込み先:\n" +
+
+                            chartFile
+
                         )
                     );
                 };
 
 
             /*
+                -------------------------------------------------
                 読み込み失敗
+                -------------------------------------------------
             */
 
             script.onerror =
                 () => {
 
+                    console.error(
+                        "譜面ファイルを読み込めません:"
+                    );
+
+                    console.error(
+                        chartFile
+                    );
+
+
                     reject(
+
                         new Error(
+
                             "譜面ファイルを読み込めません。\n\n" +
+
                             "読み込み先:\n" +
-                            song.chartFile
+
+                            chartFile
+
                         )
+
                     );
                 };
 
+
+            /*
+                -------------------------------------------------
+                scriptをページへ追加
+                -------------------------------------------------
+            */
 
             document.body.appendChild(
                 script
