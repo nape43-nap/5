@@ -692,9 +692,8 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-// 女の子のイラスト画像を読み込む設定
 const girlImg = new Image();
-girlImg.src = 'girl.png'; // ファイル名が異なる場合はここを変更してください
+girlImg.src = 'girl.png';
 
 let gameState = 'SELECT';
 let score = 0;
@@ -1117,7 +1116,7 @@ canvas.addEventListener('pointerdown', (e) => {
                             if (note.type === 'tap') {
                                 note.hit = true;
                                 judgeAction(diff, lanes[i].x, lanes[i].y);
-                                spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
+                                spawnParticles(lanes[i].x, lanes[i].y, '#16a085'); // タップ成功時の緑パーティクル
                                 playHitSound();
                                 break;
                             } else if (note.type === 'long') {
@@ -1247,7 +1246,7 @@ function handleTouchEndOrCancel(e) {
                         judgeCounts.kirari++;
                         let lanePos = lanes[note.lane];
                         showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
-                        spawnParticles(lanePos.x, lanePos.y, '#9b59b6');
+                        spawnParticles(lanePos.x, lanePos.y, '#3498db'); // フリック成功時の青パーティクル
                         playHitSound();
                         break;
                     }
@@ -1347,9 +1346,8 @@ function gameLoop() {
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
         
-        // --- 女の子のサイズを150pxに変更 ---
-        let girlWidth = 150;  // 幅を150pxに拡大
-        let girlHeight = 150; // 高さを150pxに拡大
+        let girlWidth = 150;
+        let girlHeight = 150;
         if (girlImg.complete && girlImg.naturalWidth !== 0) {
             ctx.drawImage(
                 girlImg, 
@@ -1359,7 +1357,6 @@ function gameLoop() {
                 girlHeight
             );
         } else {
-            // 画像が読み込まれていない場合の仮表示
             ctx.fillStyle = "#f5d0c5";
             ctx.beginPath();
             ctx.arc(centerX, girlY + girlFloatY + 15, 60, 0, Math.PI * 2);
@@ -1399,7 +1396,8 @@ function gameLoop() {
                     let x = startSpawnX + (target.x - startSpawnX) * progress;
                     let y = startSpawnY + (target.y - startSpawnY) * progress;
 
-                    ctx.fillStyle = "#9b59b6";
+                    // フリックノーツの色を青 (#3498db) に変更
+                    ctx.fillStyle = "#3498db";
                     ctx.strokeStyle = "#ffffff";
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -1560,7 +1558,8 @@ function gameLoop() {
                     let y = startSpawnY + (target.y - startSpawnY) * progress;
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = "#ffffff";
-                    ctx.fillStyle = "#1abc9c";
+                    // タップノーツの色を少し濃い緑 (#16a085) に変更
+                    ctx.fillStyle = "#16a085";
                     ctx.beginPath();
                     ctx.arc(x, y, 16, 0, Math.PI * 2);
                     ctx.fill();
