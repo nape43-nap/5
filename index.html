@@ -579,7 +579,7 @@
     </div>
 
     <div id="credit-screen" class="screen hidden">
-        <div class="credit-jacket-large" id="credit-jacket-icon">🌰</div>
+        <div class="credit-jacket-large" id="credit-jacket-icon">🎵</div>
         <div class="credit-title" id="credit-song-title">タイトル</div>
         <div class="credit-artist" id="credit-song-artist">アーティスト</div>
         <div class="ready-text en-font">READY...♪</div>
@@ -626,7 +626,7 @@
             <div class="rank-badge" id="result-rank">S</div>
             
             <div class="result-song-header">
-                <div class="result-jacket-small" id="result-jacket-icon">🌰</div>
+                <div class="result-jacket-small" id="result-jacket-icon">🎵</div>
                 <div class="result-song-meta">
                     <div class="result-title-text" id="result-song-title">タイトル</div>
                     <div class="result-artist-text" id="result-artist-text">アーティスト</div>
@@ -673,9 +673,6 @@
 <script>
 // 1曲ごとのファイルを読み込んで登録するための仕組み
 window.songDatabase = {};
-window.registerSongData = function(id, data) {
-    window.songDatabase[id] = { id: id, ...data };
-};
 
 let songs = [];
 
@@ -683,7 +680,7 @@ let songs = [];
 function loadAllSongs(callback) {
     let ids = window.songIds || [];
     if (ids.length === 0) {
-        songs = [{ id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0, chart: [] }];
+        songs = [{ id: 'sample', title: 'サンプル曲', artist: 'わし', jacket: '🎵', duration: 15.0, chart: [] }];
         if (callback) callback();
         return;
     }
@@ -693,6 +690,10 @@ function loadAllSongs(callback) {
         let script = document.createElement('script');
         script.src = `assets/songs/${id}.js`; // 各曲のファイルパス
         script.onload = () => {
+            // window[id] 形式で定義されたデータをデータベースに格納
+            if (window[id] && !window.songDatabase[id]) {
+                window.songDatabase[id] = { id: id, ...window[id] };
+            }
             loadedCount++;
             if (loadedCount === ids.length) {
                 songs = ids.map(i => window.songDatabase[i]).filter(Boolean);
@@ -727,6 +728,7 @@ girlImg.src = 'girl.png';
 let gameState = 'SELECT';
 let score = 0;
 let audioCtx = null;
+let currentAudio = null; // 音源再生用
 let startTime = 0;
 let songDuration = 18.0; 
 
@@ -940,6 +942,16 @@ function confirmSelectedSong() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
+    // 音源が指定されている場合は事前にロード・準備
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+    if (selectedSong.audioSrc) {
+        currentAudio = new Audio(selectedSong.audioSrc);
+        currentAudio.load();
+    }
+
     setTimeout(() => {
         startActualGame(selectedSong);
     }, 3000);
@@ -957,6 +969,13 @@ function startActualGame(song) {
     
     generateChart(song);
     startTime = audioCtx.currentTime;
+
+    // 音源の再生開始
+    if (currentAudio) {
+        currentAudio.currentTime = 0;
+        currentAudio.play().catch(e => console.log("音声再生エラー:", e));
+    }
+
     gameState = 'PLAYING';
 }
 
@@ -964,23 +983,33 @@ function openPauseMenu() {
     if (gameState !== 'PLAYING') return;
     gameState = 'PAUSE';
     pauseStartTime = audioCtx.currentTime;
+    if (currentAudio) currentAudio.pause();
     document.getElementById('pause-screen').classList.remove('hidden');
 }
 
 function resumeGame() {
     document.getElementById('pause-screen').classList.add('hidden');
     totalPausedTime += (audioCtx.currentTime - pauseStartTime);
+    if (currentAudio) currentAudio.play().catch(e => {});
     gameState = 'PLAYING';
 }
 
 function retryGame() {
     document.getElementById('pause-screen').classList.add('hidden');
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
     startActualGame(songs[currentSongIndex]);
 }
 
 function returnToSelectFromPause() {
     document.getElementById('pause-screen').classList.add('hidden');
     document.getElementById('menu-btn').classList.add('hidden');
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
     document.getElementById('select-screen').classList.remove('hidden');
     gameState = 'SELECT';
     renderSongSelector(false);
@@ -989,6 +1018,9 @@ function returnToSelectFromPause() {
 function finishGame() {
     gameState = 'RESULT';
     document.getElementById('menu-btn').classList.add('hidden');
+    if (currentAudio) {
+        currentAudio.pause();
+    }
     
     let currentSong = songs[currentSongIndex];
     document.getElementById('result-jacket-icon').innerText = currentSong.jacket || '🎵';
@@ -1069,7 +1101,7 @@ canvas.addEventListener('pointerdown', (e) => {
                     if (note.lane === i) {
                         let diff = Math.abs(currentTime - note.time);
                         if (diff < 0.4) {
-                            if (note.type === 'tap') {
+                            if (note.type === 'tap' || note.type === 'slidenode') {
                                 note.hit = true;
                                 judgeAction(diff, lanes[i].x, lanes[i].y);
                                 spawnParticles(lanes[i].x, lanes[i].y, '#16a085');
@@ -1204,10 +1236,13 @@ function gameLoop() {
         let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
         let effectiveNoteSpeed = baseNoteSpeed * noteSpeedMultiplier;
 
-        for (let m of scheduledMelodyNotes) {
-            if (!m.played && currentTime >= m.time) {
-                playMelodyTone(m.freq);
-                m.played = true;
+        // 音源がない場合のフォールバック電子音
+        if (!currentAudio) {
+            for (let m of scheduledMelodyNotes) {
+                if (!m.played && currentTime >= m.time) {
+                    playMelodyTone(m.freq);
+                    m.played = true;
+                }
             }
         }
 
@@ -1309,7 +1344,7 @@ function gameLoop() {
 // すべての曲ファイルを非同期で読み込んでからゲームを初期化
 loadAllSongs(() => {
     if (songs.length === 0) {
-        songs = [{ id: 'donguri', title: 'どんぐりころころ', artist: '文部省唱歌', jacket: '🌰', duration: 16.0, chart: [] }];
+        songs = [{ id: 'sample', title: 'サンプル曲', artist: 'わし', jacket: '🎵', duration: 15.0, chart: [] }];
     }
     renderSongSelector(false);
     gameLoop();
