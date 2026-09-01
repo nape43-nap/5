@@ -692,6 +692,10 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+// 女の子のイラスト画像を読み込む設定
+const girlImg = new Image();
+girlImg.src = 'girl.png'; // ファイル名が異なる場合はここを変更してください
+
 let gameState = 'SELECT';
 let score = 0;
 let audioCtx = null;
@@ -1191,7 +1195,6 @@ function handleTouchEndOrCancel(e) {
             let diff = Math.abs(currentTime - endTime);
             let lanePos = lanes[note.lane];
             
-            // 終点判定の許容範囲を少し広げ、より確実かつ正確に判定文字が出るように調整
             if (diff < 0.45) {
                 if (diff < 0.12) {
                     score += 400;
@@ -1343,18 +1346,25 @@ function gameLoop() {
         }
 
         let girlFloatY = Math.sin(animTimer * 2) * 4;
-        ctx.fillStyle = "#f5d0c5";
-        ctx.beginPath();
-        ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#e8dfd1";
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        ctx.fillStyle = "#e6beae";
-        ctx.beginPath();
-        ctx.arc(centerX, girlY + girlFloatY - 15, 30, 0, Math.PI * 2);
-        ctx.fill();
+        
+        // --- 描いた女の子のイラストを描画 ---
+        let girlWidth = 110;  // 女の子の幅
+        let girlHeight = 110; // 女の子の高さ
+        if (girlImg.complete && girlImg.naturalWidth !== 0) {
+            ctx.drawImage(
+                girlImg, 
+                centerX - girlWidth / 2, 
+                girlY + girlFloatY - girlHeight / 2 + 15, 
+                girlWidth, 
+                girlHeight
+            );
+        } else {
+            // 画像が読み込まれていない場合の仮表示
+            ctx.fillStyle = "#f5d0c5";
+            ctx.beginPath();
+            ctx.arc(centerX, girlY + girlFloatY + 15, 45, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
         for (let i = 0; i < lanes.length; i++) {
             let x = lanes[i].x;
