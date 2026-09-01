@@ -1614,8 +1614,14 @@ async function loadSongIndex() {
 
 
 /* =========================================================
-   外部JS譜面読み込み 完全版
-   songs/曲ID/chart.js に対応
+   外部JS譜面読み込み
+   完全版・安定版
+
+   songs/
+   └─ sample/
+      └─ chart.js
+
+   の形式に対応
 ========================================================= */
 
 async function loadExternalChart(song) {
@@ -1625,53 +1631,36 @@ async function loadExternalChart(song) {
         !song.id
     ) {
 
-        console.error(
-            "loadExternalChart: song または song.id がありません",
-            song
+        throw new Error(
+            "曲情報がありません。"
         );
-
-        return null;
     }
 
 
     /*
         =====================================================
-        譜面ファイルの場所
+        譜面ファイルのURL
         =====================================================
-
-        index.json に chartFile があればそれを使用。
-
-        なければ自動的に
-
-        songs/sample/chart.js
-
-        の形にする。
     */
 
-    const relativeChartFile =
+    const chartPath =
         song.chartFile ||
         `songs/${song.id}/chart.js`;
 
 
-    /*
-        =====================================================
-        現在のページを基準に絶対URLを作る
-        =====================================================
-    */
-
     const chartURL =
         new URL(
-            relativeChartFile,
+            chartPath,
             window.location.href
         ).href;
 
 
     console.log(
-        "================================"
+        "========================================"
     );
 
     console.log(
-        "譜面読み込み開始"
+        "譜面ファイル読み込み開始"
     );
 
     console.log(
@@ -1680,460 +1669,399 @@ async function loadExternalChart(song) {
     );
 
     console.log(
-        "相対パス:",
-        relativeChartFile
-    );
-
-    console.log(
-        "実際のURL:",
+        "譜面:",
         chartURL
     );
 
     console.log(
-        "================================"
+        "========================================"
     );
 
 
-    return new Promise(
-        (resolve, reject) => {
+    /*
+        =====================================================
+        chart.jsを直接fetch
+        =====================================================
+    */
+
+    let response;
 
 
-            /*
-                =================================================
-                前回のscriptを削除
-            =================================================
-            */
+    try {
 
-            const oldScript =
-                document.getElementById(
-                    "external-chart-script"
-                );
-
-
-            if (
-                oldScript
-            ) {
-
-                oldScript.remove();
-            }
-
-
-            /*
-                =================================================
-                古いデータを削除
-            =================================================
-            */
-
-            window.chart =
-                null;
-
-            window.sample =
-                null;
-
-
-            /*
-                今回探す名前
-
-                sample
-                ↓
-                songData_sample
-
-                donguri-korokoro
-                ↓
-                songData_donguri-korokoro
-            */
-
-            const songDataName =
-                "songData_" +
-                song.id;
-
-
-            window[
-                songDataName
-            ] =
-                null;
-
-
-            /*
-                =================================================
-                script作成
-            =================================================
-            */
-
-            const script =
-                document.createElement(
-                    "script"
-                );
-
-
-            script.id =
-                "external-chart-script";
-
-
-            /*
-                キャッシュ対策
-            */
-
-            script.src =
+        response =
+            await fetch(
                 chartURL +
-                (
-                    chartURL.includes("?")
-                    ?
-                    "&"
-                    :
-                    "?"
-                ) +
-                "t=" +
-                Date.now();
-
-
-            script.async =
-                false;
-
-
-            /*
-                =================================================
-                読み込み成功
-            =================================================
-            */
-
-            script.onload =
-                () => {
-
-                    console.log(
-                        "================================"
-                    );
-
-                    console.log(
-                        "chart.js読み込み成功！"
-                    );
-
-                    console.log(
-                        "URL:",
-                        chartURL
-                    );
-
-                    console.log(
-                        "探しているデータ:",
-                        songDataName
-                    );
-
-                    console.log(
-                        "================================"
-                    );
-
-
-                    /*
-                        =================================================
-                        正式形式
-
-                        window.songData_sample
-                    =================================================
-                    */
-
-                    const songData =
-                        window[
-                            songDataName
-                        ];
-
-
-                    if (
-                        songData
-                    ) {
-
-                        console.log(
-                            "曲データ読み込み成功！",
-                            songData
-                        );
-
-
-                        /*
-                            音源
-                        */
-
-                        if (
-                            songData.audioSrc
-                        ) {
-
-                            song.audioSrc =
-                                songData.audioSrc;
-                        }
-
-
-                        /*
-                            曲の長さ
-                        */
-
-                        if (
-                            songData.duration
-                        ) {
-
-                            song.chartDuration =
-                                Number(
-                                    songData.duration
-                                );
-                        }
-
-
-                        /*
-                            ジャケット
-                        */
-
-                        if (
-                            songData.jacket
-                        ) {
-
-                            song.jacket =
-                                songData.jacket;
-                        }
-
-
-                        /*
-                            タイトル
-                        */
-
-                        if (
-                            songData.title
-                        ) {
-
-                            song.title =
-                                songData.title;
-                        }
-
-
-                        /*
-                            アーティスト
-                        */
-
-                        if (
-                            songData.artist
-                        ) {
-
-                            song.artist =
-                                songData.artist;
-                        }
-
-
-                        console.log(
-                            "音源:",
-                            song.audioSrc
-                        );
-
-                        console.log(
-                            "譜面数:",
-                            Array.isArray(
-                                songData.chart
-                            )
-                            ?
-                            songData.chart.length
-                            :
-                            0
-                        );
-
-
-                        resolve(
-                            songData
-                        );
-
-                        return;
-                    }
-
-
-                    /*
-                        =================================================
-                        旧形式
-
-                        window.chart
-                    =================================================
-                    */
-
-                    if (
-                        window.chart
-                    ) {
-
-                        console.log(
-                            "window.chart形式で読み込み成功"
-                        );
-
-
-                        resolve(
-                            window.chart
-                        );
-
-                        return;
-                    }
-
-
-                    /*
-                        =================================================
-                        旧形式
-
-                        window.sample
-                    =================================================
-                    */
-
-                    if (
-                        window.sample
-                    ) {
-
-                        console.log(
-                            "window.sample形式で読み込み成功"
-                        );
-
-
-                        resolve(
-                            window.sample
-                        );
-
-                        return;
-                    }
-
-
-                    /*
-                        =================================================
-                        曲IDと一致するデータを探す
-                    =================================================
-                    */
-
-                    const possibleDataNames = [
-
-                        "songData_" +
-                        song.id,
-
-                        song.id,
-
-                        "data_" +
-                        song.id,
-
-                        "chart_" +
-                        song.id
-
-                    ];
-
-
-                    for (
-                        const name
-                        of possibleDataNames
-                    ) {
-
-                        if (
-                            window[name]
-                        ) {
-
-                            console.log(
-                                "別形式の曲データを発見:",
-                                name
-                            );
-
-
-                            resolve(
-                                window[name]
-                            );
-
-                            return;
-                        }
-                    }
-
-
-                    /*
-                        =================================================
-                        見つからなかった
-                    =================================================
-                    */
-
-                    console.error(
-                        "chart.jsは読み込めましたが、曲データが見つかりません。"
-                    );
-
-                    console.error(
-                        "探していた名前:",
-                        songDataName
-                    );
-
-                    console.error(
-                        "現在のsong:",
-                        song
-                    );
-
-
-                    reject(
-                        new Error(
-
-                            "chart.js は読み込めましたが、\n" +
-
-                            songDataName +
-
-                            " が見つかりません。\n\n" +
-
-                            "読み込み先:\n" +
-
-                            chartURL
-
-                        )
-                    );
-                };
-
-
-            /*
-                =================================================
-                読み込み失敗
-            =================================================
-            */
-
-            script.onerror =
-                () => {
-
-                    console.error(
-                        "================================"
-                    );
-
-                    console.error(
-                        "譜面ファイルの読み込みに失敗しました"
-                    );
-
-                    console.error(
-                        "相対パス:",
-                        relativeChartFile
-                    );
-
-                    console.error(
-                        "実際のURL:",
-                        chartURL
-                    );
-
-                    console.error(
-                        "================================"
-                    );
-
-
-                    reject(
-                        new Error(
-
-                            "譜面ファイルを読み込めませんでした。\n\n" +
-
-                            "読み込み先:\n" +
-
-                            chartURL
-
-                        )
-                    );
-                };
-
-
-            /*
-                =================================================
-                scriptを追加
-            =================================================
-            */
-
-            document.body.appendChild(
-                script
+                "?t=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
             );
 
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "chart.js fetch失敗:",
+            error
+        );
+
+
+        throw new Error(
+            "譜面ファイルにアクセスできませんでした。\n\n" +
+            chartURL
+        );
+    }
+
+
+    /*
+        HTTPエラー
+    */
+
+    if (
+        !response.ok
+    ) {
+
+        throw new Error(
+            "譜面ファイルを読み込めませんでした。\n\n" +
+            "HTTP Status: " +
+            response.status +
+            "\n\n" +
+            chartURL
+        );
+    }
+
+
+    /*
+        =====================================================
+        JSファイルを文字列として取得
+        =====================================================
+    */
+
+    const scriptText =
+        await response.text();
+
+
+    console.log(
+        "chart.js取得成功"
+    );
+
+    console.log(
+        "文字数:",
+        scriptText.length
+    );
+
+
+    /*
+        =====================================================
+        取得したJSを実行する前に
+        古いデータを消す
+        =====================================================
+    */
+
+    window.chart =
+        null;
+
+    window.sample =
+        null;
+
+
+    const songDataName =
+        "songData_" +
+        song.id;
+
+
+    window[
+        songDataName
+    ] =
+        null;
+
+
+    /*
+        =====================================================
+        chart.jsを実行
+        =====================================================
+
+        例:
+
+        window.songData_sample = {
+            ...
+        };
+
+        がここで実行される
+    =====================================================
+    */
+
+    try {
+
+        const executeChart =
+            new Function(
+                scriptText
+            );
+
+
+        executeChart();
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "chart.js実行エラー:",
+            error
+        );
+
+
+        console.error(
+            "chart.js内容:",
+            scriptText
+        );
+
+
+        throw new Error(
+            "chart.js の実行中にエラーが発生しました。\n\n" +
+            error.message
+        );
+    }
+
+
+    /*
+        =====================================================
+        songData_xxx を取得
+        =====================================================
+    */
+
+    let songData =
+        window[
+            songDataName
+        ];
+
+
+    /*
+        =====================================================
+        正常
+        =====================================================
+    */
+
+    if (
+        songData
+    ) {
+
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "曲データ読み込み成功！"
+        );
+
+        console.log(
+            "データ名:",
+            songDataName
+        );
+
+        console.log(
+            "曲:",
+            songData
+        );
+
+        console.log(
+            "譜面数:",
+            Array.isArray(
+                songData.chart
+            )
+            ?
+            songData.chart.length
+            :
+            0
+        );
+
+        console.log(
+            "========================================"
+        );
+
+
+        /*
+            =================================================
+            曲情報を反映
+            =================================================
+        */
+
+        if (
+            songData.audioSrc
+        ) {
+
+            song.audioSrc =
+                songData.audioSrc;
         }
+
+
+        if (
+            songData.duration
+        ) {
+
+            song.chartDuration =
+                Number(
+                    songData.duration
+                );
+        }
+
+
+        if (
+            songData.jacket
+        ) {
+
+            song.jacket =
+                songData.jacket;
+        }
+
+
+        if (
+            songData.title
+        ) {
+
+            song.title =
+                songData.title;
+        }
+
+
+        if (
+            songData.artist
+        ) {
+
+            song.artist =
+                songData.artist;
+        }
+
+
+        /*
+            =================================================
+            パスを曲フォルダ基準に補正
+            =================================================
+
+            chart.js:
+
+            songs/sample/chart.js
+
+            audio:
+
+            songs/sample/audio.mp3
+
+            ならそのままでOK。
+
+            もし
+
+            audio.mp3
+
+            と書かれていた場合も、
+
+            songs/sample/audio.mp3
+
+            にする。
+        =================================================
+        */
+
+        if (
+            song.audioSrc
+        ) {
+
+            if (
+                !song.audioSrc.startsWith(
+                    "http://" 
+                ) &&
+                !song.audioSrc.startsWith(
+                    "https://"
+                ) &&
+                !song.audioSrc.startsWith(
+                    "/"
+                )
+            ) {
+
+                if (
+                    !song.audioSrc.startsWith(
+                        "songs/"
+                    )
+                ) {
+
+                    song.audioSrc =
+                        `songs/${song.id}/${song.audioSrc}`;
+                }
+            }
+        }
+
+
+        return songData;
+    }
+
+
+    /*
+        =====================================================
+        旧形式
+        =====================================================
+    */
+
+    if (
+        window.chart
+    ) {
+
+        console.log(
+            "旧形式 window.chart を使用します"
+        );
+
+
+        return window.chart;
+    }
+
+
+    if (
+        window.sample
+    ) {
+
+        console.log(
+            "旧形式 window.sample を使用します"
+        );
+
+
+        return window.sample;
+    }
+
+
+    /*
+        =====================================================
+        それでも無い場合
+        =====================================================
+    */
+
+    console.error(
+        "songDataが見つかりません"
+    );
+
+    console.error(
+        "探した名前:",
+        songDataName
+    );
+
+    console.error(
+        "chart.js URL:",
+        chartURL
+    );
+
+    console.error(
+        "chart.js内容:",
+        scriptText
+    );
+
+
+    throw new Error(
+        "chart.js は読み込めましたが、\n" +
+        songDataName +
+        " が見つかりません。\n\n" +
+        "読み込み先:\n" +
+        chartURL
     );
 }
-
 /* =========================================================
    ゲーム変数
 ========================================================= */
