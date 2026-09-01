@@ -88,7 +88,6 @@
             transform: scale(0.95);
         }
 
-        /* セレクト画面用の設定ボタン */
         #selector-config-btn {
             position: absolute;
             top: 15px;
@@ -491,7 +490,6 @@
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
         }
 
-        /* 共通モーダル画面デザイン */
         .modal-panel {
             background: #fff;
             border: 3px solid #f0e6d2;
@@ -865,7 +863,7 @@ function getLanePositions() {
 let notes = [];
 let particles = [];
 let scheduledMelodyNotes = [];
-let floatingTexts = []; // 同時押しでも個別の判定文字を表示するため配列化
+let floatingTexts = [];
 
 function spawnParticles(x, y, color) {
     for (let i = 0; i < 10; i++) {
@@ -1083,9 +1081,6 @@ function scoreBoardUpdate() {
     document.getElementById('score-num').innerText = score;
 }
 
-// ----------------------------------------------------
-// タッチイベント処理（完全個別対応）
-// ----------------------------------------------------
 canvas.addEventListener('pointerdown', (e) => {
     if(gameState !== 'PLAYING') return;
 
@@ -1107,11 +1102,9 @@ canvas.addEventListener('pointerdown', (e) => {
     let lanes = getLanePositions();
     let currentTime = audioCtx.currentTime - startTime - totalPausedTime;
 
-    // タップされた位置に近いレーンを特定
     for (let i = 0; i < lanes.length; i++) {
         let distance = Math.hypot(touchX - lanes[i].x, touchY - lanes[i].y);
         if (distance < targetRadius * 2.2) {
-            // そのレーン周辺にある、まだヒットしていないノーツを探す（複数あっても独立判定）
             for (let note of notes) {
                 if (!note.hit && !note.started) {
                     if (note.lane === i) {
@@ -1122,7 +1115,7 @@ canvas.addEventListener('pointerdown', (e) => {
                                 judgeAction(diff, lanes[i].x, lanes[i].y);
                                 spawnParticles(lanes[i].x, lanes[i].y, '#1abc9c');
                                 playHitSound();
-                                break; // 1つのタッチで1つのノーツを処理
+                                break;
                             } else if (note.type === 'long') {
                                 note.started = true;
                                 note.holding = true;
@@ -1197,14 +1190,26 @@ function handleTouchEndOrCancel(e) {
             let endTime = note.time + note.duration;
             let diff = Math.abs(currentTime - endTime);
             let lanePos = lanes[note.lane];
-            if (diff < 0.35) {
-                score += 400;
-                judgeCounts.kirari++;
-                showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
+            
+            // 終点判定の許容範囲を少し広げ、より確実かつ正確に判定文字が出るように調整
+            if (diff < 0.45) {
+                if (diff < 0.12) {
+                    score += 400;
+                    judgeCounts.kirari++;
+                    showFloatingText("ｷﾗﾘ!", "#f1c40f", lanePos.x, lanePos.y - 40);
+                } else if (diff < 0.28) {
+                    score += 250;
+                    judgeCounts.suteki++;
+                    showFloatingText("ｽﾃｷ!", "#e67e22", lanePos.x, lanePos.y - 40);
+                } else {
+                    score += 150;
+                    judgeCounts.ii++;
+                    showFloatingText("ｲｲ!", "#3498db", lanePos.x, lanePos.y - 40);
+                }
             } else {
-                score += 100;
-                judgeCounts.ii++;
-                showFloatingText("ｲｲ!", "#3498db", lanePos.x, lanePos.y - 40);
+                score += 50;
+                judgeCounts.alara++;
+                showFloatingText("ｱﾗﾗ", "#95a5a6", lanePos.x, lanePos.y - 40);
             }
             note.hit = true;
             note.holding = false;
@@ -1228,7 +1233,6 @@ function handleTouchEndOrCancel(e) {
             scoreBoardUpdate();
         }
     } else {
-        // フリックの判定（個別対応）
         for (let note of notes) {
             if (!note.hit && note.type === 'flick') {
                 let diff = Math.abs(currentTime - note.time);
@@ -1300,7 +1304,6 @@ function playHitSound() {
     osc.stop(audioCtx.currentTime + 0.1);
 }
 
-// 同時押しでもそれぞれ個別の位置に判定文字を表示できるように配列管理
 function showFloatingText(text, color, x, y) {
     floatingTexts.push({
         text: text,
@@ -1527,11 +1530,11 @@ function gameLoop() {
                     } else if (note.holding) {
                         if (Math.random() < 0.25) { score += 5; scoreBoardUpdate(); }
                         
-                        if (currentTime >= endTime) {
+                        if (currentTime >= endTime + 0.35 && !note.hit) {
                             note.hit = true;
                             note.holding = false;
-                            spawnParticles(target.x, target.y, '#f39c12');
-                            playHitSound();
+                            judgeCounts.alara++;
+                            showFloatingText("ｱﾗﾗ", "#95a5a6", target.x, target.y - 40);
                         }
                     }
                 }
@@ -1582,7 +1585,6 @@ function gameLoop() {
         ctx.restore();
     }
 
-    // 各ノーツごとに独立してアニメーションする判定文字の描画
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
         let ft = floatingTexts[i];
         ft.timer--;
