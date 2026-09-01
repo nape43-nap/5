@@ -3,242 +3,1169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>絵本風リズムゲーム - MIDI譜面コンバーター</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=RocknRoll+One&display=swap" rel="stylesheet">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script src="https://unpkg.com/@tonejs/midi@2.0.28/build/Midi.js"></script>
+
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 20px;
             background: #fdfbf7;
             font-family: 'RocknRoll One', sans-serif;
             color: #7c6f64;
+
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
         .container {
             width: 100%;
             max-width: 600px;
+
             background: #fff;
+
             border: 4px solid #f0e6d2;
             border-radius: 20px;
+
             padding: 25px;
+
             box-shadow: 0 8px 25px rgba(0,0,0,0.04);
-            box-sizing: border-box;
         }
-        h1 { font-size: 22px; text-align: center; margin-bottom: 20px; color: #7c6f64; }
+
+        h1 {
+            font-size: 22px;
+            text-align: center;
+
+            margin-top: 0;
+            margin-bottom: 20px;
+
+            color: #7c6f64;
+        }
+
         .form-group {
             margin-bottom: 15px;
+
             display: flex;
             flex-direction: column;
+
             gap: 6px;
         }
-        label { font-size: 14px; font-weight: bold; }
-        input[type="text"], input[type="file"] {
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+
+            width: 100%;
+
             padding: 10px;
+
             border: 2px solid #f0e6d2;
             border-radius: 10px;
+
             font-family: 'RocknRoll One', sans-serif;
             font-size: 14px;
+
             outline: none;
+
             background: #fffcf7;
         }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            border-color: #e3c4a8;
+        }
+
         .btn {
+
             background-color: #e3c4a8;
+
             color: #fff;
+
             border: none;
+
             padding: 14px;
+
             font-size: 16px;
+
             border-radius: 25px;
+
             cursor: pointer;
+
             font-family: 'RocknRoll One', sans-serif;
+
             width: 100%;
+
             margin-top: 10px;
+
             box-shadow: 0 4px 12px rgba(227, 196, 168, 0.4);
-            transition: background-color 0.2s;
+
+            transition: 0.2s;
         }
-        .btn:active { transform: scale(0.97); }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
         .btn-copy {
+
             background-color: #b5c496;
+
             box-shadow: 0 4px 12px rgba(181, 196, 150, 0.4);
+
             margin-top: 10px;
         }
+
         textarea {
+
             width: 100%;
-            height: 200px;
+
+            height: 300px;
+
             margin-top: 15px;
+
             border: 2px solid #f0e6d2;
+
             border-radius: 10px;
+
             padding: 10px;
+
             font-family: monospace;
+
             font-size: 12px;
+
             background: #fffcf7;
-            box-sizing: border-box;
+
             resize: vertical;
         }
+
         .note-rule {
+
             font-size: 12px;
+
             background: #fffcf7;
+
             border: 2px solid #f5efe6;
-            padding: 10px;
+
+            padding: 12px;
+
             border-radius: 10px;
+
             margin-bottom: 15px;
+
+            line-height: 1.7;
+        }
+
+        .note-rule strong {
+            color: #6f6258;
+        }
+
+        .info {
+
+            margin-top: 15px;
+
+            padding: 10px;
+
+            border-radius: 10px;
+
+            background: #f7f2ea;
+
+            font-size: 12px;
+
             line-height: 1.6;
         }
+
+        .success {
+
+            margin-top: 10px;
+
+            padding: 10px;
+
+            border-radius: 10px;
+
+            background: #eef3e6;
+
+            color: #687454;
+
+            font-size: 12px;
+
+            display: none;
+        }
+
     </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h1>MIDI 譜面コンバーター</h1>
-    
+
+    <h1>
+        MIDI 譜面コンバーター
+    </h1>
+
+
+    <!-- ========================================= -->
+    <!-- ノーツ説明 -->
+    <!-- ========================================= -->
+
     <div class="note-rule">
-        <strong>📌 MIDI音程の割り当てルール (C4基準):</strong><br>
-        ・ <strong>C3 〜 G3 (48〜55)</strong>：タップ or ロングノーツ（短ければタップ、長ければロング）<br>
-        ・ <strong>C4 〜 G4 (60〜67)</strong>：フリックノーツ (◆)<br>
-        ・ <strong>C5 〜 G5 (72〜79)</strong>：ピンクのスライド（自動で複数レーンを繋ぐpathを生成）<br>
-        ※ レーン（0〜4）は各オクターブ内のC, D, E, F, G（白鍵の5つ）に対応します。
+
+        <strong>📌 MIDI音程の割り当てルール</strong>
+        <br><br>
+
+        <strong>🎵 C3〜G3</strong>
+        ：タップ / ロング
+        <br>
+
+        C3 = レーン0
+        <br>
+
+        D3 = レーン1
+        <br>
+
+        E3 = レーン2
+        <br>
+
+        F3 = レーン3
+        <br>
+
+        G3 = レーン4
+
+        <br><br>
+
+        <strong>◆ C4〜G4</strong>
+        ：フリック
+
+        <br><br>
+
+        <strong>💗 C5〜G5</strong>
+        ：スライド
+
+        <br>
+
+        スライドは自動的に
+
+        <br>
+
+        「始点 → 中間点 → 終点」
+
+        <br>
+
+        の path を生成します。
+
+        <br><br>
+
+        ※ 黒鍵も簡易的に近いレーンへ割り当てます。
+
     </div>
 
+
+    <!-- ========================================= -->
+    <!-- 曲ID -->
+    <!-- ========================================= -->
+
     <div class="form-group">
-        <label>曲ID (例: song_4)</label>
-        <input type="text" id="songId" value="song_4">
-    </div>
-    <div class="form-group">
-        <label>曲名</label>
-        <input type="text" id="songTitle" value="新しい曲">
-    </div>
-    <div class="form-group">
-        <label>アーティスト名</label>
-        <input type="text" id="songArtist" value="作者名">
-    </div>
-    <div class="form-group">
-        <label>ジャケット画像パス</label>
-        <input type="text" id="songJacket" value="🎵">
-    </div>
-    <div class="form-group">
-        <label>音声ファイルパス</label>
-        <input type="text" id="songAudio" value="assets/audio/4.mp3">
-    </div>
-    <div class="form-group">
-        <label>MIDIファイルを選択</label>
-        <input type="file" id="midiFile" accept=".mid">
+
+        <label>
+            曲ID
+        </label>
+
+        <input
+            type="text"
+            id="songId"
+            value="song_4"
+        >
+
     </div>
 
-    <button class="btn" onclick="convertMidi()">譜面データ(.js)を生成する</button>
 
-    <textarea id="outputResult" placeholder="ここに生成されたコードが表示されます..." readonly></textarea>
-    
-    <button class="btn btn-copy" onclick="copyCode()">生成されたコードをコピーする</button>
+    <!-- ========================================= -->
+    <!-- 曲名 -->
+    <!-- ========================================= -->
+
+    <div class="form-group">
+
+        <label>
+            曲名
+        </label>
+
+        <input
+            type="text"
+            id="songTitle"
+            value="新しい曲"
+        >
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- アーティスト -->
+    <!-- ========================================= -->
+
+    <div class="form-group">
+
+        <label>
+            アーティスト名
+        </label>
+
+        <input
+            type="text"
+            id="songArtist"
+            value="作者名"
+        >
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- ジャケット -->
+    <!-- ========================================= -->
+
+    <div class="form-group">
+
+        <label>
+            ジャケット画像パス / 絵文字
+        </label>
+
+        <input
+            type="text"
+            id="songJacket"
+            value="🎵"
+        >
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- 音声 -->
+    <!-- ========================================= -->
+
+    <div class="form-group">
+
+        <label>
+            音声ファイルパス
+        </label>
+
+        <input
+            type="text"
+            id="songAudio"
+            value="assets/audio/4.mp3"
+        >
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- MIDI -->
+    <!-- ========================================= -->
+
+    <div class="form-group">
+
+        <label>
+            MIDIファイルを選択
+        </label>
+
+        <input
+            type="file"
+            id="midiFile"
+            accept=".mid,.midi"
+        >
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- 生成ボタン -->
+    <!-- ========================================= -->
+
+    <button
+        class="btn"
+        onclick="convertMidi()"
+    >
+        🎼 譜面データ(.js)を生成する
+    </button>
+
+
+    <!-- ========================================= -->
+    <!-- 結果 -->
+    <!-- ========================================= -->
+
+    <textarea
+        id="outputResult"
+        placeholder="ここに生成されたコードが表示されます..."
+        readonly
+    ></textarea>
+
+
+    <!-- ========================================= -->
+    <!-- コピー -->
+    <!-- ========================================= -->
+
+    <button
+        class="btn btn-copy"
+        onclick="copyCode()"
+    >
+        📋 生成されたコードをコピーする
+    </button>
+
+
+    <div
+        id="successMessage"
+        class="success"
+    >
+        譜面データを生成しました！
+    </div>
+
+
+    <div class="info">
+
+        💡 MIDIの音の高さによってノーツ種類を自動判定します。
+
+        <br>
+
+        長い音符はロングノーツになります。
+
+        <br>
+
+        C4〜G4はフリック。
+
+        <br>
+
+        C5〜G5はスライドになります。
+
+    </div>
+
 </div>
 
+
 <script>
+
+/* =========================================================
+   MIDI → 譜面変換
+   ========================================================= */
+
 async function convertMidi() {
-    const fileInput = document.getElementById('midiFile');
+
+    const fileInput =
+        document.getElementById('midiFile');
+
+
+    /* -----------------------------------------
+       MIDI未選択
+       ----------------------------------------- */
+
     if (fileInput.files.length === 0) {
+
         alert('MIDIファイルを選択してください。');
+
         return;
     }
 
-    const file = fileInput.files[0];
-    const arrayBuffer = await file.arrayBuffer();
-    const midi = new Midi(arrayBuffer);
 
-    let chartNotes = [];
-    let maxTime = 15;
+    try {
 
-    midi.tracks.forEach(track => {
-        track.notes.forEach(note => {
-            let midiNote = note.midi;
-            let time = note.time;
-            let duration = note.duration;
+        const file =
+            fileInput.files[0];
 
-            if (time + duration > maxTime) {
-                maxTime = Math.ceil(time + duration + 2);
-            }
 
-            // オクターブ内の音程 (0=C, 1=C#, 2=D, ...) からレーン(0〜4)を決定
-            let semitone = midiNote % 12;
-            let lane = 0;
-            if (semitone === 0) lane = 0;      // C
-            else if (semitone === 2) lane = 1; // D
-            else if (semitone === 4) lane = 2; // E
-            else if (semitone === 5) lane = 3; // F
-            else if (semitone === 7) lane = 4; // G
-            else {
-                lane = Math.min(4, Math.floor(semitone / 2.5));
-            }
+        const arrayBuffer =
+            await file.arrayBuffer();
 
-            let type = 'tap';
-            let noteData = {
-                time: parseFloat(time.toFixed(3)),
-                lane: lane,
-                type: 'tap',
-                duration: 0,
-                noteName: note.name
-            };
 
-            // 音域によるノーツ種類の分岐 (C3=48, C4=60, C5=72)
-            if (midiNote >= 72 && midiNote < 84) {
-                // C5〜G5帯：ピンクのスライド (slidenode)
-                let nextLane = (lane < 4) ? lane + 1 : lane - 1;
-                noteData.type = 'slidenode';
-                noteData.path = [lane, nextLane];
-                noteData.direction = (nextLane > lane) ? 'right' : 'left';
-            } else if (midiNote >= 60 && midiNote < 72) {
-                // C4〜G4帯：フリック
-                noteData.type = 'flick';
-            } else if (midiNote >= 48 && midiNote < 60) {
-                // C3〜G3帯：タップ or ロング
-                if (duration > 0.25) {
-                    noteData.type = 'long';
-                    noteData.duration = parseFloat(duration.toFixed(3));
-                } else {
-                    noteData.type = 'tap';
+        const midi =
+            new Midi(arrayBuffer);
+
+
+        let chartNotes = [];
+
+
+        /*
+         * 初期値
+         *
+         * 曲が15秒未満でも最低15秒
+         */
+
+        let maxTime = 15;
+
+
+        /* =================================================
+           MIDIトラックを処理
+           ================================================= */
+
+        midi.tracks.forEach(track => {
+
+            track.notes.forEach(note => {
+
+
+                /* -----------------------------------------
+                   基本情報
+                   ----------------------------------------- */
+
+                const midiNote =
+                    note.midi;
+
+
+                const time =
+                    note.time;
+
+
+                const duration =
+                    note.duration;
+
+
+                /* -----------------------------------------
+                   曲の長さ
+                   ----------------------------------------- */
+
+                if (time + duration > maxTime) {
+
+                    maxTime =
+                        Math.ceil(
+                            time + duration + 2
+                        );
                 }
-            } else {
-                noteData.type = (duration > 0.25) ? 'long' : 'tap';
-                if (noteData.type === 'long') noteData.duration = parseFloat(duration.toFixed(3));
-            }
 
-            chartNotes.push(noteData);
+
+                /* =================================================
+                   レーン決定
+                   ================================================= */
+
+                const semitone =
+                    midiNote % 12;
+
+
+                let lane = 0;
+
+
+                /*
+                 * 白鍵
+                 */
+
+                if (semitone === 0) {
+
+                    lane = 0;
+
+                }
+                else if (semitone === 2) {
+
+                    lane = 1;
+
+                }
+                else if (semitone === 4) {
+
+                    lane = 2;
+
+                }
+                else if (semitone === 5) {
+
+                    lane = 3;
+
+                }
+                else if (semitone === 7) {
+
+                    lane = 4;
+
+                }
+
+                /*
+                 * 黒鍵
+                 *
+                 * 完全な音程変換ではなく
+                 * 最も近い白鍵レーンへ寄せる
+                 */
+
+                else if (semitone === 1) {
+
+                    lane = 0;
+
+                }
+                else if (semitone === 3) {
+
+                    lane = 1;
+
+                }
+                else if (semitone === 6) {
+
+                    lane = 3;
+
+                }
+                else if (semitone === 8) {
+
+                    lane = 4;
+
+                }
+                else if (semitone === 10) {
+
+                    lane = 4;
+
+                }
+
+
+                /* =================================================
+                   基本ノーツデータ
+                   ================================================= */
+
+                let noteData = {
+
+                    time:
+                        parseFloat(
+                            time.toFixed(3)
+                        ),
+
+                    lane:
+                        lane,
+
+                    type:
+                        'tap',
+
+                    duration:
+                        0,
+
+                    noteName:
+                        note.name
+
+                };
+
+
+                /* =================================================
+                   C5〜G5
+                   スライド
+                   ================================================= */
+
+                if (
+                    midiNote >= 72 &&
+                    midiNote < 84
+                ) {
+
+
+                    /*
+                     * 次のレーン
+                     */
+
+                    let nextLane;
+
+
+                    if (lane < 4) {
+
+                        nextLane =
+                            lane + 1;
+
+                    }
+                    else {
+
+                        nextLane =
+                            lane - 1;
+
+                    }
+
+
+                    /*
+                     * 中間レーン
+                     *
+                     * 弧を描くスライドを
+                     * 表現しやすくするため
+                     * 3点のpathを生成する。
+                     */
+
+                    let middleLane;
+
+
+                    if (nextLane > lane) {
+
+                        middleLane =
+                            Math.min(
+                                4,
+                                lane + 1
+                            );
+
+                    }
+                    else {
+
+                        middleLane =
+                            Math.max(
+                                0,
+                                lane - 1
+                            );
+
+                    }
+
+
+                    /*
+                     * スライドノーツ
+                     */
+
+                    noteData.type =
+                        'slidenode';
+
+
+                    /*
+                     * 従来のpath
+                     *
+                     * [開始, 終了]
+                     *
+                     * も残すのではなく、
+                     * 3点構成にする。
+                     */
+
+                    noteData.path = [
+
+                        lane,
+
+                        middleLane,
+
+                        nextLane
+
+                    ];
+
+
+                    /*
+                     * 方向
+                     */
+
+                    noteData.direction =
+                        (
+                            nextLane > lane
+                        )
+                        ? 'right'
+                        : 'left';
+
+
+                    /*
+                     * スライド用追加情報
+                     *
+                     * ゲーム側で対応させやすいように
+                     * start / middle / end も持たせる。
+                     */
+
+                    noteData.startLane =
+                        lane;
+
+
+                    noteData.middleLane =
+                        middleLane;
+
+
+                    noteData.endLane =
+                        nextLane;
+
+
+                    /*
+                     * 曲線タイプ
+                     */
+
+                    noteData.curve =
+                        'arc';
+
+
+                    /*
+                     * スライドの進行時間
+                     *
+                     * 現在は0。
+                     *
+                     * ゲーム側で必要になった場合、
+                     * ここを利用できる。
+                     */
+
+                    noteData.slideDuration =
+                        0.5;
+
+                }
+
+
+                /* =================================================
+                   C4〜G4
+                   フリック
+                   ================================================= */
+
+                else if (
+                    midiNote >= 60 &&
+                    midiNote < 72
+                ) {
+
+                    noteData.type =
+                        'flick';
+
+                }
+
+
+                /* =================================================
+                   C3〜G3
+                   タップ / ロング
+                   ================================================= */
+
+                else if (
+                    midiNote >= 48 &&
+                    midiNote < 60
+                ) {
+
+
+                    /*
+                     * 0.25秒以上なら
+                     * ロングノーツ
+                     */
+
+                    if (duration > 0.25) {
+
+                        noteData.type =
+                            'long';
+
+
+                        noteData.duration =
+                            parseFloat(
+                                duration.toFixed(3)
+                            );
+
+                    }
+
+                    else {
+
+                        noteData.type =
+                            'tap';
+
+                    }
+
+                }
+
+
+                /* =================================================
+                   その他の音域
+                   ================================================= */
+
+                else {
+
+                    if (duration > 0.25) {
+
+                        noteData.type =
+                            'long';
+
+
+                        noteData.duration =
+                            parseFloat(
+                                duration.toFixed(3)
+                            );
+
+                    }
+
+                    else {
+
+                        noteData.type =
+                            'tap';
+
+                    }
+
+                }
+
+
+                /* -----------------------------------------
+                   譜面に追加
+                   ----------------------------------------- */
+
+                chartNotes.push(
+                    noteData
+                );
+
+            });
+
         });
-    });
 
-    // 時間順にソート
-    chartNotes.sort((a, b) => a.time - b.time);
 
-    const songData = {
-        id: document.getElementById('songId').value,
-        title: document.getElementById('songTitle').value,
-        artist: document.getElementById('songArtist').value,
-        jacket: document.getElementById('songJacket').value,
-        audioSrc: document.getElementById('songAudio').value,
-        duration: maxTime,
-        chart: chartNotes
-    };
+        /* =================================================
+           時間順に並べる
+           ================================================= */
 
-    const outputCode = `window.${songData.id} = ${JSON.stringify(songData, null, 2)};`;
-    document.getElementById('outputResult').value = outputCode;
-    alert('譜面データの生成が完了しました！');
+        chartNotes.sort(
+            (a, b) =>
+                a.time - b.time
+        );
+
+
+        /* =================================================
+           曲情報
+           ================================================= */
+
+        const songData = {
+
+            id:
+                document.getElementById(
+                    'songId'
+                ).value.trim(),
+
+            title:
+                document.getElementById(
+                    'songTitle'
+                ).value.trim(),
+
+            artist:
+                document.getElementById(
+                    'songArtist'
+                ).value.trim(),
+
+            jacket:
+                document.getElementById(
+                    'songJacket'
+                ).value.trim(),
+
+            audioSrc:
+                document.getElementById(
+                    'songAudio'
+                ).value.trim(),
+
+            duration:
+                maxTime,
+
+            chart:
+                chartNotes
+
+        };
+
+
+        /* =================================================
+           IDチェック
+           ================================================= */
+
+        if (!songData.id) {
+
+            alert(
+                '曲IDを入力してください。'
+            );
+
+            return;
+        }
+
+
+        /*
+         * JavaScript変数名として使えない文字を
+         * 簡易的にチェック
+         */
+
+        if (
+            !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(
+                songData.id
+            )
+        ) {
+
+            alert(
+                '曲IDには英数字・_・$のみ使用してください。\n' +
+                '先頭を数字にすることはできません。'
+            );
+
+            return;
+        }
+
+
+        /* =================================================
+           JSコード生成
+           ================================================= */
+
+        const outputCode =
+
+`window.${songData.id} = ${JSON.stringify(
+    songData,
+    null,
+    2
+)};`;
+
+
+        /* =================================================
+           表示
+           ================================================= */
+
+        document.getElementById(
+            'outputResult'
+        ).value =
+            outputCode;
+
+
+        document.getElementById(
+            'successMessage'
+        ).style.display =
+            'block';
+
+
+        /*
+         * 簡単な結果表示
+         */
+
+        alert(
+            '譜面データの生成が完了しました！\n\n' +
+            'ノーツ数：' +
+            chartNotes.length +
+            '\n' +
+            '曲の長さ：約' +
+            maxTime +
+            '秒'
+        );
+
+
+    }
+    catch (error) {
+
+        console.error(
+            'MIDI変換エラー:',
+            error
+        );
+
+
+        alert(
+            'MIDIの読み込み中にエラーが発生しました。\n\n' +
+            error.message
+        );
+
+    }
+
 }
+
+
+/* =========================================================
+   コピー
+   ========================================================= */
 
 function copyCode() {
-    const textarea = document.getElementById('outputResult');
+
+    const textarea =
+        document.getElementById(
+            'outputResult'
+        );
+
+
     if (!textarea.value) {
-        alert('コピーするコードがありません。先に譜面データを生成してください。');
+
+        alert(
+            'コピーするコードがありません。\n' +
+            '先に譜面データを生成してください。'
+        );
+
         return;
     }
 
-    navigator.clipboard.writeText(textarea.value).then(() => {
-        alert('コードをクリップボードにコピーしました！');
-    }).catch(err => {
-        alert('コピーに失敗しました。手動で選択してコピーしてください。');
-        console.error(err);
-    });
+
+    /*
+     * Clipboard API
+     */
+
+    if (
+        navigator.clipboard &&
+        navigator.clipboard.writeText
+    ) {
+
+        navigator.clipboard.writeText(
+            textarea.value
+        )
+        .then(() => {
+
+            alert(
+                'コードをクリップボードにコピーしました！'
+            );
+
+        })
+        .catch(err => {
+
+            console.error(
+                err
+            );
+
+            fallbackCopy(
+                textarea
+            );
+
+        });
+
+    }
+
+    else {
+
+        fallbackCopy(
+            textarea
+        );
+
+    }
+
 }
+
+
+/* =========================================================
+   コピーの予備処理
+   ========================================================= */
+
+function fallbackCopy(textarea) {
+
+    textarea.removeAttribute(
+        'readonly'
+    );
+
+
+    textarea.select();
+
+
+    textarea.setSelectionRange(
+        0,
+        textarea.value.length
+    );
+
+
+    try {
+
+        document.execCommand(
+            'copy'
+        );
+
+        alert(
+            'コードをクリップボードにコピーしました！'
+        );
+
+    }
+
+    catch (error) {
+
+        alert(
+            'コピーに失敗しました。\n' +
+            'コードを手動で選択してコピーしてください。'
+        );
+
+    }
+
+
+    textarea.setAttribute(
+        'readonly',
+        true
+    );
+
+}
+
+
+/* =========================================================
+   初期処理
+   ========================================================= */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        console.log(
+            'MIDI譜面コンバーター起動'
+        );
+
+    }
+);
+
 </script>
 
 </body>
