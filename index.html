@@ -4198,9 +4198,9 @@ canvas.addEventListener(
 
 
         const currentTime =
-            audioCtx.currentTime -
-            startTime -
-            totalPausedTime;
+    musicAudio
+        ? musicAudio.currentTime
+        : 0;
 
 
         for (
