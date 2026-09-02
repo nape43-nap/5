@@ -4542,14 +4542,25 @@ function handleTouchEndOrCancel(
         );
 
 
+    /*
+        現在の曲時間
+    */
+
     const currentTime =
-    musicAudio
-        ? musicAudio.currentTime
-        : 0;
+        musicAudio
+            ? musicAudio.currentTime
+            : 0;
+
 
     const lanes =
         getLanePositions();
 
+
+    /*
+        =========================================
+        LONG / SLIDE
+        =========================================
+    */
 
     if (
         touchInfo.assignedNote
@@ -4560,7 +4571,9 @@ function handleTouchEndOrCancel(
 
 
         /*
+            -------------------------------------
             LONG終了
+            -------------------------------------
         */
 
         if (
@@ -4576,7 +4589,6 @@ function handleTouchEndOrCancel(
 
             const diff =
                 Math.abs(
-
                     currentTime -
                     endTime
                 );
@@ -4588,16 +4600,20 @@ function handleTouchEndOrCancel(
                 ];
 
 
-           if (
-    diff < 0.12 &&
-    currentTime >= endTime
-) {
+            /*
+                予定終了時間より後で、
+                かなり正確ならキラリ
+            */
+
+            if (
+                diff < 0.12 &&
+                currentTime >= endTime
+            ) {
 
                 score +=
                     400;
 
                 judgeCounts.kirari++;
-
 
                 showFloatingText(
                     "ｷﾗﾘ!",
@@ -4606,16 +4622,17 @@ function handleTouchEndOrCancel(
                     lane.y - 40
                 );
 
-           } else if (
-    diff < 0.28 &&
-    currentTime >= endTime - 0.15
-) {
+
+            } else if (
+                diff < 0.28 &&
+                currentTime >=
+                    endTime - 0.15
+            ) {
 
                 score +=
                     250;
 
                 judgeCounts.suteki++;
-
 
                 showFloatingText(
                     "ｽﾃｷ!",
@@ -4624,13 +4641,13 @@ function handleTouchEndOrCancel(
                     lane.y - 40
                 );
 
+
             } else {
 
                 score +=
                     50;
 
                 judgeCounts.alara++;
-
 
                 showFloatingText(
                     "ｱﾗﾗ",
@@ -4644,7 +4661,6 @@ function handleTouchEndOrCancel(
             note.hit =
                 true;
 
-
             note.holding =
                 false;
 
@@ -4654,7 +4670,9 @@ function handleTouchEndOrCancel(
 
 
         /*
+            -------------------------------------
             SLIDE終了
+            -------------------------------------
         */
 
         else if (
@@ -4687,6 +4705,18 @@ function handleTouchEndOrCancel(
                 ];
 
 
+            if (
+                !target
+            ) {
+
+                activeTouches.delete(
+                    e.pointerId
+                );
+
+                return;
+            }
+
+
             const distance =
                 Math.hypot(
 
@@ -4709,7 +4739,6 @@ function handleTouchEndOrCancel(
 
                 judgeCounts.suteki++;
 
-
                 showFloatingText(
                     "ｽﾃｷ!",
                     "#e67e22",
@@ -4717,10 +4746,10 @@ function handleTouchEndOrCancel(
                     target.y - 40
                 );
 
+
             } else {
 
                 judgeCounts.alara++;
-
 
                 showFloatingText(
                     "ｱﾗﾗ",
@@ -4734,7 +4763,6 @@ function handleTouchEndOrCancel(
             note.hit =
                 true;
 
-
             note.holding =
                 false;
 
@@ -4742,11 +4770,16 @@ function handleTouchEndOrCancel(
             scoreBoardUpdate();
         }
 
-    } else {
+    }
 
-        /*
-            FLICK
-        */
+
+    /*
+        =========================================
+        FLICK
+        =========================================
+    */
+
+    else {
 
         for (
             let note of notes
@@ -4759,74 +4792,125 @@ function handleTouchEndOrCancel(
             ) continue;
 
 
+            /*
+                タイミング判定
+            */
+
             const diff =
                 Math.abs(
-
                     currentTime -
                     note.time
                 );
 
 
             if (
-                diff < 0.4
+                diff >= 0.4
+            ) continue;
+
+
+            /*
+                フリック対象レーン
+            */
+
+            const lane =
+                lanes[
+                    note.lane
+                ];
+
+
+            if (
+                !lane
+            ) continue;
+
+
+            /*
+                =================================
+                フリック開始位置の判定
+                =================================
+
+                「画面のどこからでもフリックできる」
+                状態を防止する。
+
+                ノーツのあるレーン付近から
+                フリックを開始した場合だけOK。
+            */
+
+            const touchDistance =
+                Math.hypot(
+
+                    touchInfo.startX -
+                    lane.x,
+
+                    touchInfo.startY -
+                    lane.y
+                );
+
+
+            if (
+                touchDistance >
+                targetRadius * 2.5
+            ) continue;
+
+
+            /*
+                フリックした距離
+            */
+
+            const distance =
+                Math.hypot(
+
+                    touchInfo.currentX -
+                    touchInfo.startX,
+
+                    touchInfo.currentY -
+                    touchInfo.startY
+                );
+
+
+            if (
+                distance > 15
             ) {
 
-                const distance =
-                    Math.hypot(
-
-                        touchInfo.currentX -
-                        touchInfo.startX,
-
-                        touchInfo.currentY -
-                        touchInfo.startY
-                    );
+                note.hit =
+                    true;
 
 
-                if (
-                    distance > 15
-                ) {
-
-                    note.hit =
-                        true;
+                score +=
+                    350;
 
 
-                    score +=
-                        350;
+                judgeCounts.kirari++;
 
 
-                    judgeCounts.kirari++;
+                showFloatingText(
+                    "ｷﾗﾘ!",
+                    "#f1c40f",
+                    lane.x,
+                    lane.y - 40
+                );
 
 
-                    const lane =
-                        lanes[
-                            note.lane
-                        ];
+                spawnParticles(
+                    lane.x,
+                    lane.y,
+                    "#9b59b6"
+                );
 
 
-                    showFloatingText(
-                        "ｷﾗﾘ!",
-                        "#f1c40f",
-                        lane.x,
-                        lane.y - 40
-                    );
+                scoreBoardUpdate();
 
 
-                    spawnParticles(
-                        lane.x,
-                        lane.y,
-                        "#9b59b6"
-                    );
-
-
-                    scoreBoardUpdate();
-
-
-                    break;
-                }
+                break;
             }
         }
     }
 
+
+    /*
+        =========================================
+        タッチ終了処理
+        =========================================
+    */
 
     try {
 
