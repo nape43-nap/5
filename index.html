@@ -4223,7 +4223,7 @@ function judgeAction(
     scoreBoardUpdate();
 }
 /* =========================================================
-   DEBUG AUTO PLAY - TAP
+   DEBUG AUTO PLAY - TAP / FLICK
 ========================================================= */
 
 function autoPlayUpdate() {
@@ -4254,8 +4254,14 @@ function autoPlayUpdate() {
         ) continue;
 
 
+        /*
+            TAP / FLICK以外は
+            今回は処理しない
+        */
+
         if (
-            note.type !== "tap"
+            note.type !== "tap" &&
+            note.type !== "flick"
         ) continue;
 
 
@@ -4268,7 +4274,7 @@ function autoPlayUpdate() {
 
         /*
             判定時間に入ったら
-            自動でタップ
+            自動処理
         */
 
         if (
@@ -4282,31 +4288,64 @@ function autoPlayUpdate() {
             if (!lane) continue;
 
 
-            note.hit =
-    true;
+            /*
+                TAP
+            */
+
+            if (
+                note.type ===
+                "tap"
+            ) {
+
+                note.hit =
+                    true;
 
 
-/*
-    AUTO PLAYでは
-    スコア・判定数を変更しない
-
-    ただしデバッグ用に
-    判定エフェクトだけ表示する
-*/
-
-showFloatingText(
-    "AUTO",
-    "#1abc9c",
-    lane.x,
-    lane.y - 40
-);
+                showFloatingText(
+                    "AUTO TAP",
+                    "#1abc9c",
+                    lane.x,
+                    lane.y - 40
+                );
 
 
-spawnParticles(
-    lane.x,
-    lane.y,
-    "#1abc9c"
-);
+                spawnParticles(
+                    lane.x,
+                    lane.y,
+                    "#1abc9c"
+                );
+
+            }
+
+
+            /*
+                FLICK
+            */
+
+            else if (
+                note.type ===
+                "flick"
+            ) {
+
+                note.hit =
+                    true;
+
+
+                showFloatingText(
+                    "AUTO FLICK",
+                    "#9b59b6",
+                    lane.x,
+                    lane.y - 40
+                );
+
+
+                spawnParticles(
+                    lane.x,
+                    lane.y,
+                    "#9b59b6"
+                );
+
+            }
 
         }
 
