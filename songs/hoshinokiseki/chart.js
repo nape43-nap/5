@@ -103,28 +103,28 @@ window.songData_hoshinokiseki = {
             "lane": 0,
             "type": "long",
             "noteName": "C3",
-            "duration": 0.489
+            "duration": 0.326
         },
         {
             "time": 7.826,
             "lane": 4,
             "type": "long",
             "noteName": "G3",
-            "duration": 0.489
+            "duration": 0.326
         },
         {
             "time": 8.478,
             "lane": 1,
             "type": "long",
             "noteName": "D3",
-            "duration": 0.489
+            "duration": 0.326
         },
         {
             "time": 8.478,
             "lane": 3,
             "type": "long",
             "noteName": "F3",
-            "duration": 0.489
+            "duration": 0.326
         },
         {
             "time": 9.13,
@@ -227,14 +227,14 @@ window.songData_hoshinokiseki = {
             "lane": 4,
             "type": "long",
             "noteName": "G3",
-            "duration": 0.489
+            "duration": 0.326
         },
         {
             "time": 15,
             "lane": 0,
             "type": "long",
             "noteName": "C3",
-            "duration": 0.489
+            "duration": 0.326
         },
         {
             "time": 15.652,
@@ -289,7 +289,7 @@ window.songData_hoshinokiseki = {
             "lane": 2,
             "type": "long",
             "noteName": "E3",
-            "duration": 1.304
+            "duration": 1.141
         },
         {
             "time": 18.587,
