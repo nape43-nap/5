@@ -4189,10 +4189,7 @@ function judgeAction(
 ) {
 
     combo++;
-console.log(
-    "現在のコンボ:",
-    combo
-);
+
 
     if (
         diff < 0.09
@@ -4242,6 +4239,34 @@ console.log(
             x,
             y - 40
         );
+    }
+
+
+    /*
+        コンボ表示
+    */
+
+    const comboDisplay =
+        document.getElementById(
+            "combo-display"
+        );
+
+    const comboNum =
+        document.getElementById(
+            "combo-num"
+        );
+
+
+    if (
+        comboDisplay &&
+        comboNum
+    ) {
+
+        comboNum.innerText =
+            combo;
+
+        comboDisplay.style.opacity =
+            "1";
     }
 
 
