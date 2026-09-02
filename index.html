@@ -6357,40 +6357,53 @@ else if (
                         spawnOffsetY;
 
 
-                    const startX =
-                        startSpawnX +
-                        (
-                            startPos.x -
-                            startSpawnX
-                        ) *
-                        progress;
+               /*
+    SLIDEの描画位置
+
+    progressが1を超えたら
+    判定ラインの位置で止める
+*/
+const drawProgress =
+    Math.min(
+        progress,
+        1
+    );
 
 
-                    const startY =
-                        startSpawnY +
-                        (
-                            startPos.y -
-                            startSpawnY
-                        ) *
-                        progress;
+const startX =
+    startSpawnX +
+    (
+        startPos.x -
+        startSpawnX
+    ) *
+    drawProgress;
 
 
-                    const endX =
-                        startSpawnX +
-                        (
-                            endPos.x -
-                            startSpawnX
-                        ) *
-                        progress;
+const startY =
+    startSpawnY +
+    (
+        startPos.y -
+        startSpawnY
+    ) *
+    drawProgress;
 
 
-                    const endY =
-                        startSpawnY +
-                        (
-                            endPos.y -
-                            startSpawnY
-                        ) *
-                        progress;
+const endX =
+    startSpawnX +
+    (
+        endPos.x -
+        startSpawnX
+    ) *
+    drawProgress;
+
+
+const endY =
+    startSpawnY +
+    (
+        endPos.y -
+        startSpawnY
+    ) *
+    drawProgress;
 
 
                     ctx.strokeStyle =
