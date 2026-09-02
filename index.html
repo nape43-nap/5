@@ -4257,7 +4257,54 @@ function autoPlayUpdate() {
         if (
             note.type !== "tap"
         ) continue;
+        /*
+            AUTO FLICK
+        */
 
+        if (
+            note.type === "flick"
+        ) {
+
+            const diff =
+                Math.abs(
+                    currentTime -
+                    note.time
+                );
+
+
+            if (
+                diff < 0.03
+            ) {
+
+                const lane =
+                    lanes[note.lane];
+
+
+                if (!lane) continue;
+
+
+                note.hit =
+                    true;
+
+
+                showFloatingText(
+                    "AUTO FLICK",
+                    "#9b59b6",
+                    lane.x,
+                    lane.y - 40
+                );
+
+
+                spawnParticles(
+                    lane.x,
+                    lane.y,
+                    "#9b59b6"
+                );
+            }
+
+
+            continue;
+        }
 
         const diff =
             Math.abs(
