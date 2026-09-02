@@ -135,6 +135,7 @@ window.songData_sample = {
             lane: 4,
             type: 'slide',
             path: [4, 3, 2, 1, 0],
+            direction: 'left',
             noteName: 'G4'
         },
 
