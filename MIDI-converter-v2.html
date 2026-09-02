@@ -1338,134 +1338,128 @@ async function convertMidi() {
         }
 
 
+      /*
+ * =========================================
+ * SLIDEグループをchartNotesへ変換
+ * =========================================
+ */
+
+slideGroups.forEach(
+    group => {
+
         /*
-         * =========================================
-         * SLIDEグループをchartNotesへ変換
-         * =========================================
+         * =====================================
+         * グループ内のレーンを取得
+         * =====================================
          */
 
-        slideGroups.forEach(
-            group => {
+        let path = [];
 
-
-                /*
-                 * =====================================
-                 * レーン経路を作る
-                 * =====================================
-                 */
-
-                let path = [];
-
-
-                group.forEach(
-                    slideNote => {
-
-
-                        /*
-                         * 同じレーンが
-                         * 連続している場合は
-                         * 重複させない
-                         */
-
-                        if (
-                            path.length === 0 ||
-                            path[
-                                path.length - 1
-                            ] !== slideNote.lane
-                        ) {
-
-                            path.push(
-                                slideNote.lane
-                            );
-
-                        }
-
-                    }
-                );
-
-
-                /*
-                 * =====================================
-                 * 1個しかレーンがない場合
-                 * =====================================
-                 *
-                 * 例：
-                 *
-                 * C5だけ
-                 *
-                 * ↓
-                 *
-                 * [0,1]
-                 *
-                 * =====================================
-                 */
+        group.forEach(
+            slideNote => {
 
                 if (
-                    path.length === 1
+                    path.length === 0 ||
+                    path[
+                        path.length - 1
+                    ] !== slideNote.lane
                 ) {
 
-
-                    const startLane =
-                        path[0];
-
-
-                    let nextLane;
-
-
-                    if (
-                        startLane < 4
-                    ) {
-
-                        nextLane =
-                            startLane + 1;
-
-                    }
-
-                    else {
-
-                        nextLane =
-                            startLane - 1;
-
-                    }
-
-
                     path.push(
-                        nextLane
+                        slideNote.lane
                     );
 
                 }
 
+            }
+        );
 
-                /*
-                 * =====================================
-                 * 開始レーン
-                 * =====================================
-                 */
+
+        /*
+         * =====================================
+         * SLIDEが3個以上ある場合
+         * =====================================
+         *
+         * 例：
+         *
+         * [0,2,4,2]
+         *
+         * ↓
+         *
+         * [0,2]
+         * [4,2]
+         *
+         * =====================================
+         */
+
+        if (
+            path.length >= 3
+        ) {
+
+            for (
+                let i = 0;
+                i < path.length - 1;
+                i += 2
+            ) {
 
                 const startLane =
-                    path[0];
-
-
-                /*
-                 * =====================================
-                 * 終了レーン
-                 * =====================================
-                 */
+                    path[i];
 
                 const endLane =
-                    path[
-                        path.length - 1
-                    ];
+                    path[i + 1];
 
 
                 /*
-                 * =====================================
+                 * 対応する元ノーツを取得
+                 */
+
+                const startNote =
+                    group[i];
+
+                const endNote =
+                    group[i + 1];
+
+
+                if (
+                    !startNote ||
+                    !endNote
+                ) {
+                    continue;
+                }
+
+
+                /*
+                 * =================================
+                 * SLIDE時間
+                 * =================================
+                 */
+
+                const startTime =
+                    startNote.time;
+
+                const endTime =
+                    endNote.time;
+
+
+                const slideDuration =
+                    Math.max(
+                        0.5,
+                        Number(
+                            (
+                                endTime -
+                                startTime
+                            ).toFixed(3)
+                        )
+                    );
+
+
+                /*
+                 * =================================
                  * 方向
-                 * =====================================
+                 * =================================
                  */
 
                 let direction;
-
 
                 if (
                     endLane >
@@ -1496,41 +1490,9 @@ async function convertMidi() {
 
 
                 /*
-                 * =====================================
-                 * SLIDE時間
-                 * =====================================
-                 */
-
-                const startTime =
-                    group[0].time;
-
-
-                const endTime =
-                    group[
-                        group.length - 1
-                    ].time;
-
-
-                /*
-                 * 最低0.5秒
-                 */
-
-                const slideDuration =
-                    Math.max(
-                        0.5,
-                        Number(
-                            (
-                                endTime -
-                                startTime
-                            ).toFixed(3)
-                        )
-                    );
-
-
-                /*
-                 * =====================================
+                 * =================================
                  * SLIDEノーツ生成
-                 * =====================================
+                 * =================================
                  */
 
                 const slideNote = {
@@ -1545,10 +1507,13 @@ async function convertMidi() {
                         "slidenode",
 
                     noteName:
-                        group[0].noteName,
+                        startNote.noteName,
 
                     path:
-                        path,
+                        [
+                            startLane,
+                            endLane
+                        ],
 
                     direction:
                         direction,
@@ -1557,13 +1522,7 @@ async function convertMidi() {
                         startLane,
 
                     middleLane:
-                        path.length >= 3
-                            ? path[
-                                Math.floor(
-                                    path.length / 2
-                                )
-                            ]
-                            : endLane,
+                        endLane,
 
                     endLane:
                         endLane,
@@ -1581,9 +1540,209 @@ async function convertMidi() {
                     slideNote
                 );
 
+            }
+
+            return;
+        }
+
+
+        /*
+         * =====================================
+         * SLIDEが2個の場合
+         * =====================================
+         */
+
+        if (
+            path.length === 2
+        ) {
+
+            const startLane =
+                path[0];
+
+            const endLane =
+                path[1];
+
+
+            const startTime =
+                group[0].time;
+
+            const endTime =
+                group[
+                    group.length - 1
+                ].time;
+
+
+            const slideDuration =
+                Math.max(
+                    0.5,
+                    Number(
+                        (
+                            endTime -
+                            startTime
+                        ).toFixed(3)
+                    )
+                );
+
+
+            let direction;
+
+            if (
+                endLane >
+                startLane
+            ) {
+
+                direction =
+                    "right";
 
             }
-        );
+
+            else if (
+                endLane <
+                startLane
+            ) {
+
+                direction =
+                    "left";
+
+            }
+
+            else {
+
+                direction =
+                    "right";
+
+            }
+
+
+            const slideNote = {
+
+                time:
+                    startTime,
+
+                lane:
+                    startLane,
+
+                type:
+                    "slidenode",
+
+                noteName:
+                    group[0].noteName,
+
+                path:
+                    [
+                        startLane,
+                        endLane
+                    ],
+
+                direction:
+                    direction,
+
+                startLane:
+                    startLane,
+
+                middleLane:
+                    endLane,
+
+                endLane:
+                    endLane,
+
+                curve:
+                    "arc",
+
+                slideDuration:
+                    slideDuration
+
+            };
+
+
+            chartNotes.push(
+                slideNote
+            );
+
+        }
+
+
+        /*
+         * =====================================
+         * SLIDEが1個の場合
+         * =====================================
+         */
+
+        if (
+            path.length === 1
+        ) {
+
+            const startLane =
+                path[0];
+
+            let nextLane;
+
+            if (
+                startLane < 4
+            ) {
+
+                nextLane =
+                    startLane + 1;
+
+            }
+
+            else {
+
+                nextLane =
+                    startLane - 1;
+
+            }
+
+
+            const slideNote = {
+
+                time:
+                    group[0].time,
+
+                lane:
+                    startLane,
+
+                type:
+                    "slidenode",
+
+                noteName:
+                    group[0].noteName,
+
+                path:
+                    [
+                        startLane,
+                        nextLane
+                    ],
+
+                direction:
+                    "right",
+
+                startLane:
+                    startLane,
+
+                middleLane:
+                    nextLane,
+
+                endLane:
+                    nextLane,
+
+                curve:
+                    "arc",
+
+                slideDuration:
+                    0.5
+
+            };
+
+
+            chartNotes.push(
+                slideNote
+            );
+
+        }
+
+    }
+);
 
 
         /*
