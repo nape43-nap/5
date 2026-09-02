@@ -4222,7 +4222,87 @@ function judgeAction(
 
     scoreBoardUpdate();
 }
+/* =========================================================
+   DEBUG AUTO PLAY - TAP
+========================================================= */
 
+function autoPlayUpdate() {
+
+    if (
+        !autoPlay ||
+        gameState !== "PLAYING"
+    ) return;
+
+
+    const currentTime =
+        musicAudio
+            ? musicAudio.currentTime
+            : 0;
+
+
+    const lanes =
+        getLanePositions();
+
+
+    for (
+        let note of notes
+    ) {
+
+        if (
+            note.hit ||
+            note.started
+        ) continue;
+
+
+        if (
+            note.type !== "tap"
+        ) continue;
+
+
+        const diff =
+            Math.abs(
+                currentTime -
+                note.time
+            );
+
+
+        /*
+            判定時間に入ったら
+            自動でタップ
+        */
+
+        if (
+            diff < 0.03
+        ) {
+
+            const lane =
+                lanes[note.lane];
+
+
+            if (!lane) continue;
+
+
+            note.hit = true;
+
+
+            judgeAction(
+                diff,
+                lane.x,
+                lane.y
+            );
+
+
+            spawnParticles(
+                lane.x,
+                lane.y,
+                "#1abc9c"
+            );
+
+        }
+
+    }
+
+}
 
 /* =========================================================
    入力
