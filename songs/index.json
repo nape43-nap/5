@@ -2,24 +2,13 @@
   "songs": [
     {
       "id": "sample",
-      "title": "サンプル曲",
-      "artist": "Sample Artist",
-      "difficulty": "EASY",
-      "level": 3
+        },
+    {
+      "id": "hoshinokiseki",
+     
     },
     {
-      "id": "donguri-korokoro",
-      "title": "どんぐりころころ",
-      "artist": "文部省唱歌",
-      "difficulty": "NORMAL",
-      "level": 5
-    },
-    {
-      "id": "oshiro-no-menuetto",
-      "title": "お城のメヌエット",
-      "artist": "Royal Orchestra",
-      "difficulty": "HARD",
-      "level": 8
+     
     },
     {
       "id": "hoshi-furu-mori",
