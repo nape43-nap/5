@@ -2,7 +2,7 @@ window.songData_hoshinokiseki = {
     "id": "hoshinokiseki",
     "title": "星の軌跡",
     "artist": "naptime(寝落ちP)",
-    "jacket": "songs/hoshinokiseki/hoshi.png",
+    "jacket": "songs/hoshinokiseki/hoshinokiseki.jpg",
     "audioSrc": "songs/hoshinokiseki/audio.mp3",
     "duration": 24,
     "chart": [
@@ -348,30 +348,14 @@ window.songData_hoshinokiseki = {
             "noteName": "C5",
             "path": [
                 0,
-                1
+                2
             ],
             "direction": "right",
             "startLane": 0,
-            "middleLane": 1,
-            "endLane": 1,
+            "middleLane": 2,
+            "endLane": 2,
             "curve": "arc",
-            "slideDuration": 0.5
-        },
-        {
-            "time": 21.522,
-            "lane": 2,
-            "type": "slidenode",
-            "noteName": "E5",
-            "path": [
-                2,
-                3
-            ],
-            "direction": "right",
-            "startLane": 2,
-            "middleLane": 3,
-            "endLane": 3,
-            "curve": "arc",
-            "slideDuration": 0.5
+            "slideDuration": 0.652
         },
         {
             "time": 22.174,
@@ -380,30 +364,14 @@ window.songData_hoshinokiseki = {
             "noteName": "G5",
             "path": [
                 4,
-                3
+                2
             ],
             "direction": "left",
             "startLane": 4,
-            "middleLane": 3,
-            "endLane": 3,
+            "middleLane": 2,
+            "endLane": 2,
             "curve": "arc",
-            "slideDuration": 0.5
-        },
-        {
-            "time": 22.826,
-            "lane": 2,
-            "type": "slidenode",
-            "noteName": "E5",
-            "path": [
-                2,
-                3
-            ],
-            "direction": "right",
-            "startLane": 2,
-            "middleLane": 3,
-            "endLane": 3,
-            "curve": "arc",
-            "slideDuration": 0.5
+            "slideDuration": 0.652
         }
     ]
 };
