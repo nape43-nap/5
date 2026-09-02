@@ -4886,11 +4886,10 @@ function gameLoop() {
         gameState ===
         "PLAYING"
     ) {
-
-        const currentTime =
-            audioCtx.currentTime -
-            startTime -
-            totalPausedTime;
+const currentTime =
+    musicAudio
+        ? musicAudio.currentTime
+        : 0;
 
 
         const effectiveNoteSpeed =
