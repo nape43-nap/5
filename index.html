@@ -4274,35 +4274,32 @@ function autoPlayUpdate() {
                 );
 
 
-            if (
-                diff < 0.03
-            ) {
+           if (
+    note.type === "tap" &&
+    diff < 0.03
+) {
 
-                const lane =
-                    lanes[note.lane];
+    const lane =
+        lanes[note.lane];
 
+    if (!lane) continue;
 
-                if (!lane) continue;
+    note.hit =
+        true;
 
+    showFloatingText(
+        "AUTO",
+        "#1abc9c",
+        lane.x,
+        lane.y - 40
+    );
 
-                note.hit =
-                    true;
-
-
-                showFloatingText(
-                    "AUTO FLICK",
-                    "#9b59b6",
-                    lane.x,
-                    lane.y - 40
-                );
-
-
-                spawnParticles(
-                    lane.x,
-                    lane.y,
-                    "#9b59b6"
-                );
-            }
+    spawnParticles(
+        lane.x,
+        lane.y,
+        "#1abc9c"
+    );
+}
 
 
             continue;
