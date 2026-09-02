@@ -1339,7 +1339,8 @@ async function convertMidi() {
                  */
 
                 if (
-                    gap <= slideGroupGap
+                    gap <= slideGroupGap&&
+    currentGroup.length < 2
                 ) {
 
                     currentGroup.push(
