@@ -4446,18 +4446,33 @@ function autoPlayUpdate() {
                     note.duration;
 
 
-                if (
-                    currentTime >=
-                    endTime
-                ) {
+               if (
+    currentTime >=
+    endTime
+) {
 
-                    note.hit =
-                        true;
+    note.hit =
+        true;
 
 
-                    note.holding =
-                        false;
-                }
+    note.holding =
+        false;
+
+
+    showFloatingText(
+        "AUTO LONG",
+        "#f39c12",
+        lane.x,
+        lane.y - 40
+    );
+
+
+    spawnParticles(
+        lane.x,
+        lane.y,
+        "#f39c12"
+    );
+}
             }
 
 
