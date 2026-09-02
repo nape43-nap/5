@@ -5698,278 +5698,312 @@ if (
             }
 
 
-            /*
-                LONG
-            */
+           /*
+    LONG
+*/
 
-            else if (
-                note.type ===
-                "long"
+else if (
+    note.type ===
+    "long"
+) {
+
+    const endTime =
+        note.time +
+        note.duration;
+
+
+    const headProg =
+        (
+            currentTime -
+            (
+                note.time -
+                travelTime
+            )
+        ) /
+        travelTime;
+
+
+    const tailProg =
+        (
+            currentTime -
+            (
+                endTime -
+                travelTime
+            )
+        ) /
+        travelTime;
+
+
+    /*
+        LONG描画
+    */
+
+    if (
+        headProg >= 0 &&
+        tailProg <= 1.2
+    ) {
+
+        const startX =
+            centerX;
+
+
+        const startY =
+            girlY +
+            spawnOffsetY;
+
+
+        let headX;
+        let headY;
+
+        let tailX;
+        let tailY;
+
+
+        /*
+            頭の位置
+        */
+
+        if (
+            headProg >= 1 ||
+            note.started
+        ) {
+
+            headX =
+                target.x;
+
+            headY =
+                target.y;
+
+        } else {
+
+            const p =
+                Math.max(
+                    0,
+                    headProg
+                );
+
+
+            headX =
+                startX +
+                (
+                    target.x -
+                    startX
+                ) *
+                p;
+
+
+            headY =
+                startY +
+                (
+                    target.y -
+                    startY
+                ) *
+                p;
+        }
+
+
+        /*
+            終点の位置
+        */
+
+        if (
+            tailProg >= 1
+        ) {
+
+            tailX =
+                target.x;
+
+            tailY =
+                target.y;
+
+        } else {
+
+            const p =
+                Math.max(
+                    0,
+                    tailProg
+                );
+
+
+            tailX =
+                startX +
+                (
+                    target.x -
+                    startX
+                ) *
+                p;
+
+
+            tailY =
+                startY +
+                (
+                    target.y -
+                    startY
+                ) *
+                p;
+        }
+
+
+        /*
+            ロング本体
+        */
+
+        ctx.strokeStyle =
+            "rgba(243,156,18,0.65)";
+
+
+        ctx.lineWidth =
+            12;
+
+
+        ctx.lineCap =
+            "round";
+
+
+        ctx.beginPath();
+
+
+        ctx.moveTo(
+            tailX,
+            tailY
+        );
+
+
+        ctx.lineTo(
+            headX,
+            headY
+        );
+
+
+        ctx.stroke();
+
+
+        /*
+            頭
+        */
+
+        ctx.fillStyle =
+            "#f39c12";
+
+
+        ctx.strokeStyle =
+            "#ffffff";
+
+
+        ctx.lineWidth =
+            3;
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            headX,
+            headY,
+            16,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fill();
+
+        ctx.stroke();
+
+
+        /*
+            終点
+        */
+
+        if (
+            tailProg >= 0 &&
+            currentTime <
+            endTime
+        ) {
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                tailX,
+                tailY,
+                15,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fill();
+
+            ctx.stroke();
+        }
+
+
+        /*
+            押している途中で
+            大幅に離した場合
+        */
+
+        if (
+            note.holding
+        ) {
+
+            if (
+                currentTime >=
+                endTime +
+                0.35 &&
+                !note.hit
             ) {
 
-                const endTime =
-                    note.time +
-                    note.duration;
+                note.hit =
+                    true;
 
 
-                const headProg =
-                    (
-                        currentTime -
-                        (
-                            note.time -
-                            travelTime
-                        )
-                    ) /
-                    travelTime;
+                note.holding =
+                    false;
 
 
-                const tailProg =
-                    (
-                        currentTime -
-                        (
-                            endTime -
-                            travelTime
-                        )
-                    ) /
-                    travelTime;
+                judgeCounts.alara++;
 
 
-                if (
-                    headProg >= 0 &&
-                    tailProg <= 1.2
-                ) {
-
-                    const startX =
-                        centerX;
-
-
-                    const startY =
-                        girlY +
-                        spawnOffsetY;
-
-
-                    let headX;
-                    let headY;
-
-                    let tailX;
-                    let tailY;
-
-
-                    if (
-                        headProg >= 1 ||
-                        note.started
-                    ) {
-
-                        headX =
-                            target.x;
-
-                        headY =
-                            target.y;
-
-                    } else {
-
-                        const p =
-                            Math.max(
-                                0,
-                                headProg
-                            );
-
-
-                        headX =
-                            startX +
-                            (
-                                target.x -
-                                startX
-                            ) *
-                            p;
-
-
-                        headY =
-                            startY +
-                            (
-                                target.y -
-                                startY
-                            ) *
-                            p;
-                    }
-
-
-                    if (
-                        tailProg >= 1
-                    ) {
-
-                        tailX =
-                            target.x;
-
-                        tailY =
-                            target.y;
-
-                    } else {
-
-                        const p =
-                            Math.max(
-                                0,
-                                tailProg
-                            );
-
-
-                        tailX =
-                            startX +
-                            (
-                                target.x -
-                                startX
-                            ) *
-                            p;
-
-
-                        tailY =
-                            startY +
-                            (
-                                target.y -
-                                startY
-                            ) *
-                            p;
-                    }
-
-
-                    /*
-                        ロング本体
-                    */
-
-                    ctx.strokeStyle =
-                        "rgba(243,156,18,0.65)";
-
-
-                    ctx.lineWidth =
-                        12;
-
-
-                    ctx.lineCap =
-                        "round";
-
-
-                    ctx.beginPath();
-
-
-                    ctx.moveTo(
-                        tailX,
-                        tailY
-                    );
-
-
-                    ctx.lineTo(
-                        headX,
-                        headY
-                    );
-
-
-                    ctx.stroke();
-
-
-                    /*
-                        頭
-                    */
-
-                    ctx.fillStyle =
-                        "#f39c12";
-
-
-                    ctx.strokeStyle =
-                        "#ffffff";
-
-
-                    ctx.lineWidth =
-                        3;
-
-
-                    ctx.beginPath();
-
-
-                    ctx.arc(
-
-                        headX,
-                        headY,
-
-                        16,
-
-                        0,
-                        Math.PI * 2
-                    );
-
-
-                    ctx.fill();
-
-                    ctx.stroke();
-
-
-                    /*
-                        終点
-                    */
-
-                    if (
-                        tailProg >= 0 &&
-                        currentTime <
-                        endTime
-                    ) {
-
-                        ctx.beginPath();
-
-
-                        ctx.arc(
-
-                            tailX,
-                            tailY,
-
-                            15,
-
-                            0,
-                            Math.PI * 2
-                        );
-
-
-                        ctx.fill();
-
-                        ctx.stroke();
-                    }
-
-
-                    /*
-                        押している途中で
-                        大幅に離した場合
-                    */
-
-                    if (
-                        note.holding
-                    ) {
-
-                        if (
-                            currentTime >=
-                            endTime +
-                            0.35 &&
-                            !note.hit
-                        ) {
-
-                            note.hit =
-                                true;
-
-
-                            note.holding =
-                                false;
-
-
-                            judgeCounts.alara++;
-
-
-                            showFloatingText(
-                                "ｱﾗﾗ",
-                                "#95a5a6",
-                                target.x,
-                                target.y - 40
-                            );
-                        }
-                    }
-                }
+                showFloatingText(
+                    "ｱﾗﾗ",
+                    "#95a5a6",
+                    target.x,
+                    target.y - 40
+                );
             }
+        }
+    }
+
+
+    /*
+        LONGを一度も押さなかった場合
+    */
+
+    if (
+        !note.started &&
+        currentTime >=
+        endTime +
+        0.35 &&
+        !note.hit
+    ) {
+
+        note.hit =
+            true;
+
+
+        judgeCounts.alara++;
+
+
+        showFloatingText(
+            "ｱﾗﾗ",
+            "#95a5a6",
+            target.x,
+            target.y - 40
+        );
+    }
+}
 
 
             /*
