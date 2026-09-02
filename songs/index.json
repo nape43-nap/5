@@ -1,21 +1,13 @@
 {
   "songs": [
     {
-      "id": "sample",
-        },
-    {
-      "id": "hoshinokiseki",
-     
+      "id": "sample"
     },
     {
-     
+      "id": "hoshinokiseki"
     },
     {
-      "id": "hoshi-furu-mori",
-      "title": "星降る森の舞踏会",
-      "artist": "Silky Night",
-      "difficulty": "EXPERT",
-      "level": 12
+      "id": "hoshi-furu-mori"
     }
   ]
 }
