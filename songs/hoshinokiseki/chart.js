@@ -350,7 +350,7 @@ window.songData_hoshinokiseki = {
             "slideDuration": 0.5
         },
         {
-            "time": 21.848,
+            "time": 21.685,
             "lane": 2,
             "type": "slidenode",
             "noteName": "E5",
@@ -366,7 +366,7 @@ window.songData_hoshinokiseki = {
             "slideDuration": 0.5
         },
         {
-            "time": 23.152,
+            "time": 22.989,
             "lane": 2,
             "type": "slidenode",
             "noteName": "E5",
