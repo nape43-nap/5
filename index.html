@@ -4473,6 +4473,118 @@ function autoPlayUpdate() {
         continue;
     }
 }
+    /*
+    =====================================
+    SLIDE
+    =====================================
+*/
+
+if (
+    note.type === "slidenode" ||
+    note.type === "slide"
+) {
+
+    /*
+        SLIDE開始
+    */
+
+    if (
+        !note.started
+    ) {
+
+        const startDiff =
+            Math.abs(
+                currentTime -
+                note.time
+            );
+
+        if (
+            startDiff < 0.03
+        ) {
+
+            note.started =
+                true;
+
+            note.holding =
+                true;
+
+            showFloatingText(
+                "AUTO SLIDE",
+                "#3498db",
+                lanes[note.lane].x,
+                lanes[note.lane].y - 40
+            );
+
+            spawnParticles(
+                lanes[note.lane].x,
+                lanes[note.lane].y,
+                "#3498db"
+            );
+        }
+    }
+
+    /*
+        SLIDE終了
+    */
+
+    if (
+        note.started &&
+        note.holding
+    ) {
+
+        const slideDuration =
+            note.slideDuration ||
+            0.5;
+
+        const endTime =
+            note.time +
+            slideDuration;
+
+        if (
+            currentTime >=
+            endTime
+        ) {
+
+            const path =
+                note.path ||
+                [note.lane];
+
+            const endLane =
+                path[
+                    path.length - 1
+                ];
+
+            const target =
+                lanes[
+                    endLane
+                ];
+
+            note.hit =
+                true;
+
+            note.holding =
+                false;
+
+            if (target) {
+
+                showFloatingText(
+                    "AUTO SLIDE",
+                    "#3498db",
+                    target.x,
+                    target.y - 40
+                );
+
+                spawnParticles(
+                    target.x,
+                    target.y,
+                    "#3498db"
+                );
+            }
+        }
+    }
+
+    continue;
+}
 /* =========================================================
    入力
 ========================================================= */
