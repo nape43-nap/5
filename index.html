@@ -1628,7 +1628,36 @@ async function loadSongIndex() {
    外部JS譜面読み込み
    完全版
 ========================================================= */
+/* =========================================================
+   曲選択画面用 曲情報読み込み
+========================================================= */
 
+async function loadSongInfoForSelector() {
+
+    for (
+        const song of songs
+    ) {
+
+        try {
+
+            await loadExternalChart(
+                song
+            );
+
+        } catch (error) {
+
+            console.error(
+                "曲情報読み込み失敗:",
+                song.id,
+                error
+            );
+
+        }
+    }
+
+
+    renderSongSelector();
+}
 async function loadExternalChart(song) {
 
     if (
