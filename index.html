@@ -4255,7 +4255,8 @@ function autoPlayUpdate() {
 
 
         if (
-            note.type !== "tap"
+            note.type !== "tap"&&
+    note.type !== "flick"
         ) continue;
         /*
             AUTO FLICK
