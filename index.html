@@ -5919,43 +5919,66 @@ if (
                     }
 
 
-                    /*
-                        押している途中で
-                        大幅に離した場合
-                    */
+                   /*
+    LONGのMISS判定
+*/
 
-                    if (
-                        note.holding
-                    ) {
+/*
+    ① 始点を押していた場合
+    → 終点を大きく過ぎたらMISS
+*/
 
-                        if (
-                            currentTime >=
-                            endTime +
-                            0.35 &&
-                            !note.hit
-                        ) {
+if (
+    note.holding
+) {
 
-                            note.hit =
-                                true;
+    if (
+        currentTime >=
+        endTime + 0.35 &&
+        !note.hit
+    ) {
+
+        note.hit =
+            true;
+
+        note.holding =
+            false;
+
+        judgeCounts.alara++;
+
+        showFloatingText(
+            "ｱﾗﾗ",
+            "#95a5a6",
+            target.x,
+            target.y - 40
+        );
+    }
+}
 
 
-                            note.holding =
-                                false;
+/*
+    ② 始点を押さなかった場合
+    → 終点を大きく過ぎたらMISS
+*/
 
+else if (
+    currentTime >=
+    endTime + 0.35 &&
+    !note.hit
+) {
 
-                            judgeCounts.alara++;
+    note.hit =
+        true;
 
+    judgeCounts.alara++;
 
-                            showFloatingText(
-                                "ｱﾗﾗ",
-                                "#95a5a6",
-                                target.x,
-                                target.y - 40
-                            );
-                        }
-                    }
-                }
-            }
+    showFloatingText(
+        "ｱﾗﾗ",
+        "#95a5a6",
+        target.x,
+        target.y - 40
+    );
+}
 
 
             /*
