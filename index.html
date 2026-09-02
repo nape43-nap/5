@@ -4283,21 +4283,30 @@ function autoPlayUpdate() {
 
 
             note.hit =
-                true;
+    true;
 
 
-            judgeAction(
-                diff,
-                lane.x,
-                lane.y
-            );
+/*
+    AUTO PLAYでは
+    スコア・判定数を変更しない
+
+    ただしデバッグ用に
+    判定エフェクトだけ表示する
+*/
+
+showFloatingText(
+    "AUTO",
+    "#1abc9c",
+    lane.x,
+    lane.y - 40
+);
 
 
-            spawnParticles(
-                lane.x,
-                lane.y,
-                "#1abc9c"
-            );
+spawnParticles(
+    lane.x,
+    lane.y,
+    "#1abc9c"
+);
 
         }
 
