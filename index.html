@@ -4028,7 +4028,44 @@ function scoreBoardUpdate() {
     ).innerText =
         score;
 }
+/* =========================================================
+   DEBUG AUTO PLAY
+========================================================= */
 
+let autoPlay = false;
+
+
+function toggleAutoPlay() {
+
+    autoPlay = !autoPlay;
+
+
+    const btn =
+        document.getElementById(
+            "auto-play-btn"
+        );
+
+
+    if (autoPlay) {
+
+        btn.textContent =
+            "AUTO PLAY ON";
+
+        btn.style.background =
+            "#7fb069";
+
+    }
+    else {
+
+        btn.textContent =
+            "AUTO PLAY OFF";
+
+        btn.style.background =
+            "#d4a373";
+
+    }
+
+}
 
 /* =========================================================
    エフェクト
