@@ -4284,36 +4284,53 @@ canvas.addEventListener(
                     ) continue;
 
 
-                    /*
-                        TAP
-                    */
+                   /*
+    TAP
+*/
 
-                    if (
-                        note.type ===
-                        "tap"
-                    ) {
+if (
+    note.type ===
+    "tap"
+) {
 
-                        note.hit =
-                            true;
+    const flickNearby =
+        notes.some(
+            otherNote =>
+                !otherNote.hit &&
+                !otherNote.started &&
+                otherNote.type ===
+                    "flick" &&
+                otherNote.lane ===
+                    i &&
+                Math.abs(
+                    currentTime -
+                    otherNote.time
+                ) < 0.4
+        );
 
+    if (
+        flickNearby
+    ) {
+        continue;
+    }
 
-                        judgeAction(
-                            diff,
-                            lanes[i].x,
-                            lanes[i].y
-                        );
+    note.hit =
+        true;
 
+    judgeAction(
+        diff,
+        lanes[i].x,
+        lanes[i].y
+    );
 
-                        spawnParticles(
-                            lanes[i].x,
-                            lanes[i].y,
-                            "#1abc9c"
-                        );
+    spawnParticles(
+        lanes[i].x,
+        lanes[i].y,
+        "#1abc9c"
+    );
 
-
-                        break;
-                    }
-
+    break;
+}
 
                     /*
                         LONG
