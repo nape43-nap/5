@@ -4274,6 +4274,36 @@ function judgeAction(
     scoreBoardUpdate();
 }
 
+    /* =========================================================
+   コンボ加算
+========================================================= */
+
+function addCombo() {
+
+    combo++;
+
+    const comboDisplay =
+        document.getElementById(
+            "combo-display"
+        );
+
+    const comboNum =
+        document.getElementById(
+            "combo-num"
+        );
+
+    if (
+        comboDisplay &&
+        comboNum
+    ) {
+
+        comboNum.innerText =
+            combo;
+
+        comboDisplay.style.opacity =
+            "1";
+    }
+}
 
 /* =========================================================
    MISS時のコンボリセット
