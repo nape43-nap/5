@@ -340,46 +340,30 @@ window.songData_hoshinokiseki = {
             "noteName": "C5",
             "path": [
                 0,
-                1
+                2
             ],
             "direction": "right",
             "startLane": 0,
-            "middleLane": 1,
-            "endLane": 1,
+            "middleLane": 2,
+            "endLane": 2,
             "curve": "arc",
-            "slideDuration": 0.5
+            "slideDuration": 0.652
         },
         {
-            "time": 21.685,
-            "lane": 2,
+            "time": 22.174,
+            "lane": 4,
             "type": "slidenode",
-            "noteName": "E5",
+            "noteName": "G5",
             "path": [
-                2,
-                4
+                4,
+                2
             ],
-            "direction": "right",
-            "startLane": 2,
-            "middleLane": 4,
-            "endLane": 4,
+            "direction": "left",
+            "startLane": 4,
+            "middleLane": 2,
+            "endLane": 2,
             "curve": "arc",
-            "slideDuration": 0.5
-        },
-        {
-            "time": 22.989,
-            "lane": 2,
-            "type": "slidenode",
-            "noteName": "E5",
-            "path": [
-                2,
-                3
-            ],
-            "direction": "right",
-            "startLane": 2,
-            "middleLane": 3,
-            "endLane": 3,
-            "curve": "arc",
-            "slideDuration": 0.5
+            "slideDuration": 0.652
         }
     ]
 };
