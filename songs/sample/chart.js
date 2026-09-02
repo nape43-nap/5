@@ -1,214 +1,269 @@
 window.songData_sample = {
+
     id: 'sample',
 
-    title: 'sample',
+    title: 'ノーツ動作確認',
 
-    artist: 'わし',
+    artist: 'TEST CHART',
 
     jacket: 'assets/images/sample.jpg',
 
     audioSrc: 'songs/sample/audio.mp3',
 
-    duration: 7.4,
+    duration: 18,
 
     chart: [
 
+        /*
+        =====================================================
+        ① タップ
+        =====================================================
+        */
+
         {
-            time: 0,
-            lane: 3,
+            time: 1.0,
+            lane: 0,
             type: 'tap',
             noteName: 'C3'
         },
 
         {
-            time: 0.23,
-            lane: 0,
-            type: 'tap',
-            noteName: 'D3'
-        },
-
-        {
-            time: 0.47,
+            time: 1.5,
             lane: 2,
             type: 'tap',
             noteName: 'E3'
         },
 
         {
-            time: 0.7,
-            lane: 0,
+            time: 2.0,
+            lane: 4,
             type: 'tap',
             noteName: 'G3'
         },
 
+
+        /*
+        =====================================================
+        ② 同時押し
+        =====================================================
+        */
+
         {
-            time: 0.94,
-            lane: 3,
+            time: 2.8,
+            lane: 0,
             type: 'tap',
-            noteName: 'F3'
+            noteName: 'C3'
         },
 
         {
-            time: 1.17,
+            time: 2.8,
             lane: 2,
             type: 'tap',
             noteName: 'E3'
         },
 
         {
-            time: 1.41,
-            lane: 0,
+            time: 2.8,
+            lane: 4,
             type: 'tap',
-            noteName: 'D3'
+            noteName: 'G3'
         },
 
-        {
-            time: 1.64,
-            lane: 3,
-            type: 'tap',
-            noteName: 'C3'
-        },
+
+        /*
+        =====================================================
+        ③ 長押し
+        3.5秒開始 → 5.0秒終了
+        1.5秒長押し
+        =====================================================
+        */
 
         {
-            time: 1.88,
+            time: 3.5,
             lane: 0,
             type: 'long',
-            duration: 1.88,
-            noteName: 'D3'
-        },
-
-        {
-            time: 2.34,
-            lane: 2,
-            type: 'tap',
-            noteName: 'E3'
-        },
-
-        {
-            time: 2.58,
-            lane: 3,
-            type: 'tap',
+            duration: 1.5,
             noteName: 'C3'
         },
 
-        {
-            time: 2.81,
-            lane: 2,
-            type: 'tap',
-            noteName: 'E3'
-        },
+
+        /*
+        =====================================================
+        ④ 長押し
+        5.5秒開始 → 7.5秒終了
+        少し長め
+        =====================================================
+        */
 
         {
-            time: 3.05,
-            lane: 3,
-            type: 'tap',
-            noteName: 'C3'
-        },
-
-        {
-            time: 3.28,
-            lane: 2,
-            type: 'tap',
-            noteName: 'E3'
-        },
-
-        {
-            time: 3.52,
-            lane: 3,
-            type: 'tap',
-            noteName: 'C3'
-        },
-
-        {
-            time: 3.75,
-            lane: 0,
-            type: 'slide',
-            noteName: 'C4'
-        },
-
-        {
-            time: 3.75,
-            lane: 3,
-            type: 'tap',
-            noteName: 'F3'
-        },
-
-        {
-            time: 4.22,
-            lane: 0,
-            type: 'slide',
-            noteName: 'C4'
-        },
-
-        {
-            time: 4.22,
-            lane: 0,
-            type: 'tap',
+            time: 5.5,
+            lane: 4,
+            type: 'long',
+            duration: 2.0,
             noteName: 'G3'
         },
 
-        {
-            time: 4.45,
-            lane: 3,
-            type: 'tap',
-            noteName: 'F3'
-        },
+
+        /*
+        =====================================================
+        ⑤ スライド
+        8.0秒開始
+        0 → 1 → 2 → 3 → 4
+        =====================================================
+        */
 
         {
-            time: 4.69,
+            time: 8.0,
             lane: 0,
-            type: 'tap',
-            noteName: 'G3'
-        },
-
-        {
-            time: 4.69,
-            lane: 2,
             type: 'slide',
-            noteName: 'D4'
+            path: [0, 1, 2, 3, 4],
+            noteName: 'C4'
         },
 
+
+        /*
+        =====================================================
+        ⑥ スライド
+        9.5秒開始
+        4 → 3 → 2 → 1 → 0
+        =====================================================
+        */
+
         {
-            time: 4.92,
+            time: 9.5,
             lane: 4,
             type: 'slide',
-            noteName: 'E4'
+            path: [4, 3, 2, 1, 0],
+            noteName: 'G4'
         },
 
-        {
-            time: 4.92,
-            lane: 3,
-            type: 'tap',
-            noteName: 'F3'
-        },
+
+        /*
+        =====================================================
+        ⑦ フリック
+        =====================================================
+        */
 
         {
-            time: 5.63,
-            lane: 2,
-            type: 'flick',
-            noteName: 'C5'
-        },
-
-        {
-            time: 6.56,
+            time: 11.0,
             lane: 1,
-            type: 'flick',
-            noteName: 'E5'
-        },
-
-        {
-            time: 7.03,
-            lane: 4,
             type: 'flick',
             noteName: 'D5'
         },
 
         {
-            time: 7.27,
-            lane: 2,
+            time: 11.5,
+            lane: 3,
+            type: 'flick',
+            noteName: 'F5'
+        },
+
+        {
+            time: 12.0,
+            lane: 0,
             type: 'flick',
             noteName: 'C5'
+        },
+
+
+        /*
+        =====================================================
+        ⑧ タップ＋フリック同時
+        =====================================================
+        */
+
+        {
+            time: 12.8,
+            lane: 0,
+            type: 'tap',
+            noteName: 'C3'
+        },
+
+        {
+            time: 12.8,
+            lane: 2,
+            type: 'flick',
+            noteName: 'E5'
+        },
+
+        {
+            time: 12.8,
+            lane: 4,
+            type: 'tap',
+            noteName: 'G3'
+        },
+
+
+        /*
+        =====================================================
+        ⑨ 長押し＋通常ノーツ
+        =====================================================
+        */
+
+        {
+            time: 13.8,
+            lane: 1,
+            type: 'long',
+            duration: 2.0,
+            noteName: 'D3'
+        },
+
+        {
+            time: 14.5,
+            lane: 3,
+            type: 'tap',
+            noteName: 'F3'
+        },
+
+        {
+            time: 15.2,
+            lane: 4,
+            type: 'flick',
+            noteName: 'G5'
+        },
+
+
+        /*
+        =====================================================
+        ⑩ 最後の同時押し
+        =====================================================
+        */
+
+        {
+            time: 16.5,
+            lane: 0,
+            type: 'tap',
+            noteName: 'C3'
+        },
+
+        {
+            time: 16.5,
+            lane: 1,
+            type: 'tap',
+            noteName: 'D3'
+        },
+
+        {
+            time: 16.5,
+            lane: 2,
+            type: 'tap',
+            noteName: 'E3'
+        },
+
+        {
+            time: 16.5,
+            lane: 3,
+            type: 'tap',
+            noteName: 'F3'
+        },
+
+        {
+            time: 16.5,
+            lane: 4,
+            type: 'tap',
+            noteName: 'G3'
         }
 
     ]
+
 };
