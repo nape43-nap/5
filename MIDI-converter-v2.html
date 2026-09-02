@@ -15,9 +15,7 @@
     MIDI譜面コンバーター V2
 </title>
 
-
 <script src="https://unpkg.com/@tonejs/midi@2.0.28/build/Midi.js"></script>
-
 
 <style>
 
@@ -25,27 +23,22 @@
     box-sizing: border-box;
 }
 
-
 body {
 
     margin: 0;
 
     padding: 20px;
 
-    background:
-        #fdfbf7;
+    background: #fdfbf7;
 
-    color:
-        #7c6f64;
+    color: #7c6f64;
 
     font-family:
         "Arial",
         "Hiragino Kaku Gothic ProN",
         "Yu Gothic",
         sans-serif;
-
 }
-
 
 .container {
 
@@ -53,401 +46,299 @@ body {
 
     max-width: 700px;
 
-    margin:
-        0 auto;
+    margin: 0 auto;
 
-    background:
-        white;
+    background: white;
 
-    border:
-        4px solid #f0e6d2;
+    border: 4px solid #f0e6d2;
 
-    border-radius:
-        20px;
+    border-radius: 20px;
 
-    padding:
-        24px;
+    padding: 24px;
 
     box-shadow:
         0 8px 25px
         rgba(0,0,0,0.05);
-
 }
-
 
 h1 {
 
-    text-align:
-        center;
+    text-align: center;
 
-    margin:
-        0 0 8px;
+    margin: 0 0 8px;
 
-    font-size:
-        24px;
-
+    font-size: 24px;
 }
-
 
 .subtitle {
 
-    text-align:
-        center;
+    text-align: center;
 
-    font-size:
-        13px;
+    font-size: 13px;
 
-    color:
-        #aaa;
+    color: #aaa;
 
-    margin-bottom:
-        25px;
-
+    margin-bottom: 25px;
 }
-
 
 .section {
 
-    margin-bottom:
-        20px;
+    margin-bottom: 20px;
 
-    padding:
-        16px;
+    padding: 16px;
 
-    background:
-        #fffcf7;
+    background: #fffcf7;
 
-    border:
-        2px solid #f0e6d2;
+    border: 2px solid #f0e6d2;
 
-    border-radius:
-        14px;
-
+    border-radius: 14px;
 }
-
 
 .section-title {
 
-    font-size:
-        16px;
+    font-size: 16px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
-    margin-bottom:
-        12px;
+    margin-bottom: 12px;
 
-    color:
-        #6f6258;
-
+    color: #6f6258;
 }
-
 
 .form-group {
 
-    margin-bottom:
-        12px;
-
+    margin-bottom: 12px;
 }
-
 
 label {
 
-    display:
-        block;
+    display: block;
 
-    font-size:
-        13px;
+    font-size: 13px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
-    margin-bottom:
-        5px;
-
+    margin-bottom: 5px;
 }
-
 
 input[type="text"],
 input[type="number"],
 input[type="file"] {
 
-    width:
-        100%;
+    width: 100%;
 
-    padding:
-        11px;
+    padding: 11px;
 
-    border:
-        2px solid #f0e6d2;
+    border: 2px solid #f0e6d2;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    background:
-        white;
+    background: white;
 
-    font-size:
-        14px;
+    font-size: 14px;
 
-    outline:
-        none;
-
+    outline: none;
 }
-
 
 input:focus {
 
-    border-color:
-        #d9b99d;
-
+    border-color: #d9b99d;
 }
-
 
 .note-rule {
 
-    font-size:
-        12px;
+    font-size: 12px;
 
-    line-height:
-        1.8;
-
+    line-height: 1.8;
 }
-
 
 .note-rule strong {
 
-    color:
-        #6f6258;
-
+    color: #6f6258;
 }
-
 
 button {
 
-    width:
-        100%;
+    width: 100%;
 
-    border:
-        none;
+    border: none;
 
-    border-radius:
-        25px;
+    border-radius: 25px;
 
-    padding:
-        14px;
+    padding: 14px;
 
-    margin-top:
-        8px;
+    margin-top: 8px;
 
-    font-size:
-        15px;
+    font-size: 15px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
-    cursor:
-        pointer;
-
+    cursor: pointer;
 }
-
 
 .convert-button {
 
-    background:
-        #e3c4a8;
+    background: #e3c4a8;
 
-    color:
-        white;
+    color: white;
 
     box-shadow:
         0 4px 12px
         rgba(227,196,168,0.4);
-
 }
-
 
 .convert-button:active {
 
-    transform:
-        scale(0.98);
-
+    transform: scale(0.98);
 }
-
 
 .copy-button {
 
-    background:
-        #b5c496;
+    background: #b5c496;
 
-    color:
-        white;
-
+    color: white;
 }
-
 
 .download-button {
 
-    background:
-        #9bb7c9;
+    background: #9bb7c9;
 
-    color:
-        white;
-
+    color: white;
 }
-
 
 textarea {
 
-    width:
-        100%;
+    width: 100%;
 
-    min-height:
-        360px;
+    min-height: 360px;
 
-    margin-top:
-        10px;
+    margin-top: 10px;
 
-    padding:
-        12px;
+    padding: 12px;
 
-    border:
-        2px solid #f0e6d2;
+    border: 2px solid #f0e6d2;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    resize:
-        vertical;
+    resize: vertical;
 
-    font-family:
-        monospace;
+    font-family: monospace;
 
-    font-size:
-        12px;
+    font-size: 12px;
 
-    line-height:
-        1.5;
+    line-height: 1.5;
 
-    background:
-        #fff;
-
+    background: #fff;
 }
-
 
 .status {
 
-    display:
-        none;
+    display: none;
 
-    margin-top:
-        12px;
+    margin-top: 12px;
 
-    padding:
-        12px;
+    padding: 12px;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    background:
-        #eef3e6;
+    background: #eef3e6;
 
-    color:
-        #687454;
+    color: #687454;
 
-    font-size:
-        13px;
-
+    font-size: 13px;
 }
-
 
 .stats {
 
-    display:
-        grid;
+    display: grid;
 
-    grid-template-columns:
-        repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 
-    gap:
-        8px;
+    gap: 8px;
 
-    margin-top:
-        12px;
-
+    margin-top: 12px;
 }
-
 
 .stat {
 
-    background:
-        white;
+    background: white;
 
-    border:
-        2px solid #f0e6d2;
+    border: 2px solid #f0e6d2;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    padding:
-        10px;
+    padding: 10px;
 
-    text-align:
-        center;
-
+    text-align: center;
 }
-
 
 .stat-label {
 
-    font-size:
-        11px;
+    font-size: 11px;
 
-    color:
-        #aaa;
-
+    color: #aaa;
 }
-
 
 .stat-value {
 
-    font-size:
-        20px;
+    font-size: 20px;
 
-    font-weight:
-        bold;
+    font-weight: bold;
 
-    color:
-        #6f6258;
-
+    color: #6f6258;
 }
-
 
 .warning {
 
-    margin-top:
-        10px;
+    margin-top: 10px;
 
-    padding:
-        12px;
+    padding: 12px;
 
-    border-radius:
-        10px;
+    border-radius: 10px;
 
-    background:
-        #fff5e8;
+    background: #fff5e8;
 
-    color:
-        #9a7448;
+    color: #9a7448;
 
-    font-size:
-        12px;
+    font-size: 12px;
 
-    line-height:
-        1.6;
-
+    line-height: 1.6;
 }
 
+.slide-setting {
+
+    margin-top: 14px;
+
+    padding: 12px;
+
+    background: white;
+
+    border: 2px solid #f0e6d2;
+
+    border-radius: 10px;
+}
+
+.slide-setting-title {
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    color: #6f6258;
+
+    margin-bottom: 8px;
+}
+
+.slide-setting-help {
+
+    font-size: 11px;
+
+    line-height: 1.6;
+
+    color: #999;
+
+    margin-top: 6px;
+}
 
 @media (
     max-width: 500px
@@ -455,32 +346,21 @@ textarea {
 
     body {
 
-        padding:
-            10px;
-
+        padding: 10px;
     }
-
 
     .container {
 
-        padding:
-            15px;
+        padding: 15px;
 
-        border-width:
-            3px;
-
+        border-width: 3px;
     }
-
 
     h1 {
 
-        font-size:
-            20px;
-
+        font-size: 20px;
     }
-
 }
-
 
 </style>
 
@@ -578,8 +458,25 @@ MIDIノートの長さが
 
 <br>
 
-開始レーンから隣のレーンへ移動する
-pathを自動生成します。
+近い時間に並んだC5〜G5を
+自動的に1本のSLIDEへ結合します。
+
+
+<br>
+
+例：
+
+<br>
+
+C5 → D5 → E5 → F5 → G5
+
+<br>
+
+↓
+
+<br>
+
+path: [0,1,2,3,4]
 
 
 <br><br>
@@ -591,6 +488,53 @@ pathを自動生成します。
 
 同じ時刻のMIDIノートは
 そのまま同時押しとして出力されます。
+
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- SLIDE設定 -->
+<!-- ========================================= -->
+
+<div class="slide-setting">
+
+
+<div class="slide-setting-title">
+    🎢 SLIDE自動結合設定
+</div>
+
+
+<input
+    type="number"
+    id="slideGroupGap"
+    value="0.6"
+    min="0.05"
+    max="3"
+    step="0.05"
+>
+
+
+<div class="slide-setting-help">
+
+この秒数以内に次のSLIDEノートがあれば、
+同じSLIDEとして結合します。
+
+<br>
+
+例：0.6秒なら
+
+<br>
+
+C5 10.0秒
+→ D5 10.2秒
+→ E5 10.4秒
+
+<br>
+
+は1本のSLIDEになります。
+
+</div>
 
 
 </div>
@@ -623,7 +567,6 @@ pathを自動生成します。
     value="sample"
 >
 
-
 </div>
 
 
@@ -638,7 +581,6 @@ pathを自動生成します。
     id="songTitle"
     value="新しい曲"
 >
-
 
 </div>
 
@@ -655,7 +597,6 @@ pathを自動生成します。
     value="作者名"
 >
 
-
 </div>
 
 
@@ -671,7 +612,6 @@ pathを自動生成します。
     value="assets/images/sample.jpg"
 >
 
-
 </div>
 
 
@@ -686,7 +626,6 @@ pathを自動生成します。
     id="songAudio"
     value="songs/sample/audio.mp3"
 >
-
 
 </div>
 
@@ -717,7 +656,6 @@ pathを自動生成します。
     id="midiFile"
     accept=".mid,.midi"
 >
-
 
 </div>
 
@@ -960,20 +898,73 @@ async function convertMidi() {
             );
 
 
+        /*
+         * =========================================
+         * SLIDE結合間隔
+         * =========================================
+         */
+
+        const slideGroupGapInput =
+            document.getElementById(
+                "slideGroupGap"
+            );
+
+
+        let slideGroupGap =
+            Number(
+                slideGroupGapInput.value
+            );
+
+
+        if (
+            !Number.isFinite(
+                slideGroupGap
+            ) ||
+            slideGroupGap <= 0
+        ) {
+
+            slideGroupGap = 0.6;
+
+        }
+
+
+        /*
+         * =========================================
+         * 通常ノーツ
+         * =========================================
+         */
+
         let chartNotes = [];
 
 
         /*
-         * 曲の長さ
+         * =========================================
+         * SLIDE候補
+         *
+         * ここにはC5〜G5だけを
+         * 一旦ためる
+         *
+         * 後で時間順に並べて
+         * 1本のSLIDEへ結合する
+         * =========================================
          */
 
-        let maxTime =
-            15;
+        let slideCandidates = [];
 
 
         /*
-         * MIDI内の
-         * 全トラックを処理
+         * =========================================
+         * 曲の長さ
+         * =========================================
+         */
+
+        let maxTime = 15;
+
+
+        /*
+         * =========================================
+         * MIDI全トラック処理
+         * =========================================
          */
 
         midi.tracks.forEach(
@@ -1012,8 +1003,7 @@ async function convertMidi() {
 
                             maxTime =
                                 Math.ceil(
-                                    noteEnd +
-                                    2
+                                    noteEnd + 2
                                 );
 
                         }
@@ -1028,7 +1018,7 @@ async function convertMidi() {
 
 
                         /*
-                         * MIDI音階
+                         * MIDI音程
                          */
 
                         const semitone =
@@ -1037,148 +1027,58 @@ async function convertMidi() {
 
                         /*
                          * レーン
-                         *
-                         * 白鍵
                          */
 
-                        let lane =
+                        const lane =
                             getLaneFromSemitone(
                                 semitone
                             );
 
 
                         /*
-                         * ノーツデータ
-                         */
-
-                        let noteData = {
-
-                            time:
-                                Number(
-                                    time.toFixed(
-                                        3
-                                    )
-                                ),
-
-                            lane:
-                                lane,
-
-                            type:
-                                "tap",
-
-                            noteName:
-                                noteName
-
-                        };
-
-
-                        /*
                          * =====================================
                          * C5〜G5
-                         * SLIDE
+                         * SLIDE候補として保存
                          * =====================================
+                         *
+                         * MIDI番号
+                         *
+                         * C5 = 72
+                         * D5 = 74
+                         * E5 = 76
+                         * F5 = 77
+                         * G5 = 79
+                         *
                          */
 
                         if (
                             midiNote >= 72 &&
-                            midiNote < 84
+                            midiNote <= 79
                         ) {
 
 
-                            noteData.type =
-                                "slidenode";
+                            slideCandidates.push({
+
+                                time:
+                                    Number(
+                                        time.toFixed(3)
+                                    ),
+
+                                lane:
+                                    lane,
+
+                                noteName:
+                                    noteName,
+
+                                duration:
+                                    Number(
+                                        duration.toFixed(3)
+                                    )
+
+                            });
 
 
-                            /*
-                             * 隣のレーンへ
-                             */
-
-                            let nextLane;
-
-
-                            if (
-                                lane < 4
-                            ) {
-
-                                nextLane =
-                                    lane + 1;
-
-                            }
-
-                            else {
-
-                                nextLane =
-                                    lane - 1;
-
-                            }
-
-
-                            /*
-                             * 中間点
-                             */
-
-                            let middleLane;
-
-
-                            if (
-                                nextLane >
-                                lane
-                            ) {
-
-                                middleLane =
-                                    Math.min(
-                                        4,
-                                        lane + 1
-                                    );
-
-                            }
-
-                            else {
-
-                                middleLane =
-                                    Math.max(
-                                        0,
-                                        lane - 1
-                                    );
-
-                            }
-
-
-                            noteData.path = [
-
-                                lane,
-
-                                middleLane,
-
-                                nextLane
-
-                            ];
-
-
-                            noteData.direction =
-                                nextLane > lane
-                                    ? "right"
-                                    : "left";
-
-
-                            noteData.startLane =
-                                lane;
-
-
-                            noteData.middleLane =
-                                middleLane;
-
-
-                            noteData.endLane =
-                                nextLane;
-
-
-                            noteData.curve =
-                                "arc";
-
-
-                            noteData.slideDuration =
-                                0.5;
+                            return;
 
                         }
 
@@ -1190,14 +1090,32 @@ async function convertMidi() {
                          * =====================================
                          */
 
-                        else if (
+                        if (
                             midiNote >= 60 &&
-                            midiNote < 72
+                            midiNote <= 67
                         ) {
 
 
-                            noteData.type =
-                                "flick";
+                            chartNotes.push({
+
+                                time:
+                                    Number(
+                                        time.toFixed(3)
+                                    ),
+
+                                lane:
+                                    lane,
+
+                                type:
+                                    "flick",
+
+                                noteName:
+                                    noteName
+
+                            });
+
+
+                            return;
 
                         }
 
@@ -1209,36 +1127,65 @@ async function convertMidi() {
                          * =====================================
                          */
 
-                        else if (
+                        if (
                             midiNote >= 48 &&
-                            midiNote < 60
+                            midiNote <= 55
                         ) {
 
 
                             if (
-                                duration >=
-                                0.25
+                                duration >= 0.25
                             ) {
 
-                                noteData.type =
-                                    "long";
+                                chartNotes.push({
 
+                                    time:
+                                        Number(
+                                            time.toFixed(3)
+                                        ),
 
-                                noteData.duration =
-                                    Number(
-                                        duration.toFixed(
-                                            3
+                                    lane:
+                                        lane,
+
+                                    type:
+                                        "long",
+
+                                    noteName:
+                                        noteName,
+
+                                    duration:
+                                        Number(
+                                            duration.toFixed(3)
                                         )
-                                    );
+
+                                });
 
                             }
 
                             else {
 
-                                noteData.type =
-                                    "tap";
+                                chartNotes.push({
+
+                                    time:
+                                        Number(
+                                            time.toFixed(3)
+                                        ),
+
+                                    lane:
+                                        lane,
+
+                                    type:
+                                        "tap",
+
+                                    noteName:
+                                        noteName
+
+                                });
 
                             }
+
+
+                            return;
 
                         }
 
@@ -1249,48 +1196,441 @@ async function convertMidi() {
                          * =====================================
                          */
 
+                        if (
+                            duration >= 0.25
+                        ) {
+
+                            chartNotes.push({
+
+                                time:
+                                    Number(
+                                        time.toFixed(3)
+                                    ),
+
+                                lane:
+                                    lane,
+
+                                type:
+                                    "long",
+
+                                noteName:
+                                    noteName,
+
+                                duration:
+                                    Number(
+                                        duration.toFixed(3)
+                                    )
+
+                            });
+
+                        }
+
                         else {
 
+                            chartNotes.push({
 
-                            if (
-                                duration >=
-                                0.25
-                            ) {
-
-                                noteData.type =
-                                    "long";
-
-
-                                noteData.duration =
+                                time:
                                     Number(
-                                        duration.toFixed(
-                                            3
-                                        )
-                                    );
+                                        time.toFixed(3)
+                                    ),
 
-                            }
+                                lane:
+                                    lane,
 
-                            else {
+                                type:
+                                    "tap",
 
-                                noteData.type =
-                                    "tap";
+                                noteName:
+                                    noteName
 
-                            }
+                            });
 
                         }
 
 
+                    }
+                );
+
+            }
+        );
+
+
+        /*
+         * =========================================
+         * SLIDE候補を時間順に並べる
+         * =========================================
+         */
+
+        slideCandidates.sort(
+            (a, b) => {
+
+                if (
+                    a.time !==
+                    b.time
+                ) {
+
+                    return (
+                        a.time -
+                        b.time
+                    );
+
+                }
+
+                return (
+                    a.lane -
+                    b.lane
+                );
+
+            }
+        );
+
+
+        /*
+         * =========================================
+         * SLIDEをグループ化
+         * =========================================
+         */
+
+        let slideGroups = [];
+
+
+        let currentGroup = [];
+
+
+        slideCandidates.forEach(
+            slideNote => {
+
+
+                /*
+                 * グループが空なら開始
+                 */
+
+                if (
+                    currentGroup.length === 0
+                ) {
+
+                    currentGroup.push(
+                        slideNote
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * 直前のSLIDEとの時間差
+                 */
+
+                const previous =
+                    currentGroup[
+                        currentGroup.length - 1
+                    ];
+
+
+                const gap =
+                    slideNote.time -
+                    previous.time;
+
+
+                /*
+                 * 一定時間以内なら
+                 * 同じSLIDE
+                 */
+
+                if (
+                    gap <= slideGroupGap
+                ) {
+
+                    currentGroup.push(
+                        slideNote
+                    );
+
+                }
+
+                else {
+
+                    /*
+                     * 前のグループ確定
+                     */
+
+                    slideGroups.push(
+                        currentGroup
+                    );
+
+
+                    /*
+                     * 新しいSLIDE開始
+                     */
+
+                    currentGroup = [
+                        slideNote
+                    ];
+
+                }
+
+            }
+        );
+
+
+        /*
+         * 最後のグループ
+         */
+
+        if (
+            currentGroup.length > 0
+        ) {
+
+            slideGroups.push(
+                currentGroup
+            );
+
+        }
+
+
+        /*
+         * =========================================
+         * SLIDEグループをchartNotesへ変換
+         * =========================================
+         */
+
+        slideGroups.forEach(
+            group => {
+
+
+                /*
+                 * =====================================
+                 * レーン経路を作る
+                 * =====================================
+                 */
+
+                let path = [];
+
+
+                group.forEach(
+                    slideNote => {
+
+
                         /*
-                         * 譜面に追加
+                         * 同じレーンが
+                         * 連続している場合は
+                         * 重複させない
                          */
 
-                        chartNotes.push(
-                            noteData
-                        );
+                        if (
+                            path.length === 0 ||
+                            path[
+                                path.length - 1
+                            ] !== slideNote.lane
+                        ) {
 
+                            path.push(
+                                slideNote.lane
+                            );
+
+                        }
 
                     }
                 );
+
+
+                /*
+                 * =====================================
+                 * 1個しかレーンがない場合
+                 * =====================================
+                 *
+                 * 例：
+                 *
+                 * C5だけ
+                 *
+                 * ↓
+                 *
+                 * [0,1]
+                 *
+                 * =====================================
+                 */
+
+                if (
+                    path.length === 1
+                ) {
+
+
+                    const startLane =
+                        path[0];
+
+
+                    let nextLane;
+
+
+                    if (
+                        startLane < 4
+                    ) {
+
+                        nextLane =
+                            startLane + 1;
+
+                    }
+
+                    else {
+
+                        nextLane =
+                            startLane - 1;
+
+                    }
+
+
+                    path.push(
+                        nextLane
+                    );
+
+                }
+
+
+                /*
+                 * =====================================
+                 * 開始レーン
+                 * =====================================
+                 */
+
+                const startLane =
+                    path[0];
+
+
+                /*
+                 * =====================================
+                 * 終了レーン
+                 * =====================================
+                 */
+
+                const endLane =
+                    path[
+                        path.length - 1
+                    ];
+
+
+                /*
+                 * =====================================
+                 * 方向
+                 * =====================================
+                 */
+
+                let direction;
+
+
+                if (
+                    endLane >
+                    startLane
+                ) {
+
+                    direction =
+                        "right";
+
+                }
+
+                else if (
+                    endLane <
+                    startLane
+                ) {
+
+                    direction =
+                        "left";
+
+                }
+
+                else {
+
+                    direction =
+                        "right";
+
+                }
+
+
+                /*
+                 * =====================================
+                 * SLIDE時間
+                 * =====================================
+                 */
+
+                const startTime =
+                    group[0].time;
+
+
+                const endTime =
+                    group[
+                        group.length - 1
+                    ].time;
+
+
+                /*
+                 * 最低0.5秒
+                 */
+
+                const slideDuration =
+                    Math.max(
+                        0.5,
+                        Number(
+                            (
+                                endTime -
+                                startTime
+                            ).toFixed(3)
+                        )
+                    );
+
+
+                /*
+                 * =====================================
+                 * SLIDEノーツ生成
+                 * =====================================
+                 */
+
+                const slideNote = {
+
+                    time:
+                        startTime,
+
+                    lane:
+                        startLane,
+
+                    type:
+                        "slidenode",
+
+                    noteName:
+                        group[0].noteName,
+
+                    path:
+                        path,
+
+                    direction:
+                        direction,
+
+                    startLane:
+                        startLane,
+
+                    middleLane:
+                        path.length >= 3
+                            ? path[
+                                Math.floor(
+                                    path.length / 2
+                                )
+                            ]
+                            : endLane,
+
+                    endLane:
+                        endLane,
+
+                    curve:
+                        "arc",
+
+                    slideDuration:
+                        slideDuration
+
+                };
+
+
+                chartNotes.push(
+                    slideNote
+                );
+
 
             }
         );
@@ -1379,7 +1719,9 @@ async function convertMidi() {
 
 
         /*
+         * =========================================
          * IDチェック
+         * =========================================
          */
 
         if (
@@ -1413,11 +1755,7 @@ async function convertMidi() {
 
         /*
          * =========================================
-         * ゲーム側で使う変数名
-         *
-         * songData_sample
-         * songData_donguri
-         * etc...
+         * 変数名
          * =========================================
          */
 
@@ -1493,17 +1831,13 @@ async function convertMidi() {
          * =========================================
          */
 
-        let tap =
-            0;
+        let tap = 0;
 
-        let long =
-            0;
+        let long = 0;
 
-        let flick =
-            0;
+        let flick = 0;
 
-        let slide =
-            0;
+        let slide = 0;
 
 
         chartNotes.forEach(
@@ -1540,7 +1874,6 @@ async function convertMidi() {
                 else if (
                     note.type ===
                         "slide" ||
-
                     note.type ===
                         "slidenode"
                 ) {
@@ -1603,7 +1936,9 @@ async function convertMidi() {
 
 
         /*
+         * =========================================
          * 成功表示
+         * =========================================
          */
 
         const status =
@@ -1622,12 +1957,41 @@ async function convertMidi() {
             "🎉 譜面生成完了！<br>" +
 
             "変数名：window." +
-            variableName;
+            variableName +
+            "<br>" +
 
+            "🎢 SLIDE：" +
+            slide +
+            "本";
+
+
+        /*
+         * =========================================
+         * デバッグ情報
+         * =========================================
+         */
 
         console.log(
             "MIDI変換完了",
             songData
+        );
+
+
+        console.log(
+            "SLIDE候補数:",
+            slideCandidates.length
+        );
+
+
+        console.log(
+            "SLIDEグループ数:",
+            slideGroups.length
+        );
+
+
+        console.log(
+            "SLIDEグループ:",
+            slideGroups
         );
 
 
@@ -1678,7 +2042,6 @@ function getLaneFromSemitone(
 
     /*
      * C#
-     *
      * Cに寄せる
      */
 
@@ -1706,6 +2069,7 @@ function getLaneFromSemitone(
 
     /*
      * D#
+     * Dに寄せる
      */
 
     if (
@@ -1745,6 +2109,7 @@ function getLaneFromSemitone(
 
     /*
      * F#
+     * Fに寄せる
      */
 
     if (
@@ -1771,6 +2136,7 @@ function getLaneFromSemitone(
 
     /*
      * G#
+     * Gに寄せる
      */
 
     if (
