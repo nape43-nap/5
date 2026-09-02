@@ -4223,7 +4223,7 @@ function judgeAction(
     scoreBoardUpdate();
 }
 /* =========================================================
-   DEBUG AUTO PLAY - TAP
+   DEBUG AUTO PLAY
 ========================================================= */
 
 function autoPlayUpdate() {
@@ -4248,24 +4248,29 @@ function autoPlayUpdate() {
         let note of notes
     ) {
 
-        if (
-            note.hit ||
-            note.started
-        ) continue;
-
-
-        if (
-            note.type !== "tap"&&
-    note.type !== "flick"&&
-    note.type !== "long"
-        ) continue;
         /*
-            AUTO FLICK
+            すでに処理済みのノーツは無視
         */
 
         if (
-            note.type === "flick"
+            note.hit
+        ) continue;
+
+
+        /*
+            =====================================
+            TAP
+            =====================================
+        */
+
+        if (
+            note.type === "tap"
         ) {
+
+            if (
+                note.started
+            ) continue;
+
 
             const diff =
                 Math.abs(
@@ -4274,94 +4279,200 @@ function autoPlayUpdate() {
                 );
 
 
-           if (
-    note.type === "tap" &&
-    diff < 0.03
-) {
+            if (
+                diff < 0.03
+            ) {
 
-    const lane =
-        lanes[note.lane];
+                const lane =
+                    lanes[note.lane];
 
-    if (!lane) continue;
 
-    note.hit =
-        true;
+                if (!lane) continue;
 
-    showFloatingText(
-        "AUTO",
-        "#1abc9c",
-        lane.x,
-        lane.y - 40
-    );
 
-    spawnParticles(
-        lane.x,
-        lane.y,
-        "#1abc9c"
-    );
-}
+                note.hit =
+                    true;
+
+
+                showFloatingText(
+                    "AUTO TAP",
+                    "#1abc9c",
+                    lane.x,
+                    lane.y - 40
+                );
+
+
+                spawnParticles(
+                    lane.x,
+                    lane.y,
+                    "#1abc9c"
+                );
+            }
 
 
             continue;
         }
 
-        const diff =
-            Math.abs(
-                currentTime -
-                note.time
-            );
-
 
         /*
-            判定時間に入ったら
-            自動でタップ
+            =====================================
+            FLICK
+            =====================================
         */
 
         if (
-            diff < 0.03
+            note.type === "flick"
         ) {
 
-            const lane =
-                lanes[note.lane];
+            if (
+                note.started
+            ) continue;
 
 
-            if (!lane) continue;
+            const diff =
+                Math.abs(
+                    currentTime -
+                    note.time
+                );
 
 
-            note.hit =
-    true;
+            if (
+                diff < 0.03
+            ) {
+
+                const lane =
+                    lanes[note.lane];
 
 
-/*
-    AUTO PLAYでは
-    スコア・判定数を変更しない
-
-    ただしデバッグ用に
-    判定エフェクトだけ表示する
-*/
-
-showFloatingText(
-    "AUTO",
-    "#1abc9c",
-    lane.x,
-    lane.y - 40
-);
+                if (!lane) continue;
 
 
-spawnParticles(
-    lane.x,
-    lane.y,
-    "#1abc9c"
-);
+                note.hit =
+                    true;
 
+
+                showFloatingText(
+                    "AUTO FLICK",
+                    "#9b59b6",
+                    lane.x,
+                    lane.y - 40
+                );
+
+
+                spawnParticles(
+                    lane.x,
+                    lane.y,
+                    "#9b59b6"
+                );
+            }
+
+
+            continue;
         }
 
+
+        /*
+            =====================================
+            LONG
+            =====================================
+        */
+
+        if (
+            note.type === "long"
+        ) {
+
+            /*
+                LONG開始
+            */
+
+            if (
+                !note.started
+            ) {
+
+                const startDiff =
+                    Math.abs(
+                        currentTime -
+                        note.time
+                    );
+
+
+                if (
+                    startDiff < 0.03
+                ) {
+
+                    const lane =
+                        lanes[note.lane];
+
+
+                    if (!lane) continue;
+
+
+                    note.started =
+                        true;
+
+
+                    note.holding =
+                        true;
+
+
+                    showFloatingText(
+                        "AUTO LONG",
+                        "#f39c12",
+                        lane.x,
+                        lane.y - 40
+                    );
+
+
+                    spawnParticles(
+                        lane.x,
+                        lane.y,
+                        "#f39c12"
+                    );
+                }
+            }
+
+
+            /*
+                LONG終了
+            */
+
+            if (
+                note.started &&
+                note.holding
+            ) {
+
+                const endTime =
+                    note.time +
+                    note.duration;
+
+
+                if (
+                    currentTime >=
+                    endTime
+                ) {
+
+                    note.hit =
+                        true;
+
+
+                    note.holding =
+                        false;
+                }
+            }
+
+
+            continue;
+        }
+
+
+        /*
+            その他のノーツは
+            AUTO PLAYではまだ処理しない
+        */
+
+        continue;
     }
-
 }
-    
-
-
 /* =========================================================
    入力
 ========================================================= */
