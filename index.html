@@ -4524,6 +4524,8 @@ if (
 
         const slideDuration =
             note.slideDuration ||
+            note.pathTime ||
+    note.duration ||
             0.5;
 
         const endTime =
