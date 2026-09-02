@@ -4588,9 +4588,10 @@ function handleTouchEndOrCancel(
                 ];
 
 
-            if (
-                diff < 0.12
-            ) {
+           if (
+    diff < 0.12 &&
+    currentTime >= endTime
+) {
 
                 score +=
                     400;
