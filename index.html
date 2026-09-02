@@ -5088,6 +5088,7 @@ canvas.addEventListener(
                     touchInfo.assignedNote =
                         null;
 
+                    addCombo();
 
                     score +=
                         300;
@@ -5417,7 +5418,7 @@ function handleTouchEndOrCancel(
                     コンボ加算
                 */
 
-                combo++;
+                addCombo();
 
                 score +=
                     200;
