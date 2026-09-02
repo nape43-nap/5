@@ -3898,6 +3898,29 @@ function finishGame() {
     ).innerText =
         score;
 
+    const fullComboDisplay =
+    document.getElementById(
+        "full-combo-display"
+    );
+
+if (
+    fullComboDisplay
+) {
+
+    if (
+        judgeCounts.alara ===
+        0
+    ) {
+
+        fullComboDisplay.style.display =
+            "block";
+
+    } else {
+
+        fullComboDisplay.style.display =
+            "none";
+    }
+}
 
     document.getElementById(
         "count-kirari"
