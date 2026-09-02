@@ -5122,7 +5122,6 @@ canvas.addEventListener(
     handleTouchEndOrCancel
 );
 
-
 canvas.addEventListener(
     "pointercancel",
     handleTouchEndOrCancel
@@ -5179,21 +5178,7 @@ function handleTouchEndOrCancel(
             LONG終了
             -------------------------------------
         */
-console.log(
-    "LONG状態",
-    "time=",
-    currentTime,
-    "noteTime=",
-    note.time,
-    "duration=",
-    note.duration,
-    "started=",
-    note.started,
-    "holding=",
-    note.holding,
-    "hit=",
-    note.hit
-);
+
         if (
             note.type ===
             "long" &&
@@ -5219,14 +5204,20 @@ console.log(
 
 
             /*
-                予定終了時間より後で、
-                かなり正確ならキラリ
+                キラリ
             */
 
             if (
                 diff < 0.12 &&
                 currentTime >= endTime
             ) {
+
+                /*
+                    LONG成功
+                    コンボ加算
+                */
+
+                combo++;
 
                 score +=
                     400;
@@ -5241,11 +5232,22 @@ console.log(
                 );
 
 
+            /*
+                ステキ
+            */
+
             } else if (
                 diff < 0.28 &&
                 currentTime >=
                     endTime - 0.15
             ) {
+
+                /*
+                    LONG成功
+                    コンボ加算
+                */
+
+                combo++;
 
                 score +=
                     250;
@@ -5260,6 +5262,10 @@ console.log(
                 );
 
 
+            /*
+                MISS
+            */
+
             } else {
 
                 score +=
@@ -5267,9 +5273,9 @@ console.log(
 
                 judgeCounts.alara++;
 
-resetCombo();
+                resetCombo();
 
-showFloatingText(
+                showFloatingText(
                     "ｱﾗﾗ",
                     "#95a5a6",
                     lane.x,
@@ -5287,6 +5293,8 @@ showFloatingText(
 
             scoreBoardUpdate();
         }
+
+
         /*
             -------------------------------------
             LONG放置MISS
@@ -5316,9 +5324,10 @@ showFloatingText(
 
             judgeCounts.alara++;
 
-resetCombo();
+            resetCombo();
 
-if (lane) {
+
+            if (lane) {
 
                 showFloatingText(
                     "ｱﾗﾗ",
@@ -5328,6 +5337,7 @@ if (lane) {
                 );
             }
         }
+
 
         /*
             -------------------------------------
@@ -5339,7 +5349,6 @@ if (lane) {
             (
                 note.type ===
                     "slidenode" ||
-
                 note.type ===
                     "slide"
             ) &&
@@ -5379,7 +5388,6 @@ if (lane) {
 
             const distance =
                 Math.hypot(
-
                     touchInfo.currentX -
                     target.x,
 
@@ -5388,11 +5396,22 @@ if (lane) {
                 );
 
 
+            /*
+                SLIDE成功
+            */
+
             if (
                 distance <
                 targetRadius *
                 2.5
             ) {
+
+                /*
+                    SLIDE成功
+                    コンボ加算
+                */
+
+                combo++;
 
                 score +=
                     200;
@@ -5407,13 +5426,17 @@ if (lane) {
                 );
 
 
+            /*
+                SLIDE MISS
+            */
+
             } else {
 
-    judgeCounts.alara++;
+                judgeCounts.alara++;
 
-    resetCombo();
+                resetCombo();
 
-    showFloatingText(
+                showFloatingText(
                     "ｱﾗﾗ",
                     "#95a5a6",
                     target.x,
@@ -5486,20 +5509,11 @@ if (lane) {
 
 
             /*
-                =================================
-                フリック開始位置の判定
-                =================================
-
-                「画面のどこからでもフリックできる」
-                状態を防止する。
-
-                ノーツのあるレーン付近から
-                フリックを開始した場合だけOK。
+                フリック開始位置
             */
 
             const touchDistance =
                 Math.hypot(
-
                     touchInfo.startX -
                     lane.x,
 
@@ -5529,6 +5543,10 @@ if (lane) {
                 );
 
 
+            /*
+                FLICK成功
+            */
+
             if (
                 distance > 15
             ) {
@@ -5537,9 +5555,15 @@ if (lane) {
                     true;
 
 
+                /*
+                    FLICK成功
+                    コンボ加算
+                */
+
+                combo++;
+
                 score +=
                     350;
-
 
                 judgeCounts.kirari++;
 
@@ -5587,6 +5611,11 @@ if (lane) {
         e.pointerId
     );
 }
+
+
+/* =========================================================
+   ゲームループ
+========================================================= */
 
 
 /* =========================================================
