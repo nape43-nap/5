@@ -4188,8 +4188,16 @@ function judgeAction(
     y
 ) {
 
+    /*
+        成功したのでコンボ加算
+    */
+
     combo++;
 
+
+    /*
+        判定
+    */
 
     if (
         diff < 0.09
@@ -4271,6 +4279,41 @@ function judgeAction(
 
 
     scoreBoardUpdate();
+}
+
+
+/* =========================================================
+   MISS時のコンボリセット
+========================================================= */
+
+function resetCombo() {
+
+    combo =
+        0;
+
+
+    const comboDisplay =
+        document.getElementById(
+            "combo-display"
+        );
+
+    const comboNum =
+        document.getElementById(
+            "combo-num"
+        );
+
+
+    if (
+        comboDisplay &&
+        comboNum
+    ) {
+
+        comboNum.innerText =
+            "0";
+
+        comboDisplay.style.opacity =
+            "0";
+    }
 }
     
 /* =========================================================
