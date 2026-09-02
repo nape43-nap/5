@@ -4606,9 +4606,10 @@ function handleTouchEndOrCancel(
                     lane.y - 40
                 );
 
-            } else if (
-                diff < 0.28
-            ) {
+           } else if (
+    diff < 0.28 &&
+    currentTime >= endTime - 0.15
+) {
 
                 score +=
                     250;
