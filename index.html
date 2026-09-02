@@ -4410,6 +4410,16 @@ canvas.addEventListener(
         ) return;
 
 
+        /*
+            AUTO PLAY中は
+            プレイヤー入力を無効化
+        */
+
+        if (
+            autoPlay
+        ) return;
+
+
         const rect =
             canvas.getBoundingClientRect();
 
