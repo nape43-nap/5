@@ -4194,7 +4194,6 @@ function judgeAction(
 
     combo++;
 
-
     /*
         判定
     */
@@ -4207,7 +4206,6 @@ function judgeAction(
             300;
 
         judgeCounts.kirari++;
-
 
         showFloatingText(
             "ｷﾗﾘ!",
@@ -4225,7 +4223,6 @@ function judgeAction(
 
         judgeCounts.suteki++;
 
-
         showFloatingText(
             "ｽﾃｷ!",
             "#e67e22",
@@ -4240,7 +4237,6 @@ function judgeAction(
 
         judgeCounts.ii++;
 
-
         showFloatingText(
             "ｲｲ!",
             "#3498db",
@@ -4248,7 +4244,6 @@ function judgeAction(
             y - 40
         );
     }
-
 
     /*
         コンボ表示
@@ -4264,7 +4259,6 @@ function judgeAction(
             "combo-num"
         );
 
-
     if (
         comboDisplay &&
         comboNum
@@ -4276,7 +4270,6 @@ function judgeAction(
         comboDisplay.style.opacity =
             "1";
     }
-
 
     scoreBoardUpdate();
 }
@@ -4291,7 +4284,6 @@ function resetCombo() {
     combo =
         0;
 
-
     const comboDisplay =
         document.getElementById(
             "combo-display"
@@ -4301,7 +4293,6 @@ function resetCombo() {
         document.getElementById(
             "combo-num"
         );
-
 
     if (
         comboDisplay &&
