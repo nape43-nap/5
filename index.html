@@ -4899,7 +4899,46 @@ function handleTouchEndOrCancel(
 
             scoreBoardUpdate();
         }
+        /*
+            -------------------------------------
+            LONG放置MISS
+            -------------------------------------
+        */
 
+        if (
+            note.type ===
+            "long" &&
+            !note.started &&
+            currentTime >=
+                note.time +
+                note.duration +
+                0.35 &&
+            !note.hit
+        ) {
+
+            const lane =
+                lanes[
+                    note.lane
+                ];
+
+
+            note.hit =
+                true;
+
+
+            judgeCounts.alara++;
+
+
+            if (lane) {
+
+                showFloatingText(
+                    "ｱﾗﾗ",
+                    "#95a5a6",
+                    lane.x,
+                    lane.y - 40
+                );
+            }
+        }
 
         /*
             -------------------------------------
