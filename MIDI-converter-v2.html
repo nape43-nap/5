@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 
 <head>
@@ -6,8 +7,9 @@
 <meta charset="UTF-8">
 
 <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+
 >
 
 <title>
@@ -366,37 +368,31 @@ textarea {
 
 </head>
 
-
 <body>
 
-
 <div class="container">
-
 
 <h1>
     🎼 MIDI譜面コンバーター V2
 </h1>
 
-
 <div class="subtitle">
     絵本風リズムゲーム専用
 </div>
 
-
 <!-- ========================================= -->
+
 <!-- 譜面仕様 -->
+
 <!-- ========================================= -->
 
 <div class="section">
-
 
 <div class="section-title">
     🎵 MIDI → ノーツ変換ルール
 </div>
 
-
 <div class="note-rule">
-
 
 <strong>白鍵の音名 → レーン</strong>
 
@@ -420,9 +416,7 @@ F → レーン3
 
 G → レーン4
 
-
 <br><br>
-
 
 <strong>音域 → ノーツ種類</strong>
 
@@ -438,21 +432,16 @@ C4〜G4 → FLICK
 
 C5〜G5 → SLIDE
 
-
 <br><br>
-
 
 <strong>LONG</strong>
 
 <br>
 
-MIDIノートの長さが
-<strong>0.25秒以上</strong>
+MIDIノートの長さが <strong>0.25秒以上</strong>
 ならLONGになります。
 
-
 <br><br>
-
 
 <strong>SLIDE</strong>
 
@@ -460,7 +449,6 @@ MIDIノートの長さが
 
 近い時間に並んだC5〜G5を
 自動的に1本のSLIDEへ結合します。
-
 
 <br>
 
@@ -478,9 +466,7 @@ C5 → D5 → E5 → F5 → G5
 
 path: [0,1,2,3,4]
 
-
 <br><br>
-
 
 <strong>同時押し</strong>
 
@@ -489,31 +475,29 @@ path: [0,1,2,3,4]
 同じ時刻のMIDIノートは
 そのまま同時押しとして出力されます。
 
-
 </div>
 
-
 <!-- ========================================= -->
+
 <!-- SLIDE設定 -->
+
 <!-- ========================================= -->
 
 <div class="slide-setting">
-
 
 <div class="slide-setting-title">
     🎢 SLIDE自動結合設定
 </div>
 
-
 <input
-    type="number"
-    id="slideGroupGap"
-    value="0.6"
-    min="0.05"
-    max="3"
-    step="0.05"
->
+type="number"
+id="slideGroupGap"
+value="0.6"
+min="0.05"
+max="3"
+step="0.05"
 
+>
 
 <div class="slide-setting-help">
 
@@ -536,24 +520,21 @@ C5 10.0秒
 
 </div>
 
-
 </div>
 
-
 </div>
-
 
 <!-- ========================================= -->
+
 <!-- 曲情報 -->
+
 <!-- ========================================= -->
 
 <div class="section">
 
-
 <div class="section-title">
     📖 曲情報
 </div>
-
 
 <div class="form-group">
 
@@ -562,13 +543,13 @@ C5 10.0秒
 </label>
 
 <input
-    type="text"
-    id="songId"
-    value="sample"
+type="text"
+id="songId"
+value="sample"
+
 >
 
 </div>
-
 
 <div class="form-group">
 
@@ -577,13 +558,13 @@ C5 10.0秒
 </label>
 
 <input
-    type="text"
-    id="songTitle"
-    value="新しい曲"
+type="text"
+id="songTitle"
+value="新しい曲"
+
 >
 
 </div>
-
 
 <div class="form-group">
 
@@ -592,58 +573,27 @@ C5 10.0秒
 </label>
 
 <input
-    type="text"
-    id="songArtist"
-    value="作者名"
+type="text"
+id="songArtist"
+value="作者名"
+
 >
 
 </div>
 
-
-<div class="form-group">
-
-<label>
-    ジャケット画像パス
-</label>
-
-<input
-    type="text"
-    id="songJacket"
-    value="assets/images/sample.jpg"
->
-
 </div>
-
-
-<div class="form-group">
-
-<label>
-    音声ファイルパス
-</label>
-
-<input
-    type="text"
-    id="songAudio"
-    value="songs/sample/audio.mp3"
->
-
-</div>
-
-
-</div>
-
 
 <!-- ========================================= -->
+
 <!-- MIDI -->
+
 <!-- ========================================= -->
 
 <div class="section">
 
-
 <div class="section-title">
     🎹 MIDIファイル
 </div>
-
 
 <div class="form-group">
 
@@ -652,44 +602,42 @@ C5 10.0秒
 </label>
 
 <input
-    type="file"
-    id="midiFile"
-    accept=".mid,.midi"
+type="file"
+id="midiFile"
+accept=".mid,.midi"
+
 >
 
 </div>
 
-
 <button
-    class="convert-button"
-    onclick="convertMidi()"
+class="convert-button"
+onclick="convertMidi()"
+
 >
 
 🎼 MIDIから譜面を生成
 
 </button>
 
-
 </div>
 
-
 <!-- ========================================= -->
+
 <!-- 結果 -->
+
 <!-- ========================================= -->
 
 <div class="section">
-
 
 <div class="section-title">
     📊 変換結果
 </div>
 
-
 <div
     id="stats"
     class="stats"
 >
-
 
 <div class="stat">
 
@@ -706,7 +654,6 @@ C5 10.0秒
 
 </div>
 
-
 <div class="stat">
 
 <div class="stat-label">
@@ -721,7 +668,6 @@ C5 10.0秒
 </div>
 
 </div>
-
 
 <div class="stat">
 
@@ -738,7 +684,6 @@ C5 10.0秒
 
 </div>
 
-
 <div class="stat">
 
 <div class="stat-label">
@@ -753,7 +698,6 @@ C5 10.0秒
 </div>
 
 </div>
-
 
 <div class="stat">
 
@@ -770,7 +714,6 @@ C5 10.0秒
 
 </div>
 
-
 <div class="stat">
 
 <div class="stat-label">
@@ -786,15 +729,12 @@ C5 10.0秒
 
 </div>
 
-
 </div>
-
 
 <div
     id="status"
     class="status"
 ></div>
-
 
 <textarea
     id="outputResult"
@@ -802,29 +742,27 @@ C5 10.0秒
     placeholder="ここにchart.jsが生成されます..."
 ></textarea>
 
-
 <button
-    class="copy-button"
-    onclick="copyCode()"
+class="copy-button"
+onclick="copyCode()"
+
 >
 
 📋 chart.jsをコピー
 
 </button>
 
-
 <button
-    class="download-button"
-    onclick="downloadChart()"
+class="download-button"
+onclick="downloadChart()"
+
 >
 
 💾 chart.jsを保存
 
 </button>
 
-
 </div>
-
 
 <div class="warning">
 
@@ -840,6 +778,18 @@ C5 10.0秒
 
 <br><br>
 
+🎨 ジャケット画像：
+
+`songs/曲ID/曲ID.jpg`
+
+<br>
+
+🎵 音声ファイル：
+
+`songs/曲ID/audio.mp3`
+
+<br><br>
+
 ⚠️ 曲IDを変更した場合は、
 ゲーム側の
 `songs/index.json`
@@ -847,9 +797,7 @@ C5 10.0秒
 
 </div>
 
-
 </div>
-
 
 <script>
 
@@ -1336,11 +1284,13 @@ async function convertMidi() {
                 /*
                  * 一定時間以内なら
                  * 同じSLIDE
+                 *
+                 * 最大2個まで
                  */
 
                 if (
-                    gap <= slideGroupGap&&
-    currentGroup.length < 2
+                    gap <= slideGroupGap &&
+                    currentGroup.length < 2
                 ) {
 
                     currentGroup.push(
@@ -1701,24 +1651,6 @@ async function convertMidi() {
                 .trim();
 
 
-        const songJacket =
-            document
-                .getElementById(
-                    "songJacket"
-                )
-                .value
-                .trim();
-
-
-        const songAudio =
-            document
-                .getElementById(
-                    "songAudio"
-                )
-                .value
-                .trim();
-
-
         /*
          * =========================================
          * IDチェック
@@ -1752,6 +1684,34 @@ async function convertMidi() {
             return;
 
         }
+
+
+        /*
+         * =========================================
+         * 自動パス生成
+         * =========================================
+         *
+         * 曲IDが
+         *
+         * hoshinokiseki
+         *
+         * なら
+         *
+         * songs/hoshinokiseki/audio.mp3
+         *
+         * songs/hoshinokiseki/hoshinokiseki.jpg
+         *
+         * になる
+         *
+         * =========================================
+         */
+
+        const songJacket =
+            `songs/${songId}/${songId}.jpg`;
+
+
+        const songAudio =
+            `songs/${songId}/audio.mp3`;
 
 
         /*
@@ -1959,6 +1919,14 @@ async function convertMidi() {
 
             "変数名：window." +
             variableName +
+            "<br>" +
+
+            "🎨 ジャケット：" +
+            songJacket +
+            "<br>" +
+
+            "🎵 音声：" +
+            songAudio +
             "<br>" +
 
             "🎢 SLIDE：" +
@@ -2432,7 +2400,6 @@ document.addEventListener(
 
 
 </script>
-
 
 </body>
 
