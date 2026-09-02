@@ -1594,7 +1594,7 @@ async function loadSongIndex() {
         }
 
 
-        renderSongSelector();
+        await loadSongInfoForSelector();
 
 
     } catch (error) {
