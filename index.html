@@ -4185,12 +4185,6 @@ function judgeAction(
     y
 ) {
 
-    /*
-        コンボ加算
-    */
-    combo++;
-
-
     if (
         diff < 0.09
     ) {
@@ -4238,47 +4232,6 @@ function judgeAction(
             "#3498db",
             x,
             y - 40
-        );
-    }
-
-
-    /*
-        コンボ表示更新
-    */
-
-    const comboDisplay =
-        document.getElementById(
-            "combo-display"
-        );
-
-    const comboNum =
-        document.getElementById(
-            "combo-num"
-        );
-
-
-    if (
-        comboDisplay &&
-        comboNum
-    ) {
-
-        comboNum.innerText =
-            combo;
-
-        comboDisplay.style.opacity =
-            "1";
-
-        comboDisplay.style.transform =
-            "scale(1.15)";
-
-        setTimeout(
-            () => {
-
-                comboDisplay.style.transform =
-                    "scale(1)";
-
-            },
-            100
         );
     }
 
