@@ -9,23 +9,20 @@ window.songData_hoshinokiseki = {
         {
             "time": 1.63,
             "lane": 0,
-            "type": "long",
-            "noteName": "C3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "C3"
         },
         {
             "time": 1.957,
             "lane": 1,
-            "type": "long",
-            "noteName": "D3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "D3"
         },
         {
             "time": 2.283,
             "lane": 2,
-            "type": "long",
-            "noteName": "E3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "E3"
         },
         {
             "time": 2.609,
@@ -37,16 +34,14 @@ window.songData_hoshinokiseki = {
         {
             "time": 3.587,
             "lane": 4,
-            "type": "long",
-            "noteName": "G3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "G3"
         },
         {
             "time": 3.913,
             "lane": 1,
-            "type": "long",
-            "noteName": "D3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "D3"
         },
         {
             "time": 4.565,
@@ -63,23 +58,20 @@ window.songData_hoshinokiseki = {
         {
             "time": 5.217,
             "lane": 4,
-            "type": "long",
-            "noteName": "G3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "G3"
         },
         {
             "time": 5.543,
             "lane": 3,
-            "type": "long",
-            "noteName": "F3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "F3"
         },
         {
             "time": 5.87,
             "lane": 1,
-            "type": "long",
-            "noteName": "D3",
-            "duration": 0.326
+            "type": "tap",
+            "noteName": "D3"
         },
         {
             "time": 6.196,
@@ -111,28 +103,28 @@ window.songData_hoshinokiseki = {
             "lane": 0,
             "type": "long",
             "noteName": "C3",
-            "duration": 0.652
+            "duration": 0.489
         },
         {
             "time": 7.826,
             "lane": 4,
             "type": "long",
             "noteName": "G3",
-            "duration": 0.652
+            "duration": 0.489
         },
         {
             "time": 8.478,
             "lane": 1,
             "type": "long",
             "noteName": "D3",
-            "duration": 0.652
+            "duration": 0.489
         },
         {
             "time": 8.478,
             "lane": 3,
             "type": "long",
             "noteName": "F3",
-            "duration": 0.652
+            "duration": 0.489
         },
         {
             "time": 9.13,
@@ -235,14 +227,14 @@ window.songData_hoshinokiseki = {
             "lane": 4,
             "type": "long",
             "noteName": "G3",
-            "duration": 0.652
+            "duration": 0.489
         },
         {
             "time": 15,
             "lane": 0,
             "type": "long",
             "noteName": "C3",
-            "duration": 0.652
+            "duration": 0.489
         },
         {
             "time": 15.652,
@@ -348,30 +340,46 @@ window.songData_hoshinokiseki = {
             "noteName": "C5",
             "path": [
                 0,
-                2
+                1
             ],
             "direction": "right",
             "startLane": 0,
-            "middleLane": 2,
-            "endLane": 2,
+            "middleLane": 1,
+            "endLane": 1,
             "curve": "arc",
-            "slideDuration": 0.652
+            "slideDuration": 0.5
         },
         {
-            "time": 22.174,
-            "lane": 4,
+            "time": 21.848,
+            "lane": 2,
             "type": "slidenode",
-            "noteName": "G5",
+            "noteName": "E5",
             "path": [
-                4,
-                2
+                2,
+                4
             ],
-            "direction": "left",
-            "startLane": 4,
-            "middleLane": 2,
-            "endLane": 2,
+            "direction": "right",
+            "startLane": 2,
+            "middleLane": 4,
+            "endLane": 4,
             "curve": "arc",
-            "slideDuration": 0.652
+            "slideDuration": 0.5
+        },
+        {
+            "time": 23.152,
+            "lane": 2,
+            "type": "slidenode",
+            "noteName": "E5",
+            "path": [
+                2,
+                3
+            ],
+            "direction": "right",
+            "startLane": 2,
+            "middleLane": 3,
+            "endLane": 3,
+            "curve": "arc",
+            "slideDuration": 0.5
         }
     ]
 };
