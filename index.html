@@ -4897,25 +4897,23 @@ const currentTime =
             noteSpeedMultiplier;
 
 
-        /*
-            譜面終了
-        */
+      /*
+    曲終了
+*/
 
-        if (
-            currentTime >=
-            songDuration
-        ) {
+if (
+    musicAudio &&
+    musicAudio.ended
+) {
 
-            finishGame();
+    finishGame();
 
+    requestAnimationFrame(
+        gameLoop
+    );
 
-            requestAnimationFrame(
-                gameLoop
-            );
-
-
-            return;
-        }
+    return;
+}
 
 
         /*
