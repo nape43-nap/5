@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>みかんキャッチ！</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#dff3ff;font-family:sans-serif;text-align:center;user-select:none}
+  h1{margin:12px 0 4px;color:#5b3b20}
+  #info{font-size:22px;font-weight:bold;margin-bottom:8px}
+  #game{
+    position:relative;margin:auto;width:min(96vw,700px);height:min(75vh,600px);
+    min-height:450px;overflow:hidden;border:5px solid #6b4728;border-radius:18px;
+    background:linear-gradient(#9edcff 0 62%,#8fd36b 62%);
+  }
+  #tree{position:absolute;left:50%;top:20px;transform:translateX(-50%);
+    font-size:130px;line-height:1}
+  .orange{position:absolute;font-size:38px;line-height:1}
+  #player{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+    font-size:60px;line-height:1}
+  #basket{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+    font-size:70px;line-height:1}
+  #msg{position:absolute;top:45%;width:100%;font-size:28px;font-weight:bold;color:#633;
+    pointer-events:none}
+  button{font-size:18px;padding:8px 18px;margin:8px;border:0;border-radius:10px;background:#ffb84d}
+  .hint{font-size:14px;color:#555}
+</style>
+</head>
+<body>
+<h1>🍊 みかんキャッチ！</h1>
+<div id="info">SCORE: <span id="score">0</span>　🍊: <span id="caught">0</span></div>
+<div id="game">
+  <div id="tree">🌳</div>
+  <div id="player">🧑</div>
+  <div id="basket">🧺</div>
+  <div id="msg">← → キーで左右に動こう！</div>
+</div>
+<div>
+  <button onclick="startGame()">ゲーム開始 / リスタート</button>
+</div>
+<div class="hint">PC：← →　　スマホ：画面の左右をタップ</div>
+
+<script>
+const game=document.getElementById("game");
+const basket=document.getElementById("basket");
+const player=document.getElementById("player");
+const scoreEl=document.getElementById("score");
+const caughtEl=document.getElementById("caught");
+const msg=document.getElementById("msg");
+
+let x=50, score=0, caught=0, playing=false, oranges=[];
+let keys={left:false,right:false};
+
+function startGame(){
+  oranges.forEach(o=>o.el.remove());
+  oranges=[];
+  x=50; score=0; caught=0; playing=true;
+  scoreEl.textContent=score; caughtEl.textContent=caught;
+  msg.textContent="";
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft") keys.left=true;
+  if(e.key==="ArrowRight") keys.right=true;
+});
+document.addEventListener("keyup",e=>{
+  if(e.key==="ArrowLeft") keys.left=false;
+  if(e.key==="ArrowRight") keys.right=false;
+});
+
+game.addEventListener("pointerdown",e=>{
+  if(!playing)return;
+  const r=game.getBoundingClientRect();
+  if(e.clientX-r.left < r.width/2) keys.left=true;
+  else keys.right=true;
+});
+game.addEventListener("pointerup",()=>{keys.left=false;keys.right=false});
+game.addEventListener("pointerleave",()=>{keys.left=false;keys.right=false});
+
+function spawn(){
+  if(!playing)return;
+  const el=document.createElement("div");
+  el.className="orange"; el.textContent="🍊";
+  const ox=10+Math.random()*80;
+  el.style.left=ox+"%"; el.style.top="105px";
+  game.appendChild(el);
+  oranges.push({el,x:ox,y:105,speed:2+Math.random()*2});
+}
+
+function loop(){
+  if(playing){
+    if(keys.left)x-=0.8;
+    if(keys.right)x+=0.8;
+    x=Math.max(7,Math.min(93,x));
+    player.style.left=x+"%";
+    basket.style.left=x+"%";
+
+    for(let i=oranges.length-1;i>=0;i--){
+      let o=oranges[i]; o.y+=o.speed;
+      o.el.style.top=o.y+"px";
+
+      // みかんがカゴの高さに来たらキャッチ判定
+      if(o.y>game.clientHeight-105){
+        const dx=Math.abs(o.x-x);
+        if(dx<9){
+          score+=10; caught++;
+          scoreEl.textContent=score; caughtEl.textContent=caught;
+          o.el.remove(); oranges.splice(i,1);
+        }else if(o.y>game.clientHeight-55){
+          o.el.remove(); oranges.splice(i,1);
+        }
+      }
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+setInterval(spawn,700);
+loop();
+</script>
+</body>
+</html>
