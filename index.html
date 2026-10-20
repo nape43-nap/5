@@ -1252,7 +1252,7 @@ input[type="range"] {
                 <span
                     class="stat-label-kirari"
                 >
-                    ｷﾗﾘ!
+                    PERFECT
                 </span>
 
                 <span id="count-kirari">
@@ -1267,7 +1267,7 @@ input[type="range"] {
                 <span
                     class="stat-label-suteki"
                 >
-                    ｽﾃｷ!
+                    GREAT
                 </span>
 
                 <span id="count-suteki">
@@ -1282,7 +1282,7 @@ input[type="range"] {
                 <span
                     class="stat-label-ii"
                 >
-                    ｲｲ!
+                    GOOD
                 </span>
 
                 <span id="count-ii">
@@ -1297,7 +1297,7 @@ input[type="range"] {
                 <span
                     class="stat-label-alara"
                 >
-                    ｱﾗﾗ
+                    MISS
                 </span>
 
                 <span id="count-alara">
@@ -4254,7 +4254,7 @@ function judgeAction(
         judgeCounts.kirari++;
 
         showFloatingText(
-            "ｷﾗﾘ!",
+            "PERFECT",
             "#f1c40f",
             x,
             y - 40
@@ -4270,7 +4270,7 @@ function judgeAction(
         judgeCounts.suteki++;
 
         showFloatingText(
-            "ｽﾃｷ!",
+            "GREAT",
             "#e67e22",
             x,
             y - 40
@@ -4284,7 +4284,7 @@ function judgeAction(
         judgeCounts.ii++;
 
         showFloatingText(
-            "ｲｲ!",
+            "GOOD",
             "#3498db",
             x,
             y - 40
@@ -5144,7 +5144,7 @@ canvas.addEventListener(
 
 
                     showFloatingText(
-                        "ｷﾗﾘ!",
+                        "PERFECT",
                         "#f1c40f",
                         target.x,
                         target.y - 40
@@ -5257,7 +5257,7 @@ function handleTouchEndOrCancel(
 
 
             /*
-                キラリ
+                PERFECT
             */
 
             if (
@@ -5278,7 +5278,7 @@ function handleTouchEndOrCancel(
                 judgeCounts.kirari++;
 
                 showFloatingText(
-                    "ｷﾗﾘ!",
+                    "PERFECT",
                     "#f1c40f",
                     lane.x,
                     lane.y - 40
@@ -5286,7 +5286,7 @@ function handleTouchEndOrCancel(
 
 
             /*
-                ステキ
+                GREAT
             */
 
             } else if (
@@ -5308,7 +5308,7 @@ function handleTouchEndOrCancel(
                 judgeCounts.suteki++;
 
                 showFloatingText(
-                    "ｽﾃｷ!",
+                    "GREAT",
                     "#e67e22",
                     lane.x,
                     lane.y - 40
@@ -5329,7 +5329,7 @@ function handleTouchEndOrCancel(
                 resetCombo();
 
                 showFloatingText(
-                    "ｱﾗﾗ",
+                    "MISS",
                     "#95a5a6",
                     lane.x,
                     lane.y - 40
@@ -5383,7 +5383,7 @@ function handleTouchEndOrCancel(
             if (lane) {
 
                 showFloatingText(
-                    "ｱﾗﾗ",
+                    "MISS",
                     "#95a5a6",
                     lane.x,
                     lane.y - 40
@@ -5472,7 +5472,7 @@ function handleTouchEndOrCancel(
                 judgeCounts.suteki++;
 
                 showFloatingText(
-                    "ｽﾃｷ!",
+                    "GREAT",
                     "#e67e22",
                     target.x,
                     target.y - 40
@@ -5490,7 +5490,7 @@ function handleTouchEndOrCancel(
                 resetCombo();
 
                 showFloatingText(
-                    "ｱﾗﾗ",
+                    "MISS",
                     "#95a5a6",
                     target.x,
                     target.y - 40
@@ -5622,7 +5622,7 @@ function handleTouchEndOrCancel(
 
 
                 showFloatingText(
-                    "ｷﾗﾘ!",
+                    "PERFECT",
                     "#f1c40f",
                     lane.x,
                     lane.y - 40
@@ -6597,7 +6597,7 @@ function drawGirl(g) {
     大きいほどゆっくり流れます（1.0 = 以前の速さ）
     設定画面のスライダーはこの上にさらに掛かります
 */
-const NOTE_TRAVEL_SCALE = 1.6;
+const NOTE_TRAVEL_SCALE = 2.1;
 
 
 function gameLoop() {
@@ -6823,7 +6823,7 @@ function gameLoop() {
                     resetCombo();
 
                     showFloatingText(
-                        "ｱﾗﾗ",
+                        "MISS",
                         "#95a5a6",
                         target.x,
                         target.y - 40
@@ -7005,7 +7005,7 @@ function gameLoop() {
                             resetCombo();
 
                             showFloatingText(
-                                "ｱﾗﾗ",
+                                "MISS",
                                 "#95a5a6",
                                 target.x,
                                 target.y - 40
@@ -7033,7 +7033,7 @@ function gameLoop() {
                     resetCombo();
 
                     showFloatingText(
-                        "ｱﾗﾗ",
+                        "MISS",
                         "#95a5a6",
                         target.x,
                         target.y - 40
@@ -7188,7 +7188,7 @@ function gameLoop() {
                     if (endPos) {
 
                         showFloatingText(
-                            "ｱﾗﾗ",
+                            "MISS",
                             "#95a5a6",
                             endPos.x,
                             endPos.y - 40
@@ -7320,7 +7320,7 @@ function gameLoop() {
             ft.color;
 
         ctx.font =
-            "bold 22px 'RocknRoll One', sans-serif";
+            "bold 20px 'Darumadrop One', 'RocknRoll One', sans-serif";
 
         ctx.textAlign =
             "center";
