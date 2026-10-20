@@ -28,8 +28,6 @@ body {
     margin: 0;
     padding: 0;
 
-    touch-action: manipulation;
-    
     background: #fdfbf7;
 
     font-family:
@@ -499,7 +497,9 @@ h1 {
 
     text-align: center;
 
-    color: #7c6f64;
+    color: #ffffff;
+
+    text-shadow: 0 2px 6px rgba(20,10,50,0.7);
 
     font-size: 20px;
 
@@ -1237,39 +1237,24 @@ input[type="range"] {
             </div>
 
 
-           <div
-    class="result-score-val"
-    id="final-score"
->
-    0
-</div>
+            <div
+                class="result-score-val"
+                id="final-score"
+            >
+                0
+            </div>
 
-</div>
-
-
-<div
-    id="full-combo-display"
-    style="
-        text-align:center;
-        font-size:22px;
-        font-weight:bold;
-        color:#d4a373;
-        margin-bottom:10px;
-        display:none;
-    "
->
-    FULL COMBO!
-</div>
+        </div>
 
 
-<div class="judge-stats">
+        <div class="judge-stats">
 
             <div class="judge-row">
 
                 <span
                     class="stat-label-kirari"
                 >
-                    PERFECT
+                    ｷﾗﾘ!
                 </span>
 
                 <span id="count-kirari">
@@ -1284,7 +1269,7 @@ input[type="range"] {
                 <span
                     class="stat-label-suteki"
                 >
-                    GREAT
+                    ｽﾃｷ!
                 </span>
 
                 <span id="count-suteki">
@@ -1299,7 +1284,7 @@ input[type="range"] {
                 <span
                     class="stat-label-ii"
                 >
-                    GOOD
+                    ｲｲ!
                 </span>
 
                 <span id="count-ii">
@@ -1314,7 +1299,7 @@ input[type="range"] {
                 <span
                     class="stat-label-alara"
                 >
-                   MISS
+                    ｱﾗﾗ
                 </span>
 
                 <span id="count-alara">
@@ -1384,30 +1369,6 @@ input[type="range"] {
 
 <script>
 
-    let lastTouchEnd = 0;
-
-document.addEventListener(
-    "touchend",
-    function (e) {
-
-        const now =
-            Date.now();
-
-        if (
-            now - lastTouchEnd <= 300
-        ) {
-
-            e.preventDefault();
-        }
-
-        lastTouchEnd =
-            now;
-    },
-    {
-        passive: false
-    }
-);
-    
 /* =========================================================
    Canvas
 ========================================================= */
@@ -1501,8 +1462,7 @@ const baseNoteSpeed =
     2.8;
 
 
-const targetRadius =
-    32;
+const targetRadius = 36;
 
 
 /* =========================================================
@@ -2354,59 +2314,103 @@ function generateChart(
 
 
 /* =========================================================
-   レーン
+   レーン（プロセカ風の奥行きレーン）
+
+   ・女の子は奥（画面上のほう）に立っています
+   ・ノーツは女の子の足元から手前へ流れてきます
+   ・判定ラインは画面の下のほうにあります
 ========================================================= */
 
+const HIGHWAY = {
+
+    /* 奥行きの深さ（大きいほど奥が小さく見える） */
+    zFar: 6,
+
+    /* 手前でのノーツの厚み（px） */
+    noteH: 30
+};
+
+
+/* 今のフレームのレーン形状（毎フレーム更新） */
+let HW = null;
+
+
+function getHighwayGeometry() {
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    return {
+
+        w: w,
+        h: h,
+
+        centerX: w / 2,
+
+        /* 判定ラインのY */
+        judgeY: h * 0.80,
+
+        /* 遠近法の消失点のY */
+        vanishY: h * 0.20,
+
+        /* 手前での1レーンの幅 */
+        laneW: (w * 0.94) / 5,
+
+        /* ノーツが出現する時の大きさ */
+        s0: 1 / HIGHWAY.zFar
+    };
+}
+
+
+/* progress(0〜1)から大きさ(0.17〜1)を求める */
+function depthScale(p) {
+
+    if (p < 0) p = 0;
+
+    if (p <= 1) {
+
+        const z =
+            HIGHWAY.zFar -
+            (HIGHWAY.zFar - 1) * p;
+
+        return 1 / z;
+    }
+
+    /* 判定ラインを過ぎたあと */
+    return 1 + (p - 1);
+}
+
+
+function projectY(g, s) {
+
+    return g.vanishY +
+        (g.judgeY - g.vanishY) * s;
+}
+
+
+function projectX(g, laneFloat, s) {
+
+    return g.centerX +
+        (laneFloat - 2) * g.laneW * s;
+}
+
+
+/* 判定ライン上の各レーンの中心（タップ判定に使われる） */
 function getLanePositions() {
 
-    let positions = [];
+    const g = getHighwayGeometry();
 
-    let centerX =
-        canvas.width / 2;
+    const positions = [];
 
-    let baseY =
-        canvas.height * 0.62;
-
-    let totalWidth =
-        canvas.width * 0.76;
-
-    let spacing =
-        totalWidth / 4;
-
-
-    for (
-        let i = 0;
-        i < 5;
-        i++
-    ) {
-
-        let x =
-            centerX -
-            totalWidth / 2 +
-            spacing * i;
-
-
-        let offsetY =
-            -Math.pow(
-                i - 2,
-                2
-            ) * 12 +
-            25;
-
-
-        let y =
-            baseY +
-            offsetY;
-
+    for (let i = 0; i < 5; i++) {
 
         positions.push({
 
-            x: x,
+            x: projectX(g, i, 1),
 
-            y: y
+            y: g.judgeY
         });
     }
-
 
     return positions;
 }
@@ -3924,29 +3928,6 @@ function finishGame() {
     ).innerText =
         score;
 
-    const fullComboDisplay =
-    document.getElementById(
-        "full-combo-display"
-    );
-
-if (
-    fullComboDisplay
-) {
-
-    if (
-        judgeCounts.alara ===
-        0
-    ) {
-
-        fullComboDisplay.style.display =
-            "block";
-
-    } else {
-
-        fullComboDisplay.style.display =
-            "none";
-    }
-}
 
     document.getElementById(
         "count-kirari"
@@ -4272,7 +4253,7 @@ function judgeAction(
         judgeCounts.kirari++;
 
         showFloatingText(
-            "PERFECT",
+            "ｷﾗﾘ!",
             "#f1c40f",
             x,
             y - 40
@@ -4288,7 +4269,7 @@ function judgeAction(
         judgeCounts.suteki++;
 
         showFloatingText(
-            "GREAT",
+            "ｽﾃｷ!",
             "#e67e22",
             x,
             y - 40
@@ -4302,7 +4283,7 @@ function judgeAction(
         judgeCounts.ii++;
 
         showFloatingText(
-            "GOOD",
+            "ｲｲ!",
             "#3498db",
             x,
             y - 40
@@ -5162,7 +5143,7 @@ canvas.addEventListener(
 
 
                     showFloatingText(
-                        "PERFECT",
+                        "ｷﾗﾘ!",
                         "#f1c40f",
                         target.x,
                         target.y - 40
@@ -5296,7 +5277,7 @@ function handleTouchEndOrCancel(
                 judgeCounts.kirari++;
 
                 showFloatingText(
-                    "PERFECT",
+                    "ｷﾗﾘ!",
                     "#f1c40f",
                     lane.x,
                     lane.y - 40
@@ -5326,7 +5307,7 @@ function handleTouchEndOrCancel(
                 judgeCounts.suteki++;
 
                 showFloatingText(
-                    "GREAT",
+                    "ｽﾃｷ!",
                     "#e67e22",
                     lane.x,
                     lane.y - 40
@@ -5347,7 +5328,7 @@ function handleTouchEndOrCancel(
                 resetCombo();
 
                 showFloatingText(
-                    "MISS",
+                    "ｱﾗﾗ",
                     "#95a5a6",
                     lane.x,
                     lane.y - 40
@@ -5401,7 +5382,7 @@ function handleTouchEndOrCancel(
             if (lane) {
 
                 showFloatingText(
-                    "MISS",
+                    "ｱﾗﾗ",
                     "#95a5a6",
                     lane.x,
                     lane.y - 40
@@ -5490,7 +5471,7 @@ function handleTouchEndOrCancel(
                 judgeCounts.suteki++;
 
                 showFloatingText(
-                    "GREAT",
+                    "ｽﾃｷ!",
                     "#e67e22",
                     target.x,
                     target.y - 40
@@ -5508,7 +5489,7 @@ function handleTouchEndOrCancel(
                 resetCombo();
 
                 showFloatingText(
-                    "MISS",
+                    "ｱﾗﾗ",
                     "#95a5a6",
                     target.x,
                     target.y - 40
@@ -5640,7 +5621,7 @@ function handleTouchEndOrCancel(
 
 
                 showFloatingText(
-                    "PERFECT",
+                    "ｷﾗﾘ!",
                     "#f1c40f",
                     lane.x,
                     lane.y - 40
@@ -5685,16 +5666,647 @@ function handleTouchEndOrCancel(
 
 
 /* =========================================================
-   ゲームループ
-========================================================= */
-
-
-/* =========================================================
-   ゲームループ
+   ゲームループ（プロセカ風 3D表示）
 ========================================================= */
 
 let animTimer =
     0;
+
+
+/* 背景の星 */
+const bgStars = [];
+
+for (let i = 0; i < 45; i++) {
+
+    bgStars.push({
+
+        x: Math.random(),
+        y: Math.random() * 0.5,
+        r: 0.6 + Math.random() * 1.6,
+        ph: Math.random() * Math.PI * 2
+    });
+}
+
+
+/* 角丸四角形のパス */
+function rrPath(x, y, w, h, r) {
+
+    r = Math.min(r, w / 2, h / 2);
+
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+}
+
+
+/* ノーツの色 */
+const NOTE_COLORS = {
+
+    tap: {
+        top: "#a8f0ff",
+        bottom: "#2fb8e6",
+        side: "#17779c"
+    },
+
+    flick: {
+        top: "#ffb0dc",
+        bottom: "#e0409a",
+        side: "#8f2463"
+    },
+
+    long: {
+        top: "#fff0a8",
+        bottom: "#f2a81d",
+        side: "#a8690a"
+    },
+
+    slide: {
+        top: "#efb8ff",
+        bottom: "#a64df0",
+        side: "#62289e"
+    }
+};
+
+
+/* 長方形ノーツ（少し厚みのある立体表現） */
+function drawNote3D(
+    g,
+    cx,
+    cy,
+    s,
+    widthLanes,
+    palette,
+    symbol,
+    alpha
+) {
+
+    const w =
+        g.laneW * s * widthLanes * 0.9;
+
+    const h =
+        HIGHWAY.noteH * s;
+
+    const depth =
+        Math.max(2, 7 * s);
+
+    const x =
+        cx - w / 2;
+
+    const y =
+        cy - h / 2;
+
+    ctx.save();
+
+    ctx.globalAlpha = alpha;
+
+    /* 側面（厚み） */
+    rrPath(x, y + depth, w, h, h * 0.4);
+    ctx.fillStyle = palette.side;
+    ctx.fill();
+
+    /* 表面 */
+    rrPath(x, y, w, h, h * 0.4);
+
+    const grad =
+        ctx.createLinearGradient(
+            0, y, 0, y + h
+        );
+
+    grad.addColorStop(0, palette.top);
+    grad.addColorStop(1, palette.bottom);
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.lineWidth = Math.max(1, 2.5 * s);
+    ctx.strokeStyle = "#ffffff";
+    ctx.stroke();
+
+    /* つや */
+    rrPath(
+        x + w * 0.06,
+        y + h * 0.12,
+        w * 0.88,
+        h * 0.3,
+        h * 0.15
+    );
+
+    ctx.fillStyle =
+        "rgba(255,255,255,0.45)";
+
+    ctx.fill();
+
+    /* 記号 */
+    if (symbol) {
+
+        ctx.fillStyle = "#ffffff";
+
+        ctx.font =
+            "bold " +
+            Math.max(8, h * 0.6) +
+            "px sans-serif";
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.fillText(
+            symbol,
+            cx,
+            cy + h * 0.05
+        );
+    }
+
+    ctx.restore();
+}
+
+
+/* 登場時はふわっと出て、判定ラインを過ぎたら薄くなる */
+function noteAlpha(p) {
+
+    let a = 1;
+
+    if (p < 0.12) {
+
+        a = Math.max(0, p / 0.12);
+    }
+
+    if (p > 1) {
+
+        a = Math.max(0.25, 1 - (p - 1) * 3);
+    }
+
+    return a;
+}
+
+
+/* ロングノーツの帯 */
+function drawLongBody(
+    g,
+    lane,
+    sHead,
+    sTail,
+    alpha
+) {
+
+    const yH = projectY(g, sHead);
+    const yT = projectY(g, sTail);
+
+    const xH = projectX(g, lane, sHead);
+    const xT = projectX(g, lane, sTail);
+
+    const wH = g.laneW * sHead * 0.9 * 0.42;
+    const wT = g.laneW * sTail * 0.9 * 0.42;
+
+    ctx.save();
+
+    ctx.globalAlpha = alpha;
+
+    const grad =
+        ctx.createLinearGradient(
+            0, yT, 0, yH
+        );
+
+    grad.addColorStop(
+        0,
+        "rgba(255,222,110,0.55)"
+    );
+
+    grad.addColorStop(
+        1,
+        "rgba(255,196,60,0.85)"
+    );
+
+    ctx.fillStyle = grad;
+
+    ctx.beginPath();
+    ctx.moveTo(xT - wT, yT);
+    ctx.lineTo(xT + wT, yT);
+    ctx.lineTo(xH + wH, yH);
+    ctx.lineTo(xH - wH, yH);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,0.8)";
+
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+/* スライドの帯（始点→終点） */
+function drawSlideBody(
+    g,
+    laneA,
+    laneB,
+    s,
+    alpha
+) {
+
+    const y = projectY(g, s);
+
+    const xA = projectX(g, laneA, s);
+    const xB = projectX(g, laneB, s);
+
+    const left = Math.min(xA, xB);
+    const right = Math.max(xA, xB);
+
+    const bandH =
+        HIGHWAY.noteH * s * 0.7;
+
+    ctx.save();
+
+    ctx.globalAlpha = alpha;
+
+    rrPath(
+        left,
+        y - bandH / 2,
+        right - left,
+        bandH,
+        bandH * 0.5
+    );
+
+    ctx.fillStyle =
+        "rgba(224,110,255,0.6)";
+
+    ctx.fill();
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,0.85)";
+
+    ctx.lineWidth =
+        Math.max(1, 2 * s);
+
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+/* 背景・レーン・判定ライン */
+function drawStage(
+    g,
+    currentTime,
+    travelTime,
+    pressed
+) {
+
+    const w = g.w;
+    const h = g.h;
+    const cx = g.centerX;
+    const laneW = g.laneW;
+    const s0 = g.s0;
+
+    /* ---------- 空 ---------- */
+
+    const sky =
+        ctx.createLinearGradient(0, 0, 0, h);
+
+    sky.addColorStop(0, "#1d1b4b");
+    sky.addColorStop(0.35, "#4a3a8c");
+    sky.addColorStop(0.6, "#b46fb5");
+    sky.addColorStop(1, "#2a1f4d");
+
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, w, h);
+
+    /* ---------- 星 ---------- */
+
+    ctx.fillStyle = "#ffffff";
+
+    for (const st of bgStars) {
+
+        ctx.globalAlpha =
+            0.35 +
+            0.65 *
+            Math.abs(
+                Math.sin(
+                    animTimer * 0.8 + st.ph
+                )
+            );
+
+        ctx.beginPath();
+        ctx.arc(
+            st.x * w,
+            st.y * h,
+            st.r,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+    }
+
+    ctx.globalAlpha = 1;
+
+    /* ---------- レーンの床 ---------- */
+
+    const sB = 1.22;
+
+    const yTop = projectY(g, s0);
+    const yBot = projectY(g, sB);
+
+    const halfTop = 2.5 * laneW * s0;
+    const halfBot = 2.5 * laneW * sB;
+
+    const floor =
+        ctx.createLinearGradient(
+            0, yTop, 0, yBot
+        );
+
+    floor.addColorStop(
+        0,
+        "rgba(25,15,60,0.45)"
+    );
+
+    floor.addColorStop(
+        1,
+        "rgba(30,18,75,0.85)"
+    );
+
+    ctx.fillStyle = floor;
+
+    ctx.beginPath();
+    ctx.moveTo(cx - halfTop, yTop);
+    ctx.lineTo(cx + halfTop, yTop);
+    ctx.lineTo(cx + halfBot, yBot);
+    ctx.lineTo(cx - halfBot, yBot);
+    ctx.closePath();
+    ctx.fill();
+
+    /* レーンの下の暗い部分 */
+
+    ctx.fillStyle =
+        "rgba(10,6,30,0.85)";
+
+    ctx.fillRect(0, yBot, w, h - yBot);
+
+    /* ---------- 押している列を光らせる ---------- */
+
+    for (let i = 0; i < 5; i++) {
+
+        if (!pressed[i]) continue;
+
+        const l1 = i - 0.5;
+        const l2 = i + 0.5;
+
+        const yJ = g.judgeY;
+
+        const glow =
+            ctx.createLinearGradient(
+                0, yTop, 0, yJ
+            );
+
+        glow.addColorStop(
+            0,
+            "rgba(255,160,230,0)"
+        );
+
+        glow.addColorStop(
+            1,
+            "rgba(255,160,230,0.55)"
+        );
+
+        ctx.fillStyle = glow;
+
+        ctx.beginPath();
+        ctx.moveTo(projectX(g, l1, s0), yTop);
+        ctx.lineTo(projectX(g, l2, s0), yTop);
+        ctx.lineTo(projectX(g, l2, 1), yJ);
+        ctx.lineTo(projectX(g, l1, 1), yJ);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    /* ---------- 拍の横線（ノーツと同じ速さで流れる） ---------- */
+
+    const beat = 0.5;
+
+    const mStart =
+        Math.ceil(
+            (currentTime - 0.2 * travelTime) /
+            beat
+        );
+
+    const mEnd =
+        Math.floor(
+            (currentTime + travelTime) /
+            beat
+        );
+
+    ctx.strokeStyle = "#ffffff";
+
+    for (
+        let m = mStart;
+        m <= mEnd && m - mStart < 40;
+        m++
+    ) {
+
+        const tm = m * beat;
+
+        const p =
+            (currentTime - tm + travelTime) /
+            travelTime;
+
+        if (p < 0 || p > 1.2) continue;
+
+        const s = depthScale(p);
+        const y = projectY(g, s);
+        const half = 2.5 * laneW * s;
+
+        ctx.globalAlpha =
+            0.28 * Math.min(1, p * 4);
+
+        ctx.lineWidth =
+            Math.max(1, 2 * s);
+
+        ctx.beginPath();
+        ctx.moveTo(cx - half, y);
+        ctx.lineTo(cx + half, y);
+        ctx.stroke();
+    }
+
+    ctx.globalAlpha = 1;
+
+    /* ---------- レーンの区切り線 ---------- */
+
+    for (let k = 0; k <= 5; k++) {
+
+        const l = k - 0.5;
+
+        const outer = (k === 0 || k === 5);
+
+        if (outer) continue;
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,0.22)";
+
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        ctx.moveTo(projectX(g, l, s0), yTop);
+        ctx.lineTo(projectX(g, l, sB), yBot);
+        ctx.stroke();
+    }
+
+    /* ---------- 左右のふち（光る） ---------- */
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        "rgba(255,170,230,0.95)";
+
+    ctx.lineWidth = 3;
+
+    ctx.shadowColor = "#ff8fd8";
+    ctx.shadowBlur = 12;
+
+    ctx.beginPath();
+    ctx.moveTo(projectX(g, -0.5, s0), yTop);
+    ctx.lineTo(projectX(g, -0.5, sB), yBot);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(projectX(g, 4.5, s0), yTop);
+    ctx.lineTo(projectX(g, 4.5, sB), yBot);
+    ctx.stroke();
+
+    ctx.restore();
+
+    /* ---------- 判定ライン ---------- */
+
+    const yJ = g.judgeY;
+
+    ctx.save();
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,0.95)";
+
+    ctx.lineWidth = 5;
+
+    ctx.shadowColor = "#ff8fd8";
+    ctx.shadowBlur = 14;
+
+    ctx.beginPath();
+    ctx.moveTo(cx - 2.5 * laneW, yJ);
+    ctx.lineTo(cx + 2.5 * laneW, yJ);
+    ctx.stroke();
+
+    ctx.restore();
+
+    /* 各レーンの「ここで押す」枠 */
+
+    const th = HIGHWAY.noteH;
+
+    for (let i = 0; i < 5; i++) {
+
+        const x = projectX(g, i, 1);
+
+        rrPath(
+            x - laneW * 0.45,
+            yJ - th / 2,
+            laneW * 0.9,
+            th,
+            th * 0.4
+        );
+
+        ctx.fillStyle =
+            pressed[i]
+            ? "rgba(255,255,255,0.40)"
+            : "rgba(255,255,255,0.10)";
+
+        ctx.fill();
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,0.75)";
+
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+
+
+/* 女の子（レーンの奥に立っている） */
+function drawGirl(g) {
+
+    const feetY =
+        projectY(g, g.s0) + 22;
+
+    const bob =
+        Math.sin(animTimer * 2) * 4;
+
+    /* 足元の光 */
+
+    const glow =
+        ctx.createRadialGradient(
+            g.centerX, feetY, 4,
+            g.centerX, feetY, 80
+        );
+
+    glow.addColorStop(
+        0,
+        "rgba(255,220,250,0.75)"
+    );
+
+    glow.addColorStop(
+        1,
+        "rgba(255,220,250,0)"
+    );
+
+    ctx.fillStyle = glow;
+
+    ctx.beginPath();
+    ctx.ellipse(
+        g.centerX,
+        feetY,
+        80,
+        26,
+        0,
+        0,
+        Math.PI * 2
+    );
+    ctx.fill();
+
+    if (
+        girlImg.complete &&
+        girlImg.naturalWidth !== 0
+    ) {
+
+        const gh = 130;
+
+        const gw =
+            gh *
+            girlImg.naturalWidth /
+            girlImg.naturalHeight;
+
+        ctx.drawImage(
+            girlImg,
+            g.centerX - gw / 2,
+            feetY - gh + bob,
+            gw,
+            gh
+        );
+
+    } else {
+
+        ctx.fillStyle = "#f5d0c5";
+
+        ctx.beginPath();
+        ctx.arc(
+            g.centerX,
+            feetY - 60 + bob,
+            45,
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+    }
+}
 
 
 function gameLoop() {
@@ -5705,213 +6317,117 @@ function gameLoop() {
         canvas.width,
         canvas.height
     );
+
     autoPlayUpdate();
 
     animTimer +=
         0.05;
 
+    const g =
+        getHighwayGeometry();
 
-    const centerX =
-        canvas.width / 2;
-
-
-    const girlY =
-        canvas.height *
-        0.3 -
-        70;
-
+    HW = g;
 
     const lanes =
         getLanePositions();
-
-
-    const spawnOffsetY =
-        75;
-
 
     if (
         gameState ===
         "PLAYING"
     ) {
-const currentTime =
-    musicAudio
-        ? musicAudio.currentTime
-        : 0;
 
+        const currentTime =
+            musicAudio
+                ? musicAudio.currentTime
+                : 0;
 
         const effectiveNoteSpeed =
             baseNoteSpeed *
             noteSpeedMultiplier;
 
-
-      /*
-    曲終了
-*/
-
-if (
-    musicAudio &&
-    musicAudio.ended
-) {
-
-    finishGame();
-
-    requestAnimationFrame(
-        gameLoop
-    );
-
-    return;
-}
-
-
         /*
-            女の子
+            曲終了
         */
-
-        const girlFloatY =
-            Math.sin(
-                animTimer * 2
-            ) * 4;
-
-
-        const girlWidth =
-            110;
-
-
-        const girlHeight =
-            110;
-
-
         if (
-            girlImg.complete &&
-            girlImg.naturalWidth !== 0
+            musicAudio &&
+            musicAudio.ended
         ) {
 
-            ctx.drawImage(
+            finishGame();
 
-                girlImg,
-
-                centerX -
-                girlWidth / 2,
-
-                girlY +
-                girlFloatY -
-                girlHeight / 2 +
-                15,
-
-                girlWidth,
-
-                girlHeight
+            requestAnimationFrame(
+                gameLoop
             );
 
-        } else {
-
-            ctx.fillStyle =
-                "#f5d0c5";
-
-
-            ctx.beginPath();
-
-
-            ctx.arc(
-
-                centerX,
-
-                girlY +
-                girlFloatY +
-                15,
-
-                45,
-
-                0,
-                Math.PI * 2
-            );
-
-
-            ctx.fill();
+            return;
         }
 
+        const travelTime =
+            baseNoteSpeed /
+            effectiveNoteSpeed;
 
         /*
-            判定枠
+            押されているレーン
         */
+        const pressed =
+            [false, false, false, false, false];
+
+        activeTouches.forEach(
+            t => {
+
+                for (
+                    let i = 0;
+                    i < lanes.length;
+                    i++
+                ) {
+
+                    if (
+                        Math.hypot(
+                            t.currentX -
+                            lanes[i].x,
+                            t.currentY -
+                            lanes[i].y
+                        ) <
+                        targetRadius * 1.3
+                    ) {
+
+                        pressed[i] = true;
+                    }
+                }
+            }
+        );
 
         for (
-            let i = 0;
-            i < lanes.length;
-            i++
+            const n of notes
         ) {
 
-            const x =
-                lanes[i].x;
+            if (
+                n.holding &&
+                !n.hit &&
+                pressed[n.lane] !== undefined
+            ) {
 
-
-            const y =
-                lanes[i].y;
-
-
-            ctx.fillStyle =
-                "rgba(255,255,255,0.9)";
-
-
-            ctx.strokeStyle =
-                "#d4c5b9";
-
-
-            ctx.lineWidth =
-                3;
-
-
-            ctx.beginPath();
-
-
-            ctx.arc(
-
-                x,
-                y,
-
-                targetRadius,
-
-                0,
-                Math.PI * 2
-            );
-
-
-            ctx.fill();
-
-            ctx.stroke();
-
-
-            ctx.strokeStyle =
-                "#e8dfd1";
-
-
-            ctx.lineWidth =
-                2;
-
-
-            ctx.beginPath();
-
-
-            ctx.arc(
-
-                x,
-                y,
-
-                targetRadius *
-                0.55,
-
-                0,
-                Math.PI * 2
-            );
-
-
-            ctx.stroke();
+                pressed[n.lane] = true;
+            }
         }
 
+        /*
+            背景・レーン・判定ライン・女の子
+        */
+        drawStage(
+            g,
+            currentTime,
+            travelTime,
+            pressed
+        );
+
+        drawGirl(g);
 
         /*
             ノーツ
+            （奥のものから順に描くためキューに溜める）
         */
+        const drawQueue = [];
 
         for (
             let note of notes
@@ -5921,30 +6437,23 @@ if (
                 note.hit
             ) continue;
 
-
             const target =
                 lanes[
                     note.lane
                 ];
 
-
             if (
                 !target
             ) continue;
 
-
-            const travelTime =
-                baseNoteSpeed /
-                effectiveNoteSpeed;
-
-
             /*
-                TAP
+                TAP / FLICK
             */
-
             if (
                 note.type ===
-                "tap"
+                    "tap" ||
+                note.type ===
+                    "flick"
             ) {
 
                 const progress =
@@ -5957,71 +6466,52 @@ if (
                     ) /
                     travelTime;
 
-
                 if (
                     progress >= 0 &&
                     progress <= 1.2
                 ) {
 
-                    const startX =
-                        centerX;
+                    const isFlick =
+                        note.type ===
+                        "flick";
 
+                    drawQueue.push({
 
-                    const startY =
-                        girlY +
-                        spawnOffsetY;
+                        p: progress,
 
+                        fn: () => {
 
-                    const x =
-                        startX +
-                        (
-                            target.x -
-                            startX
-                        ) *
-                        progress;
+                            const s =
+                                depthScale(
+                                    progress
+                                );
 
-
-                    const y =
-                        startY +
-                        (
-                            target.y -
-                            startY
-                        ) *
-                        progress;
-
-
-                    ctx.fillStyle =
-                        "#1abc9c";
-
-
-                    ctx.strokeStyle =
-                        "#ffffff";
-
-
-                    ctx.lineWidth =
-                        3;
-
-
-                    ctx.beginPath();
-
-
-                    ctx.arc(
-
-                        x,
-                        y,
-
-                        16,
-
-                        0,
-                        Math.PI * 2
-                    );
-
-
-                    ctx.fill();
-
-                    ctx.stroke();
+                            drawNote3D(
+                                g,
+                                projectX(
+                                    g,
+                                    note.lane,
+                                    s
+                                ),
+                                projectY(
+                                    g,
+                                    s
+                                ),
+                                s,
+                                1,
+                                isFlick
+                                    ? NOTE_COLORS.flick
+                                    : NOTE_COLORS.tap,
+                                isFlick
+                                    ? "◆"
+                                    : null,
+                                noteAlpha(
+                                    progress
+                                )
+                            );
+                        }
+                    });
                 }
-
 
                 if (
                     progress > 1.2 &&
@@ -6030,15 +6520,13 @@ if (
 
                     note.hit =
                         true;
-
 
                     judgeCounts.alara++;
 
-resetCombo();
+                    resetCombo();
 
-showFloatingText(
-    "MISS",
-                        "MISS",
+                    showFloatingText(
+                        "ｱﾗﾗ",
                         "#95a5a6",
                         target.x,
                         target.y - 40
@@ -6046,17 +6534,19 @@ showFloatingText(
                 }
             }
 
-
             /*
-                FLICK
+                LONG
             */
-
             else if (
                 note.type ===
-                "flick"
+                "long"
             ) {
 
-                const progress =
+                const endTime =
+                    note.time +
+                    note.duration;
+
+                const headProg =
                     (
                         currentTime -
                         (
@@ -6066,434 +6556,197 @@ showFloatingText(
                     ) /
                     travelTime;
 
+                const tailProg =
+                    (
+                        currentTime -
+                        (
+                            endTime -
+                            travelTime
+                        )
+                    ) /
+                    travelTime;
 
                 if (
-                    progress >= 0 &&
-                    progress <= 1.2
+                    headProg >= 0 &&
+                    tailProg <= 1.2
                 ) {
 
-                    const startX =
-                        centerX;
-
-
-                    const startY =
-                        girlY +
-                        spawnOffsetY;
-
-
-                    const x =
-                        startX +
+                    /*
+                        頭：判定ラインに着いたら
+                        （または押し始めたら）そこで止まる
+                    */
+                    const headP =
                         (
-                            target.x -
-                            startX
-                        ) *
-                        progress;
+                            headProg >= 1 ||
+                            note.started
+                        )
+                        ? 1
+                        : Math.max(
+                            0,
+                            headProg
+                        );
 
+                    /*
+                        終点
+                    */
+                    const tailP =
+                        tailProg >= 1
+                        ? 1
+                        : Math.max(
+                            0,
+                            tailProg
+                        );
 
-                    const y =
-                        startY +
-                        (
-                            target.y -
-                            startY
-                        ) *
-                        progress;
+                    drawQueue.push({
 
+                        p: headP,
 
-                    ctx.fillStyle =
-                        "#9b59b6";
+                        fn: () => {
 
+                            const sH =
+                                depthScale(
+                                    headP
+                                );
 
-                    ctx.strokeStyle =
-                        "#ffffff";
+                            const sT =
+                                depthScale(
+                                    tailP
+                                );
 
+                            const a =
+                                noteAlpha(
+                                    Math.min(
+                                        headP,
+                                        1
+                                    )
+                                );
 
-                    ctx.lineWidth =
-                        3;
+                            /* 帯 */
+                            drawLongBody(
+                                g,
+                                note.lane,
+                                sH,
+                                sT,
+                                a
+                            );
 
+                            /* 終点 */
+                            if (
+                                tailProg >= 0 &&
+                                currentTime <
+                                endTime
+                            ) {
 
-                    ctx.beginPath();
+                                drawNote3D(
+                                    g,
+                                    projectX(
+                                        g,
+                                        note.lane,
+                                        sT
+                                    ),
+                                    projectY(
+                                        g,
+                                        sT
+                                    ),
+                                    sT,
+                                    1,
+                                    NOTE_COLORS.long,
+                                    null,
+                                    noteAlpha(
+                                        tailP
+                                    )
+                                );
+                            }
 
+                            /* 頭 */
+                            drawNote3D(
+                                g,
+                                projectX(
+                                    g,
+                                    note.lane,
+                                    sH
+                                ),
+                                projectY(
+                                    g,
+                                    sH
+                                ),
+                                sH,
+                                1,
+                                NOTE_COLORS.long,
+                                null,
+                                a
+                            );
+                        }
+                    });
 
-                    ctx.arc(
+                    /*
+                        押している途中で
+                        大幅に離した場合
+                    */
+                    if (
+                        note.holding
+                    ) {
 
-                        x,
-                        y,
+                        if (
+                            currentTime >=
+                            endTime +
+                            0.35 &&
+                            !note.hit
+                        ) {
 
-                        16,
+                            note.hit =
+                                true;
 
-                        0,
-                        Math.PI * 2
-                    );
+                            note.holding =
+                                false;
 
+                            judgeCounts.alara++;
 
-                    ctx.fill();
+                            resetCombo();
 
-                    ctx.stroke();
-
-
-                    ctx.fillStyle =
-                        "#ffffff";
-
-
-                    ctx.font =
-                        "bold 13px sans-serif";
-
-
-                    ctx.textAlign =
-                        "center";
-
-
-                    ctx.textBaseline =
-                        "middle";
-
-
-                    ctx.fillText(
-                        "◆",
-                        x,
-                        y
-                    );
+                            showFloatingText(
+                                "ｱﾗﾗ",
+                                "#95a5a6",
+                                target.x,
+                                target.y - 40
+                            );
+                        }
+                    }
                 }
 
-
+                /*
+                    LONGを一度も押さなかった場合
+                */
                 if (
-                    progress > 1.2 &&
+                    !note.started &&
+                    currentTime >=
+                    endTime +
+                    0.35 &&
                     !note.hit
                 ) {
 
                     note.hit =
                         true;
 
+                    judgeCounts.alara++;
 
-                  judgeCounts.alara++;
+                    resetCombo();
 
-resetCombo();
-
-showFloatingText(
-                        "MISS",
+                    showFloatingText(
+                        "ｱﾗﾗ",
                         "#95a5a6",
                         target.x,
                         target.y - 40
                     );
                 }
             }
-
-
-           /*
-    LONG
-*/
-
-else if (
-    note.type ===
-    "long"
-) {
-
-    const endTime =
-        note.time +
-        note.duration;
-
-
-    const headProg =
-        (
-            currentTime -
-            (
-                note.time -
-                travelTime
-            )
-        ) /
-        travelTime;
-
-
-    const tailProg =
-        (
-            currentTime -
-            (
-                endTime -
-                travelTime
-            )
-        ) /
-        travelTime;
-
-
-    /*
-        LONG描画
-    */
-
-    if (
-        headProg >= 0 &&
-        tailProg <= 1.2
-    ) {
-
-        const startX =
-            centerX;
-
-
-        const startY =
-            girlY +
-            spawnOffsetY;
-
-
-        let headX;
-        let headY;
-
-        let tailX;
-        let tailY;
-
-
-        /*
-            頭の位置
-        */
-
-        if (
-            headProg >= 1 ||
-            note.started
-        ) {
-
-            headX =
-                target.x;
-
-            headY =
-                target.y;
-
-        } else {
-
-            const p =
-                Math.max(
-                    0,
-                    headProg
-                );
-
-
-            headX =
-                startX +
-                (
-                    target.x -
-                    startX
-                ) *
-                p;
-
-
-            headY =
-                startY +
-                (
-                    target.y -
-                    startY
-                ) *
-                p;
-        }
-
-
-        /*
-            終点の位置
-        */
-
-        if (
-            tailProg >= 1
-        ) {
-
-            tailX =
-                target.x;
-
-            tailY =
-                target.y;
-
-        } else {
-
-            const p =
-                Math.max(
-                    0,
-                    tailProg
-                );
-
-
-            tailX =
-                startX +
-                (
-                    target.x -
-                    startX
-                ) *
-                p;
-
-
-            tailY =
-                startY +
-                (
-                    target.y -
-                    startY
-                ) *
-                p;
-        }
-
-
-        /*
-            ロング本体
-        */
-
-        ctx.strokeStyle =
-            "rgba(243,156,18,0.65)";
-
-
-        ctx.lineWidth =
-            12;
-
-
-        ctx.lineCap =
-            "round";
-
-
-        ctx.beginPath();
-
-
-        ctx.moveTo(
-            tailX,
-            tailY
-        );
-
-
-        ctx.lineTo(
-            headX,
-            headY
-        );
-
-
-        ctx.stroke();
-
-
-        /*
-            頭
-        */
-
-        ctx.fillStyle =
-            "#f39c12";
-
-
-        ctx.strokeStyle =
-            "#ffffff";
-
-
-        ctx.lineWidth =
-            3;
-
-
-        ctx.beginPath();
-
-
-        ctx.arc(
-            headX,
-            headY,
-            16,
-            0,
-            Math.PI * 2
-        );
-
-
-        ctx.fill();
-
-        ctx.stroke();
-
-
-        /*
-            終点
-        */
-
-        if (
-            tailProg >= 0 &&
-            currentTime <
-            endTime
-        ) {
-
-            ctx.beginPath();
-
-
-            ctx.arc(
-                tailX,
-                tailY,
-                15,
-                0,
-                Math.PI * 2
-            );
-
-
-            ctx.fill();
-
-            ctx.stroke();
-        }
-
-
-        /*
-            押している途中で
-            大幅に離した場合
-        */
-
-        if (
-            note.holding
-        ) {
-
-            if (
-                currentTime >=
-                endTime +
-                0.35 &&
-                !note.hit
-            ) {
-
-                note.hit =
-                    true;
-
-
-                note.holding =
-                    false;
-
-
-                judgeCounts.alara++;
-resetCombo();
-
-                showFloatingText(
-                    "MISS",
-                    "#95a5a6",
-                    target.x,
-                    target.y - 40
-                );
-            }
-        }
-    }
-
-
-    /*
-        LONGを一度も押さなかった場合
-    */
-
-    if (
-        !note.started &&
-        currentTime >=
-        endTime +
-        0.35 &&
-        !note.hit
-    ) {
-
-        note.hit =
-            true;
-
-
-        judgeCounts.alara++;
-resetCombo();
-
-        showFloatingText(
-            "MISS",
-            "#95a5a6",
-            target.x,
-            target.y - 40
-        );
-    }
-}
-
 
             /*
                 SLIDE
             */
-
             else if (
                 note.type ===
                     "slidenode" ||
-
                 note.type ===
                     "slide"
             ) {
@@ -6504,7 +6757,6 @@ resetCombo();
                         note.lane
                     ];
 
-
                 const progress =
                     (
                         currentTime -
@@ -6515,228 +6767,125 @@ resetCombo();
                     ) /
                     travelTime;
 
+                const startLane =
+                    path[0];
+
+                const endLane =
+                    path[
+                        path.length - 1
+                    ];
+
+                if (
+                    !lanes[startLane] ||
+                    !lanes[endLane]
+                ) continue;
 
                 if (
                     progress >= 0 &&
                     progress <= 1.5
                 ) {
 
-                    const startPos =
-                        lanes[
-                            path[0]
-                        ];
-
-
-                    const endPos =
-                        lanes[
-                            path[
-                                path.length - 1
-                            ]
-                        ];
-
-
-                    if (
-                        !startPos ||
-                        !endPos
-                    ) continue;
-
-
-                    const startSpawnX =
-                        centerX;
-
-
-                    const startSpawnY =
-                        girlY +
-                        spawnOffsetY;
-
-
-               /*
-    SLIDEの描画位置
-
-    progressが1を超えたら
-    判定ラインの位置で止める
-*/
-const drawProgress =
-    Math.min(
-        progress,
-        1
-    );
-
-
-const startX =
-    startSpawnX +
-    (
-        startPos.x -
-        startSpawnX
-    ) *
-    drawProgress;
-
-
-const startY =
-    startSpawnY +
-    (
-        startPos.y -
-        startSpawnY
-    ) *
-    drawProgress;
-
-
-const endX =
-    startSpawnX +
-    (
-        endPos.x -
-        startSpawnX
-    ) *
-    drawProgress;
-
-
-const endY =
-    startSpawnY +
-    (
-        endPos.y -
-        startSpawnY
-    ) *
-    drawProgress;
-
-
-                    ctx.strokeStyle =
-                        "rgba(224,86,253,0.9)";
-
-
-                    ctx.lineWidth =
-                        14;
-
-
-                    ctx.lineCap =
-                        "round";
-
-
-                    ctx.beginPath();
-
-
-                    ctx.moveTo(
-                        startX,
-                        startY
-                    );
-
-
-                    ctx.lineTo(
-                        endX,
-                        endY
-                    );
-
-
-                    ctx.stroke();
-
-
-                    ctx.fillStyle =
-                        "#e056fd";
-
-
-                    ctx.strokeStyle =
-                        "#ffffff";
-
-
-                    ctx.lineWidth =
-                        3;
-
-
-                    ctx.beginPath();
-
-
-                    ctx.arc(
-
-                        startX,
-                        startY,
-
-                        16,
-
-                        0,
-                        Math.PI * 2
-                    );
-
-
-                    ctx.fill();
-
-                    ctx.stroke();
-
-
-                    ctx.beginPath();
-
-
-                    ctx.arc(
-
-                        endX,
-                        endY,
-
-                        15,
-
-                        0,
-                        Math.PI * 2
-                    );
-
-
-                    ctx.fill();
-
-                    ctx.stroke();
-
-
-                    ctx.fillStyle =
-                        "#ffffff";
-
-
-                    ctx.font =
-                        "bold 13px sans-serif";
-
-
-                    ctx.textAlign =
-                        "center";
-
-
-                    ctx.textBaseline =
-                        "middle";
-
-
-                    ctx.fillText(
-
-                        note.direction ===
-                        "left"
-                        ?
-                        "◀︎"
-                        :
-                        "▶︎",
-
-                        startX,
-                        startY
-                    );
+                    /*
+                        判定ラインを過ぎたら
+                        判定ラインの位置で止める
+                    */
+                    const drawP =
+                        Math.min(
+                            progress,
+                            1
+                        );
+
+                    drawQueue.push({
+
+                        p: drawP,
+
+                        fn: () => {
+
+                            const s =
+                                depthScale(
+                                    drawP
+                                );
+
+                            const a =
+                                noteAlpha(
+                                    drawP
+                                );
+
+                            const y =
+                                projectY(
+                                    g,
+                                    s
+                                );
+
+                            /* 帯 */
+                            drawSlideBody(
+                                g,
+                                startLane,
+                                endLane,
+                                s,
+                                a
+                            );
+
+                            /* 終点 */
+                            drawNote3D(
+                                g,
+                                projectX(
+                                    g,
+                                    endLane,
+                                    s
+                                ),
+                                y,
+                                s,
+                                1,
+                                NOTE_COLORS.slide,
+                                null,
+                                a
+                            );
+
+                            /* 始点（矢印つき） */
+                            drawNote3D(
+                                g,
+                                projectX(
+                                    g,
+                                    startLane,
+                                    s
+                                ),
+                                y,
+                                s,
+                                1,
+                                NOTE_COLORS.slide,
+                                note.direction ===
+                                "left"
+                                    ? "◀︎"
+                                    : "▶︎",
+                                a
+                            );
+                        }
+                    });
                 }
-
 
                 if (
                     progress > 1.5 &&
-                    !note.hit&&
+                    !note.hit &&
                     !autoPlay
                 ) {
 
                     note.hit =
                         true;
 
-
                     judgeCounts.alara++;
-resetCombo();
+
+                    resetCombo();
 
                     const endPos =
                         lanes[
-                            path[
-                                path.length - 1
-                            ]
+                            endLane
                         ];
-
 
                     if (endPos) {
 
                         showFloatingText(
-                            "MISS",
+                            "ｱﾗﾗ",
                             "#95a5a6",
                             endPos.x,
                             endPos.y - 40
@@ -6745,25 +6894,35 @@ resetCombo();
                 }
             }
         }
-    }
 
+        /*
+            奥 → 手前の順に描く
+        */
+        drawQueue.sort(
+            (a, b) =>
+                a.p - b.p
+        );
+
+        for (
+            const item of drawQueue
+        ) {
+
+            item.fn();
+        }
+    }
 
     /*
         パーティクル
     */
-
     for (
         let i =
             particles.length - 1;
-
         i >= 0;
-
         i--
     ) {
 
         const p =
             particles[i];
-
 
         p.x +=
             p.vx;
@@ -6771,10 +6930,8 @@ resetCombo();
         p.y +=
             p.vy;
 
-
         p.alpha -=
             p.decay;
-
 
         if (
             p.alpha <= 0
@@ -6788,65 +6945,48 @@ resetCombo();
             continue;
         }
 
-
         ctx.save();
-
 
         ctx.globalAlpha =
             p.alpha;
 
-
         ctx.fillStyle =
             p.color;
 
-
         ctx.beginPath();
 
-
         ctx.arc(
-
             p.x,
             p.y,
-
             p.radius,
-
             0,
             Math.PI * 2
         );
 
-
         ctx.fill();
-
 
         ctx.restore();
     }
 
-
     /*
         判定文字
     */
-
     for (
         let i =
             floatingTexts.length - 1;
-
         i >= 0;
-
         i--
     ) {
 
         const ft =
             floatingTexts[i];
 
-
         ft.timer--;
-
 
         const progressRate =
             1 -
             ft.timer /
             ft.maxTime;
-
 
         const floatY =
             -Math.sin(
@@ -6855,7 +6995,6 @@ resetCombo();
             ) *
             25;
 
-
         const alpha =
             ft.timer < 8
             ?
@@ -6863,46 +7002,34 @@ resetCombo();
             :
             1;
 
-
         ctx.save();
-
 
         ctx.globalAlpha =
             alpha;
 
-
         ctx.translate(
-
             ft.x,
-
             ft.y +
             floatY
         );
 
-
         ctx.fillStyle =
             ft.color;
-
 
         ctx.font =
             "bold 22px 'RocknRoll One', sans-serif";
 
-
         ctx.textAlign =
             "center";
-
 
         ctx.textBaseline =
             "middle";
 
-
         ctx.lineWidth =
             4;
 
-
         ctx.strokeStyle =
-            "#ffffff";
-
+            "rgba(40,20,70,0.85)";
 
         ctx.strokeText(
             ft.text,
@@ -6910,16 +7037,13 @@ resetCombo();
             0
         );
 
-
         ctx.fillText(
             ft.text,
             0,
             0
         );
 
-
         ctx.restore();
-
 
         if (
             ft.timer <= 0
@@ -6931,7 +7055,6 @@ resetCombo();
             );
         }
     }
-
 
     requestAnimationFrame(
         gameLoop
