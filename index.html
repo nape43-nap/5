@@ -497,9 +497,7 @@ h1 {
 
     text-align: center;
 
-    color: #ffffff;
-
-    text-shadow: 0 2px 6px rgba(20,10,50,0.7);
+    color: #7c6f64;
 
     font-size: 20px;
 
@@ -2314,7 +2312,7 @@ function generateChart(
 
 
 /* =========================================================
-   レーン（プロセカ風の奥行きレーン）
+   レーン（絵本風の奥行きレーン（のびていく小道））
 
    ・女の子は奥（画面上のほう）に立っています
    ・ノーツは女の子の足元から手前へ流れてきます
@@ -2324,10 +2322,10 @@ function generateChart(
 const HIGHWAY = {
 
     /* 奥行きの深さ（大きいほど奥が小さく見える） */
-    zFar: 6,
+    zFar: 4,
 
     /* 手前でのノーツの厚み（px） */
-    noteH: 30
+    noteH: 34
 };
 
 
@@ -2351,7 +2349,9 @@ function getHighwayGeometry() {
         judgeY: h * 0.80,
 
         /* 遠近法の消失点のY */
-        vanishY: h * 0.20,
+        vanishY:
+            (h * 0.30 - h * 0.80 / HIGHWAY.zFar) /
+            (1 - 1 / HIGHWAY.zFar),
 
         /* 手前での1レーンの幅 */
         laneW: (w * 0.94) / 5,
@@ -5666,26 +5666,16 @@ function handleTouchEndOrCancel(
 
 
 /* =========================================================
-   ゲームループ（プロセカ風 3D表示）
+   ゲームループ（絵本風 表示）
 ========================================================= */
 
 let animTimer =
     0;
 
+/* ノーツごとの「ちょっとだけ傾ける」ための種 */
+let curNoteSeed = 0;
 
-/* 背景の星 */
-const bgStars = [];
-
-for (let i = 0; i < 45; i++) {
-
-    bgStars.push({
-
-        x: Math.random(),
-        y: Math.random() * 0.5,
-        r: 0.6 + Math.random() * 1.6,
-        ph: Math.random() * Math.PI * 2
-    });
-}
+const INK = "#7c6f64";          /* 線の色（こげ茶） */
 
 
 /* 角丸四角形のパス */
@@ -5703,36 +5693,313 @@ function rrPath(x, y, w, h, r) {
 }
 
 
-/* ノーツの色 */
+/* ノーツの色（やさしいパステル） */
 const NOTE_COLORS = {
 
     tap: {
-        top: "#a8f0ff",
-        bottom: "#2fb8e6",
-        side: "#17779c"
+        top: "#d3f3e6",
+        bottom: "#8fd6b9",
+        side: "#5fa88b"
     },
 
     flick: {
-        top: "#ffb0dc",
-        bottom: "#e0409a",
-        side: "#8f2463"
+        top: "#ffd4dc",
+        bottom: "#f29bb0",
+        side: "#c06c82"
     },
 
     long: {
-        top: "#fff0a8",
-        bottom: "#f2a81d",
-        side: "#a8690a"
+        top: "#fff0bd",
+        bottom: "#f5c45e",
+        side: "#c4902e"
     },
 
     slide: {
-        top: "#efb8ff",
-        bottom: "#a64df0",
-        side: "#62289e"
+        top: "#eadcfa",
+        bottom: "#bb9be6",
+        side: "#8566b8"
     }
 };
 
 
-/* 長方形ノーツ（少し厚みのある立体表現） */
+/* =========================================================
+   背景（紙に描いた絵のような景色）
+   一度だけ作って使い回すので軽いです
+========================================================= */
+
+let bgCache = null;
+let bgCacheKey = "";
+
+
+function seededRandom(seed) {
+
+    let s = seed;
+
+    return function () {
+
+        s = (s * 16807) % 2147483647;
+
+        return (s - 1) / 2147483646;
+    };
+}
+
+
+function drawTree(c, x, y, size) {
+
+    /* みき */
+    c.fillStyle = "#c9a27e";
+    c.fillRect(x - size * 0.08, y - size * 0.35, size * 0.16, size * 0.4);
+
+    /* はっぱ */
+    c.fillStyle = "#9fd08a";
+    c.strokeStyle = "rgba(124,111,100,0.55)";
+    c.lineWidth = 1.5;
+
+    c.beginPath();
+    c.arc(x, y - size * 0.62, size * 0.38, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+
+    c.fillStyle = "rgba(255,255,255,0.28)";
+
+    c.beginPath();
+    c.arc(
+        x - size * 0.12,
+        y - size * 0.72,
+        size * 0.14,
+        0,
+        Math.PI * 2
+    );
+    c.fill();
+}
+
+
+function drawFlower(c, x, y, r, color) {
+
+    c.fillStyle = color;
+
+    for (let k = 0; k < 5; k++) {
+
+        const a = (Math.PI * 2 / 5) * k;
+
+        c.beginPath();
+        c.arc(
+            x + Math.cos(a) * r,
+            y + Math.sin(a) * r,
+            r * 0.8,
+            0,
+            Math.PI * 2
+        );
+        c.fill();
+    }
+
+    c.fillStyle = "#ffe08a";
+
+    c.beginPath();
+    c.arc(x, y, r * 0.7, 0, Math.PI * 2);
+    c.fill();
+}
+
+
+function buildBackground(w, h) {
+
+    const off =
+        document.createElement("canvas");
+
+    off.width = w;
+    off.height = h;
+
+    const c = off.getContext("2d");
+
+    const rnd = seededRandom(20240607);
+
+    /* ---------- そら ---------- */
+
+    const sky =
+        c.createLinearGradient(0, 0, 0, h * 0.4);
+
+    sky.addColorStop(0, "#bfe3f2");
+    sky.addColorStop(1, "#fdf1dc");
+
+    c.fillStyle = sky;
+    c.fillRect(0, 0, w, h);
+
+    /* ---------- おひさま ---------- */
+
+    const sunX = w * 0.82;
+    const sunY = h * 0.1;
+
+    const sunGlow =
+        c.createRadialGradient(
+            sunX, sunY, 6,
+            sunX, sunY, 70
+        );
+
+    sunGlow.addColorStop(0, "rgba(255,236,160,0.9)");
+    sunGlow.addColorStop(1, "rgba(255,236,160,0)");
+
+    c.fillStyle = sunGlow;
+    c.fillRect(0, 0, w, h * 0.3);
+
+    c.fillStyle = "#ffe596";
+    c.beginPath();
+    c.arc(sunX, sunY, 24, 0, Math.PI * 2);
+    c.fill();
+
+    /* ---------- とおくの丘 ---------- */
+
+    c.fillStyle = "#cfe6c4";
+
+    c.beginPath();
+    c.moveTo(0, h * 0.34);
+
+    c.bezierCurveTo(
+        w * 0.2, h * 0.24,
+        w * 0.35, h * 0.3,
+        w * 0.5, h * 0.28
+    );
+
+    c.bezierCurveTo(
+        w * 0.7, h * 0.24,
+        w * 0.85, h * 0.3,
+        w, h * 0.26
+    );
+
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+    c.fill();
+
+    /* ---------- 手前の丘（草原） ---------- */
+
+    const grass =
+        c.createLinearGradient(0, h * 0.3, 0, h);
+
+    grass.addColorStop(0, "#c2e2a8");
+    grass.addColorStop(1, "#9fcf86");
+
+    c.fillStyle = grass;
+
+    c.beginPath();
+    c.moveTo(0, h * 0.36);
+
+    c.bezierCurveTo(
+        w * 0.25, h * 0.31,
+        w * 0.4, h * 0.35,
+        w * 0.55, h * 0.33
+    );
+
+    c.bezierCurveTo(
+        w * 0.75, h * 0.3,
+        w * 0.9, h * 0.34,
+        w, h * 0.31
+    );
+
+    c.lineTo(w, h);
+    c.lineTo(0, h);
+    c.closePath();
+    c.fill();
+
+    /* ---------- 木 ---------- */
+
+    drawTree(c, w * 0.08, h * 0.37, 62);
+    drawTree(c, w * 0.93, h * 0.34, 70);
+    drawTree(c, w * 0.18, h * 0.33, 40);
+    drawTree(c, w * 0.84, h * 0.31, 36);
+
+    /* ---------- 草の中のお花 ---------- */
+
+    const flowerColors =
+        ["#ffb7c5", "#fff3b0", "#ffffff", "#ffc9a8"];
+
+    for (let i = 0; i < 38; i++) {
+
+        const fy = h * (0.4 + rnd() * 0.58);
+
+        /* 小道（中央）にはかからないようにする */
+        const side = rnd() < 0.5 ? -1 : 1;
+
+        const fy01 = (fy - h * 0.3) / (h * 0.7);
+
+        const pathHalf =
+            w * (0.12 + 0.4 * fy01);
+
+        const fx =
+            w / 2 +
+            side *
+            (pathHalf + 12 + rnd() * w * 0.2);
+
+        if (fx < 8 || fx > w - 8) continue;
+
+        drawFlower(
+            c,
+            fx,
+            fy,
+            3 + rnd() * 2.5,
+            flowerColors[
+                Math.floor(rnd() * flowerColors.length)
+            ]
+        );
+    }
+
+    /* ---------- 紙のざらざら ---------- */
+
+    for (let i = 0; i < 700; i++) {
+
+        c.fillStyle =
+            rnd() < 0.5
+            ? "rgba(124,111,100,0.05)"
+            : "rgba(255,255,255,0.18)";
+
+        c.fillRect(
+            rnd() * w,
+            rnd() * h,
+            1 + rnd() * 1.5,
+            1 + rnd() * 1.5
+        );
+    }
+
+    /* ---------- ふちのやわらかい影（本のページ風） ---------- */
+
+    const vig =
+        c.createRadialGradient(
+            w / 2, h / 2, h * 0.35,
+            w / 2, h / 2, h * 0.8
+        );
+
+    vig.addColorStop(0, "rgba(160,120,80,0)");
+    vig.addColorStop(1, "rgba(160,120,80,0.18)");
+
+    c.fillStyle = vig;
+    c.fillRect(0, 0, w, h);
+
+    return off;
+}
+
+
+function drawCloud(x, y, scale) {
+
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+
+    ctx.beginPath();
+    ctx.arc(x, y, 16 * scale, 0, Math.PI * 2);
+    ctx.arc(x + 18 * scale, y - 8 * scale, 20 * scale, 0, Math.PI * 2);
+    ctx.arc(x + 40 * scale, y, 16 * scale, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillRect(
+        x,
+        y - 2 * scale,
+        40 * scale,
+        14 * scale
+    );
+}
+
+
+/* =========================================================
+   ノーツ（紙で作ったカードのような長方形）
+========================================================= */
+
 function drawNote3D(
     g,
     cx,
@@ -5751,30 +6018,39 @@ function drawNote3D(
         HIGHWAY.noteH * s;
 
     const depth =
-        Math.max(2, 7 * s);
+        Math.max(2, 6 * s);
 
-    const x =
-        cx - w / 2;
-
-    const y =
-        cy - h / 2;
+    /* ほんの少しだけ傾けて、手作り感を出す */
+    const tilt =
+        Math.sin(curNoteSeed) * 0.035;
 
     ctx.save();
 
     ctx.globalAlpha = alpha;
 
-    /* 側面（厚み） */
-    rrPath(x, y + depth, w, h, h * 0.4);
+    ctx.translate(cx, cy);
+    ctx.rotate(tilt);
+
+    const x = -w / 2;
+    const y = -h / 2;
+
+    const radius = h * 0.42;
+
+    /* かげ */
+    rrPath(x + 1, y + depth + 3 * s, w, h, radius);
+    ctx.fillStyle = "rgba(124,111,100,0.22)";
+    ctx.fill();
+
+    /* 厚み */
+    rrPath(x, y + depth, w, h, radius);
     ctx.fillStyle = palette.side;
     ctx.fill();
 
     /* 表面 */
-    rrPath(x, y, w, h, h * 0.4);
+    rrPath(x, y, w, h, radius);
 
     const grad =
-        ctx.createLinearGradient(
-            0, y, 0, y + h
-        );
+        ctx.createLinearGradient(0, y, 0, y + h);
 
     grad.addColorStop(0, palette.top);
     grad.addColorStop(1, palette.bottom);
@@ -5782,42 +6058,51 @@ function drawNote3D(
     ctx.fillStyle = grad;
     ctx.fill();
 
-    ctx.lineWidth = Math.max(1, 2.5 * s);
-    ctx.strokeStyle = "#ffffff";
+    /* こげ茶のふち（絵本の線画風） */
+    ctx.lineWidth = Math.max(1.5, 3 * s);
+    ctx.strokeStyle = INK;
+    ctx.lineJoin = "round";
     ctx.stroke();
 
-    /* つや */
+    /* ぬい目 */
+    const inset = h * 0.2;
+
     rrPath(
-        x + w * 0.06,
-        y + h * 0.12,
-        w * 0.88,
-        h * 0.3,
-        h * 0.15
+        x + inset,
+        y + inset,
+        w - inset * 2,
+        h - inset * 2,
+        Math.max(1, radius - inset)
     );
 
-    ctx.fillStyle =
-        "rgba(255,255,255,0.45)";
+    ctx.setLineDash([
+        Math.max(2, 5 * s),
+        Math.max(2, 4 * s)
+    ]);
 
-    ctx.fill();
+    ctx.lineWidth = Math.max(1, 1.8 * s);
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.stroke();
+
+    ctx.setLineDash([]);
 
     /* 記号 */
     if (symbol) {
 
-        ctx.fillStyle = "#ffffff";
-
         ctx.font =
             "bold " +
-            Math.max(8, h * 0.6) +
+            Math.max(8, h * 0.58) +
             "px sans-serif";
 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        ctx.fillText(
-            symbol,
-            cx,
-            cy + h * 0.05
-        );
+        ctx.lineWidth = Math.max(2, 3 * s);
+        ctx.strokeStyle = INK;
+        ctx.strokeText(symbol, 0, h * 0.04);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(symbol, 0, h * 0.04);
     }
 
     ctx.restore();
@@ -5843,7 +6128,7 @@ function noteAlpha(p) {
 }
 
 
-/* ロングノーツの帯 */
+/* ロングノーツの帯（リボン） */
 function drawLongBody(
     g,
     lane,
@@ -5858,27 +6143,18 @@ function drawLongBody(
     const xH = projectX(g, lane, sHead);
     const xT = projectX(g, lane, sTail);
 
-    const wH = g.laneW * sHead * 0.9 * 0.42;
-    const wT = g.laneW * sTail * 0.9 * 0.42;
+    const wH = g.laneW * sHead * 0.9 * 0.4;
+    const wT = g.laneW * sTail * 0.9 * 0.4;
 
     ctx.save();
 
     ctx.globalAlpha = alpha;
 
     const grad =
-        ctx.createLinearGradient(
-            0, yT, 0, yH
-        );
+        ctx.createLinearGradient(0, yT, 0, yH);
 
-    grad.addColorStop(
-        0,
-        "rgba(255,222,110,0.55)"
-    );
-
-    grad.addColorStop(
-        1,
-        "rgba(255,196,60,0.85)"
-    );
+    grad.addColorStop(0, "rgba(255,235,170,0.75)");
+    grad.addColorStop(1, "rgba(250,205,100,0.92)");
 
     ctx.fillStyle = grad;
 
@@ -5890,11 +6166,21 @@ function drawLongBody(
     ctx.closePath();
     ctx.fill();
 
-    ctx.strokeStyle =
-        "rgba(255,255,255,0.8)";
-
+    /* ふち（点線のぬい目） */
+    ctx.strokeStyle = INK;
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+    ctx.moveTo(xT, yT);
+    ctx.lineTo(xH, yH);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
 
     ctx.restore();
 }
@@ -5933,23 +6219,33 @@ function drawSlideBody(
     );
 
     ctx.fillStyle =
-        "rgba(224,110,255,0.6)";
+        "rgba(205,180,245,0.8)";
 
     ctx.fill();
 
-    ctx.strokeStyle =
-        "rgba(255,255,255,0.85)";
-
-    ctx.lineWidth =
-        Math.max(1, 2 * s);
-
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = Math.max(1.5, 2.5 * s);
     ctx.stroke();
+
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = 1.5;
+
+    ctx.beginPath();
+    ctx.moveTo(left + bandH * 0.4, y);
+    ctx.lineTo(right - bandH * 0.4, y);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
 
     ctx.restore();
 }
 
 
-/* 背景・レーン・判定ライン */
+/* =========================================================
+   背景・小道・判定ライン
+========================================================= */
+
 function drawStage(
     g,
     currentTime,
@@ -5963,50 +6259,38 @@ function drawStage(
     const laneW = g.laneW;
     const s0 = g.s0;
 
-    /* ---------- 空 ---------- */
+    /* ---------- 背景（キャッシュ） ---------- */
 
-    const sky =
-        ctx.createLinearGradient(0, 0, 0, h);
+    const key = w + "x" + h;
 
-    sky.addColorStop(0, "#1d1b4b");
-    sky.addColorStop(0.35, "#4a3a8c");
-    sky.addColorStop(0.6, "#b46fb5");
-    sky.addColorStop(1, "#2a1f4d");
+    if (!bgCache || bgCacheKey !== key) {
 
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, w, h);
-
-    /* ---------- 星 ---------- */
-
-    ctx.fillStyle = "#ffffff";
-
-    for (const st of bgStars) {
-
-        ctx.globalAlpha =
-            0.35 +
-            0.65 *
-            Math.abs(
-                Math.sin(
-                    animTimer * 0.8 + st.ph
-                )
-            );
-
-        ctx.beginPath();
-        ctx.arc(
-            st.x * w,
-            st.y * h,
-            st.r,
-            0,
-            Math.PI * 2
-        );
-        ctx.fill();
+        bgCache = buildBackground(w, h);
+        bgCacheKey = key;
     }
 
-    ctx.globalAlpha = 1;
+    ctx.drawImage(bgCache, 0, 0);
 
-    /* ---------- レーンの床 ---------- */
+    /* ---------- ゆっくり流れる雲 ---------- */
 
-    const sB = 1.22;
+    const cloudDefs = [
+        { base: 0.1, y: 0.07, sc: 1.1, sp: 4 },
+        { base: 0.55, y: 0.14, sc: 0.8, sp: 3 },
+        { base: 0.85, y: 0.04, sc: 0.9, sp: 5 }
+    ];
+
+    for (const cd of cloudDefs) {
+
+        const x =
+            ((cd.base * w + animTimer * cd.sp * 3) %
+            (w + 160)) - 80;
+
+        drawCloud(x, h * cd.y, cd.sc);
+    }
+
+    /* ---------- 小道 ---------- */
+
+    const sB = 1.4;
 
     const yTop = projectY(g, s0);
     const yBot = projectY(g, sB);
@@ -6014,22 +6298,13 @@ function drawStage(
     const halfTop = 2.5 * laneW * s0;
     const halfBot = 2.5 * laneW * sB;
 
-    const floor =
-        ctx.createLinearGradient(
-            0, yTop, 0, yBot
-        );
+    const road =
+        ctx.createLinearGradient(0, yTop, 0, yBot);
 
-    floor.addColorStop(
-        0,
-        "rgba(25,15,60,0.45)"
-    );
+    road.addColorStop(0, "#fff7e6");
+    road.addColorStop(1, "#ffeccb");
 
-    floor.addColorStop(
-        1,
-        "rgba(30,18,75,0.85)"
-    );
-
-    ctx.fillStyle = floor;
+    ctx.fillStyle = road;
 
     ctx.beginPath();
     ctx.moveTo(cx - halfTop, yTop);
@@ -6039,14 +6314,7 @@ function drawStage(
     ctx.closePath();
     ctx.fill();
 
-    /* レーンの下の暗い部分 */
-
-    ctx.fillStyle =
-        "rgba(10,6,30,0.85)";
-
-    ctx.fillRect(0, yBot, w, h - yBot);
-
-    /* ---------- 押している列を光らせる ---------- */
+    /* ---------- 押している列をほんのり光らせる ---------- */
 
     for (let i = 0; i < 5; i++) {
 
@@ -6058,19 +6326,10 @@ function drawStage(
         const yJ = g.judgeY;
 
         const glow =
-            ctx.createLinearGradient(
-                0, yTop, 0, yJ
-            );
+            ctx.createLinearGradient(0, yTop, 0, yJ);
 
-        glow.addColorStop(
-            0,
-            "rgba(255,160,230,0)"
-        );
-
-        glow.addColorStop(
-            1,
-            "rgba(255,160,230,0.55)"
-        );
+        glow.addColorStop(0, "rgba(255,226,150,0)");
+        glow.addColorStop(1, "rgba(255,214,120,0.7)");
 
         ctx.fillStyle = glow;
 
@@ -6083,23 +6342,23 @@ function drawStage(
         ctx.fill();
     }
 
-    /* ---------- 拍の横線（ノーツと同じ速さで流れる） ---------- */
+    /* ---------- 拍の点線（ノーツと同じ速さで流れる） ---------- */
 
     const beat = 0.5;
 
     const mStart =
         Math.ceil(
-            (currentTime - 0.2 * travelTime) /
-            beat
+            (currentTime - 0.2 * travelTime) / beat
         );
 
     const mEnd =
         Math.floor(
-            (currentTime + travelTime) /
-            beat
+            (currentTime + travelTime) / beat
         );
 
-    ctx.strokeStyle = "#ffffff";
+    ctx.strokeStyle = INK;
+    ctx.setLineDash([4, 7]);
+    ctx.lineCap = "round";
 
     for (
         let m = mStart;
@@ -6120,7 +6379,7 @@ function drawStage(
         const half = 2.5 * laneW * s;
 
         ctx.globalAlpha =
-            0.28 * Math.min(1, p * 4);
+            0.22 * Math.min(1, p * 4);
 
         ctx.lineWidth =
             Math.max(1, 2 * s);
@@ -6133,20 +6392,15 @@ function drawStage(
 
     ctx.globalAlpha = 1;
 
-    /* ---------- レーンの区切り線 ---------- */
+    /* ---------- レーンの区切り（ぽんぽん点線） ---------- */
 
-    for (let k = 0; k <= 5; k++) {
+    ctx.setLineDash([1, 9]);
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "rgba(124,111,100,0.35)";
+
+    for (let k = 1; k <= 4; k++) {
 
         const l = k - 0.5;
-
-        const outer = (k === 0 || k === 5);
-
-        if (outer) continue;
-
-        ctx.strokeStyle =
-            "rgba(255,255,255,0.22)";
-
-        ctx.lineWidth = 1.5;
 
         ctx.beginPath();
         ctx.moveTo(projectX(g, l, s0), yTop);
@@ -6154,52 +6408,67 @@ function drawStage(
         ctx.stroke();
     }
 
-    /* ---------- 左右のふち（光る） ---------- */
+    ctx.setLineDash([]);
 
-    ctx.save();
+    /* ---------- 小道のふち（ぬい目） ---------- */
 
-    ctx.strokeStyle =
-        "rgba(255,170,230,0.95)";
+    for (const l of [-0.5, 4.5]) {
 
-    ctx.lineWidth = 3;
+        ctx.strokeStyle = "#d9b48c";
+        ctx.lineWidth = 6;
 
-    ctx.shadowColor = "#ff8fd8";
-    ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(projectX(g, l, s0), yTop);
+        ctx.lineTo(projectX(g, l, sB), yBot);
+        ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(projectX(g, -0.5, s0), yTop);
-    ctx.lineTo(projectX(g, -0.5, sB), yBot);
-    ctx.stroke();
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = 1.5;
 
-    ctx.beginPath();
-    ctx.moveTo(projectX(g, 4.5, s0), yTop);
-    ctx.lineTo(projectX(g, 4.5, sB), yBot);
-    ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(projectX(g, l, s0), yTop);
+        ctx.lineTo(projectX(g, l, sB), yBot);
+        ctx.stroke();
 
-    ctx.restore();
+        ctx.setLineDash([7, 7]);
+        ctx.strokeStyle = "#fffdf9";
+        ctx.lineWidth = 2;
 
-    /* ---------- 判定ライン ---------- */
+        ctx.beginPath();
+        ctx.moveTo(projectX(g, l, s0), yTop);
+        ctx.lineTo(projectX(g, l, sB), yBot);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+    }
+
+    /* ---------- 判定ライン（ロープ） ---------- */
 
     const yJ = g.judgeY;
 
-    ctx.save();
+    ctx.lineCap = "round";
 
-    ctx.strokeStyle =
-        "rgba(255,255,255,0.95)";
-
-    ctx.lineWidth = 5;
-
-    ctx.shadowColor = "#ff8fd8";
-    ctx.shadowBlur = 14;
+    ctx.strokeStyle = "#d4a373";
+    ctx.lineWidth = 6;
 
     ctx.beginPath();
     ctx.moveTo(cx - 2.5 * laneW, yJ);
     ctx.lineTo(cx + 2.5 * laneW, yJ);
     ctx.stroke();
 
-    ctx.restore();
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = "#fffdf9";
+    ctx.lineWidth = 2;
 
-    /* 各レーンの「ここで押す」枠 */
+    ctx.beginPath();
+    ctx.moveTo(cx - 2.5 * laneW, yJ);
+    ctx.lineTo(cx + 2.5 * laneW, yJ);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.lineCap = "butt";
+
+    /* ---------- 各レーンの「ここで押す」枠 ---------- */
 
     const th = HIGHWAY.noteH;
 
@@ -6212,26 +6481,29 @@ function drawStage(
             yJ - th / 2,
             laneW * 0.9,
             th,
-            th * 0.4
+            th * 0.42
         );
 
         ctx.fillStyle =
             pressed[i]
-            ? "rgba(255,255,255,0.40)"
-            : "rgba(255,255,255,0.10)";
+            ? "rgba(255,233,160,0.95)"
+            : "rgba(255,255,255,0.6)";
 
         ctx.fill();
 
-        ctx.strokeStyle =
-            "rgba(255,255,255,0.75)";
-
-        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 5]);
+        ctx.strokeStyle = "#a8927d";
+        ctx.lineWidth = 2.5;
         ctx.stroke();
+        ctx.setLineDash([]);
     }
 }
 
 
-/* 女の子（レーンの奥に立っている） */
+/* =========================================================
+   女の子（小道の奥の、草の丘に立っている）
+========================================================= */
+
 function drawGirl(g) {
 
     const feetY =
@@ -6240,32 +6512,42 @@ function drawGirl(g) {
     const bob =
         Math.sin(animTimer * 2) * 4;
 
-    /* 足元の光 */
+    /* 草の小さな丘 */
 
-    const glow =
-        ctx.createRadialGradient(
-            g.centerX, feetY, 4,
-            g.centerX, feetY, 80
-        );
-
-    glow.addColorStop(
-        0,
-        "rgba(255,220,250,0.75)"
-    );
-
-    glow.addColorStop(
-        1,
-        "rgba(255,220,250,0)"
-    );
-
-    ctx.fillStyle = glow;
+    ctx.fillStyle = "#b5dc98";
 
     ctx.beginPath();
     ctx.ellipse(
         g.centerX,
         feetY,
-        80,
-        26,
+        78,
+        20,
+        0,
+        0,
+        Math.PI * 2
+    );
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(124,111,100,0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    /* 小さなお花 */
+
+    drawFlower(ctx, g.centerX - 52, feetY + 2, 3.5, "#ffb7c5");
+    drawFlower(ctx, g.centerX + 55, feetY - 2, 3.5, "#fff3b0");
+    drawFlower(ctx, g.centerX + 38, feetY + 6, 3, "#ffffff");
+
+    /* 足元のかげ */
+
+    ctx.fillStyle = "rgba(124,111,100,0.2)";
+
+    ctx.beginPath();
+    ctx.ellipse(
+        g.centerX,
+        feetY + 2,
+        34,
+        8,
         0,
         0,
         Math.PI * 2
@@ -6481,6 +6763,9 @@ function gameLoop() {
 
                         fn: () => {
 
+                            curNoteSeed = note.time * 37 + note.lane * 11;
+
+
                             const s =
                                 depthScale(
                                     progress
@@ -6602,6 +6887,9 @@ function gameLoop() {
                         p: headP,
 
                         fn: () => {
+
+                            curNoteSeed = note.time * 37 + note.lane * 11;
+
 
                             const sH =
                                 depthScale(
@@ -6800,6 +7088,9 @@ function gameLoop() {
                         p: drawP,
 
                         fn: () => {
+
+                            curNoteSeed = note.time * 37 + note.lane * 11;
+
 
                             const s =
                                 depthScale(
@@ -7029,7 +7320,7 @@ function gameLoop() {
             4;
 
         ctx.strokeStyle =
-            "rgba(40,20,70,0.85)";
+            "#fffdf9";
 
         ctx.strokeText(
             ft.text,
