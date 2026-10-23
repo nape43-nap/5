@@ -2313,24 +2313,28 @@ function generateChart(
 
 
 /* =========================================================
-   レーン（絵本風の奥行きレーン（のびていく小道））
+   扇型レイアウト
 
-   ・女の子は奥（画面上のほう）に立っています
-   ・ノーツは女の子の足元から手前へ流れてきます
-   ・判定ラインは画面の下のほうにあります
+   ・女の子は画面の上のほうに立っています
+   ・ノーツは女の子の足元から扇のように広がって降りてきます
+   ・判定は、下の弧の上に並んだ5か所です
+     （左・斜め左・中央・斜め右・右）
 ========================================================= */
 
-const HIGHWAY = {
+const FAN = {
 
-    /* 奥行きの深さ（大きいほど奥が小さく見える） */
+    /* 奥行きの深さ（大きいほど出だしが小さく見える） */
     zFar: 4,
 
-    /* 手前でのノーツの厚み（px） */
-    noteH: 34
+    /* ノーツが出現する時の大きさ */
+    s0: 0.25,
+
+    /* 5つの判定位置の角度（真下が0度） */
+    angles: [-70, -35, 0, 35, 70]
 };
 
 
-/* 今のフレームのレーン形状（毎フレーム更新） */
+/* 今のフレームの形（毎フレーム更新） */
 let HW = null;
 
 
@@ -2339,31 +2343,75 @@ function getHighwayGeometry() {
     const w = canvas.width;
     const h = canvas.height;
 
+    /* 画面が小さい端末ではノーツも少し小さく */
+    const k =
+        Math.max(0.7, Math.min(1.2, w / 434));
+
+    const cx = w / 2;
+
+    /* 判定の弧（楕円の下半分） */
+    const Rx = w * 0.40;
+    const Ry = h * 0.334;
+    const cyE = h * 0.466;
+
+    /* ノーツの出どころ（女の子の足元） */
+    const O = {
+        x: cx,
+        y: h * 0.28
+    };
+
+    const pts = [];
+    const rots = [];
+
+    for (const a of FAN.angles) {
+
+        const r = a * Math.PI / 180;
+
+        const p = {
+            x: cx + Rx * Math.sin(r),
+            y: cyE + Ry * Math.cos(r)
+        };
+
+        pts.push(p);
+
+        /* ノーツの向き（進行方向に対して横長にする） */
+        rots.push(
+            Math.atan2(p.y - O.y, p.x - O.x) -
+            Math.PI / 2
+        );
+    }
+
     return {
 
         w: w,
         h: h,
-
-        centerX: w / 2,
-
-        /* 判定ラインのY */
-        judgeY: h * 0.80,
-
-        /* 遠近法の消失点のY */
-        vanishY:
-            (h * 0.30 - h * 0.80 / HIGHWAY.zFar) /
-            (1 - 1 / HIGHWAY.zFar),
-
-        /* 手前での1レーンの幅 */
-        laneW: (w * 0.94) / 5,
-
-        /* ノーツが出現する時の大きさ */
-        s0: 1 / HIGHWAY.zFar
+        cx: cx,
+        Rx: Rx,
+        Ry: Ry,
+        cyE: cyE,
+        O: O,
+        pts: pts,
+        rots: rots,
+        s0: FAN.s0,
+        noteW: 84 * k,
+        noteH: 36 * k
     };
 }
 
 
-/* progress(0〜1)から大きさ(0.17〜1)を求める */
+/* 弧の上の点（kは弧の大きさの倍率） */
+function ellipsePt(g, aDeg, k) {
+
+    const r = aDeg * Math.PI / 180;
+
+    return {
+        x: g.cx + g.Rx * k * Math.sin(r),
+        y: g.cyE + g.Ry * k * Math.cos(r)
+    };
+}
+
+
+/* progress(0〜1)から大きさ(0.25〜1)を求める */
 function depthScale(p) {
 
     if (p < 0) p = 0;
@@ -2371,49 +2419,56 @@ function depthScale(p) {
     if (p <= 1) {
 
         const z =
-            HIGHWAY.zFar -
-            (HIGHWAY.zFar - 1) * p;
+            FAN.zFar -
+            (FAN.zFar - 1) * p;
 
         return 1 / z;
     }
 
-    /* 判定ラインを過ぎたあと */
+    /* 判定を過ぎたあと */
     return 1 + (p - 1);
 }
 
 
-function projectY(g, s) {
+/* ノーツの今の位置・大きさ・向き */
+function fanPos(g, laneFloat, p) {
 
-    return g.vanishY +
-        (g.judgeY - g.vanishY) * s;
+    const s = depthScale(p);
+
+    const q = (s - g.s0) / (1 - g.s0);
+
+    const l = Math.max(0, Math.min(4, laneFloat));
+
+    const i0 = Math.floor(l);
+    const i1 = Math.min(4, i0 + 1);
+    const f = l - i0;
+
+    const P = {
+        x: g.pts[i0].x + (g.pts[i1].x - g.pts[i0].x) * f,
+        y: g.pts[i0].y + (g.pts[i1].y - g.pts[i0].y) * f
+    };
+
+    const rot =
+        g.rots[i0] + (g.rots[i1] - g.rots[i0]) * f;
+
+    return {
+
+        x: g.O.x + (P.x - g.O.x) * q,
+        y: g.O.y + (P.y - g.O.y) * q,
+        s: s,
+        rot: rot
+    };
 }
 
 
-function projectX(g, laneFloat, s) {
-
-    return g.centerX +
-        (laneFloat - 2) * g.laneW * s;
-}
-
-
-/* 判定ライン上の各レーンの中心（タップ判定に使われる） */
+/* 5つの判定位置（タップ判定に使われる） */
 function getLanePositions() {
 
     const g = getHighwayGeometry();
 
-    const positions = [];
-
-    for (let i = 0; i < 5; i++) {
-
-        positions.push({
-
-            x: projectX(g, i, 1),
-
-            y: g.judgeY
-        });
-    }
-
-    return positions;
+    return g.pts.map(
+        p => ({ x: p.x, y: p.y })
+    );
 }
 
 
@@ -6006,17 +6061,14 @@ function drawNote3D(
     cx,
     cy,
     s,
-    widthLanes,
+    rot,
     palette,
     symbol,
     alpha
 ) {
 
-    const w =
-        g.laneW * s * widthLanes * 0.9;
-
-    const h =
-        HIGHWAY.noteH * s;
+    const w = g.noteW * s;
+    const h = g.noteH * s;
 
     const depth =
         Math.max(2, 6 * s);
@@ -6030,7 +6082,7 @@ function drawNote3D(
     ctx.globalAlpha = alpha;
 
     ctx.translate(cx, cy);
-    ctx.rotate(tilt);
+    ctx.rotate(rot + tilt);
 
     const x = -w / 2;
     const y = -h / 2;
@@ -6059,7 +6111,7 @@ function drawNote3D(
     ctx.fillStyle = grad;
     ctx.fill();
 
-    /* こげ茶のふち（絵本の線画風） */
+    /* こげ茶のふち */
     ctx.lineWidth = Math.max(1.5, 3 * s);
     ctx.strokeStyle = INK;
     ctx.lineJoin = "round";
@@ -6110,7 +6162,7 @@ function drawNote3D(
 }
 
 
-/* 登場時はふわっと出て、判定ラインを過ぎたら薄くなる */
+/* 登場時はふわっと出て、判定を過ぎたら薄くなる */
 function noteAlpha(p) {
 
     let a = 1;
@@ -6132,27 +6184,26 @@ function noteAlpha(p) {
 /* ロングノーツの帯（リボン） */
 function drawLongBody(
     g,
-    lane,
-    sHead,
-    sTail,
+    ph,
+    pt,
     alpha
 ) {
 
-    const yH = projectY(g, sHead);
-    const yT = projectY(g, sTail);
+    /* ノーツの横方向（帯の幅の向き） */
+    const ax = Math.cos(ph.rot);
+    const ay = Math.sin(ph.rot);
 
-    const xH = projectX(g, lane, sHead);
-    const xT = projectX(g, lane, sTail);
-
-    const wH = g.laneW * sHead * 0.9 * 0.4;
-    const wT = g.laneW * sTail * 0.9 * 0.4;
+    const hwH = g.noteW * ph.s * 0.4;
+    const hwT = g.noteW * pt.s * 0.4;
 
     ctx.save();
 
     ctx.globalAlpha = alpha;
 
     const grad =
-        ctx.createLinearGradient(0, yT, 0, yH);
+        ctx.createLinearGradient(
+            pt.x, pt.y, ph.x, ph.y
+        );
 
     grad.addColorStop(0, "rgba(255,235,170,0.75)");
     grad.addColorStop(1, "rgba(250,205,100,0.92)");
@@ -6160,25 +6211,25 @@ function drawLongBody(
     ctx.fillStyle = grad;
 
     ctx.beginPath();
-    ctx.moveTo(xT - wT, yT);
-    ctx.lineTo(xT + wT, yT);
-    ctx.lineTo(xH + wH, yH);
-    ctx.lineTo(xH - wH, yH);
+    ctx.moveTo(pt.x - ax * hwT, pt.y - ay * hwT);
+    ctx.lineTo(pt.x + ax * hwT, pt.y + ay * hwT);
+    ctx.lineTo(ph.x + ax * hwH, ph.y + ay * hwH);
+    ctx.lineTo(ph.x - ax * hwH, ph.y - ay * hwH);
     ctx.closePath();
     ctx.fill();
 
-    /* ふち（点線のぬい目） */
     ctx.strokeStyle = INK;
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    /* 中央のぬい目 */
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = "rgba(255,255,255,0.9)";
     ctx.lineWidth = 1.5;
 
     ctx.beginPath();
-    ctx.moveTo(xT, yT);
-    ctx.lineTo(xH, yH);
+    ctx.moveTo(pt.x, pt.y);
+    ctx.lineTo(ph.x, ph.y);
     ctx.stroke();
 
     ctx.setLineDash([]);
@@ -6187,54 +6238,67 @@ function drawLongBody(
 }
 
 
-/* スライドの帯（始点→終点） */
+/* スライドの帯（始点→終点。弧に沿ってつなぐ） */
 function drawSlideBody(
     g,
     laneA,
     laneB,
-    s,
+    p,
     alpha
 ) {
 
-    const y = projectY(g, s);
+    const s = depthScale(p);
 
-    const xA = projectX(g, laneA, s);
-    const xB = projectX(g, laneB, s);
+    const bandH = g.noteH * s * 0.7;
 
-    const left = Math.min(xA, xB);
-    const right = Math.max(xA, xB);
+    const line = [];
 
-    const bandH =
-        HIGHWAY.noteH * s * 0.7;
+    for (let i = 0; i <= 10; i++) {
+
+        line.push(
+            fanPos(
+                g,
+                laneA + (laneB - laneA) * i / 10,
+                p
+            )
+        );
+    }
 
     ctx.save();
 
     ctx.globalAlpha = alpha;
 
-    rrPath(
-        left,
-        y - bandH / 2,
-        right - left,
-        bandH,
-        bandH * 0.5
-    );
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
-    ctx.fillStyle =
-        "rgba(205,180,245,0.8)";
+    const trace = () => {
 
-    ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(line[0].x, line[0].y);
 
+        for (let i = 1; i < line.length; i++) {
+
+            ctx.lineTo(line[i].x, line[i].y);
+        }
+    };
+
+    /* ふち */
+    trace();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = Math.max(1.5, 2.5 * s);
+    ctx.lineWidth = bandH + Math.max(2, 4 * s);
     ctx.stroke();
 
+    /* 中身 */
+    trace();
+    ctx.strokeStyle = "rgba(210,188,246,0.95)";
+    ctx.lineWidth = bandH;
+    ctx.stroke();
+
+    /* ぬい目 */
+    trace();
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = "rgba(255,255,255,0.95)";
     ctx.lineWidth = 1.5;
-
-    ctx.beginPath();
-    ctx.moveTo(left + bandH * 0.4, y);
-    ctx.lineTo(right - bandH * 0.4, y);
     ctx.stroke();
 
     ctx.setLineDash([]);
@@ -6244,7 +6308,7 @@ function drawSlideBody(
 
 
 /* =========================================================
-   背景・小道・判定ライン
+   背景・扇・判定の弧
 ========================================================= */
 
 function drawStage(
@@ -6256,9 +6320,7 @@ function drawStage(
 
     const w = g.w;
     const h = g.h;
-    const cx = g.centerX;
-    const laneW = g.laneW;
-    const s0 = g.s0;
+    const O = g.O;
 
     /* ---------- 背景（キャッシュ） ---------- */
 
@@ -6289,45 +6351,67 @@ function drawStage(
         drawCloud(x, h * cd.y, cd.sc);
     }
 
-    /* ---------- 小道 ---------- */
-
-    const sB = 1.4;
-
-    const yTop = projectY(g, s0);
-    const yBot = projectY(g, sB);
-
-    const halfTop = 2.5 * laneW * s0;
-    const halfBot = 2.5 * laneW * sB;
-
-    const road =
-        ctx.createLinearGradient(0, yTop, 0, yBot);
-
-    road.addColorStop(0, "#fff7e6");
-    road.addColorStop(1, "#ffeccb");
-
-    ctx.fillStyle = road;
+    /* ---------- 扇（広がる小道） ---------- */
 
     ctx.beginPath();
-    ctx.moveTo(cx - halfTop, yTop);
-    ctx.lineTo(cx + halfTop, yTop);
-    ctx.lineTo(cx + halfBot, yBot);
-    ctx.lineTo(cx - halfBot, yBot);
+    ctx.moveTo(O.x, O.y);
+
+    for (let a = -80; a <= 80; a += 8) {
+
+        const p = ellipsePt(g, a, 1.14);
+
+        ctx.lineTo(p.x, p.y);
+    }
+
     ctx.closePath();
+
+    const fanGrad =
+        ctx.createRadialGradient(
+            O.x, O.y, 10,
+            O.x, O.y, h * 0.62
+        );
+
+    fanGrad.addColorStop(0, "#fff7e6");
+    fanGrad.addColorStop(1, "#ffeccb");
+
+    ctx.fillStyle = fanGrad;
     ctx.fill();
 
-    /* ---------- 押している列をほんのり光らせる ---------- */
+    /* ふち（ぬい目） */
+    ctx.lineJoin = "round";
+
+    ctx.strokeStyle = "#d9b48c";
+    ctx.lineWidth = 6;
+    ctx.stroke();
+
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.setLineDash([7, 7]);
+    ctx.strokeStyle = "#fffdf9";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* ---------- 押している道をほんのり光らせる ---------- */
 
     for (let i = 0; i < 5; i++) {
 
         if (!pressed[i]) continue;
 
-        const l1 = i - 0.5;
-        const l2 = i + 0.5;
+        const a = FAN.angles[i];
 
-        const yJ = g.judgeY;
+        const P = g.pts[i];
+
+        const e1 = ellipsePt(g, a - 17.5, 1.0);
+        const e2 = ellipsePt(g, a, 1.0);
+        const e3 = ellipsePt(g, a + 17.5, 1.0);
 
         const glow =
-            ctx.createLinearGradient(0, yTop, 0, yJ);
+            ctx.createLinearGradient(
+                O.x, O.y, P.x, P.y
+            );
 
         glow.addColorStop(0, "rgba(255,226,150,0)");
         glow.addColorStop(1, "rgba(255,214,120,0.7)");
@@ -6335,15 +6419,15 @@ function drawStage(
         ctx.fillStyle = glow;
 
         ctx.beginPath();
-        ctx.moveTo(projectX(g, l1, s0), yTop);
-        ctx.lineTo(projectX(g, l2, s0), yTop);
-        ctx.lineTo(projectX(g, l2, 1), yJ);
-        ctx.lineTo(projectX(g, l1, 1), yJ);
+        ctx.moveTo(O.x, O.y);
+        ctx.lineTo(e1.x, e1.y);
+        ctx.lineTo(e2.x, e2.y);
+        ctx.lineTo(e3.x, e3.y);
         ctx.closePath();
         ctx.fill();
     }
 
-    /* ---------- 拍の点線（ノーツと同じ速さで流れる） ---------- */
+    /* ---------- 拍の波（ノーツと同じ速さで広がる） ---------- */
 
     const beat = 0.5;
 
@@ -6376,8 +6460,8 @@ function drawStage(
         if (p < 0 || p > 1.2) continue;
 
         const s = depthScale(p);
-        const y = projectY(g, s);
-        const half = 2.5 * laneW * s;
+
+        const q = (s - g.s0) / (1 - g.s0);
 
         ctx.globalAlpha =
             0.22 * Math.min(1, p * 4);
@@ -6386,103 +6470,105 @@ function drawStage(
             Math.max(1, 2 * s);
 
         ctx.beginPath();
-        ctx.moveTo(cx - half, y);
-        ctx.lineTo(cx + half, y);
+
+        for (let a = -80; a <= 80; a += 8) {
+
+            const B = ellipsePt(g, a, 1.0);
+
+            const x = O.x + (B.x - O.x) * q;
+            const y = O.y + (B.y - O.y) * q;
+
+            if (a === -80) {
+
+                ctx.moveTo(x, y);
+
+            } else {
+
+                ctx.lineTo(x, y);
+            }
+        }
+
         ctx.stroke();
     }
 
     ctx.globalAlpha = 1;
 
-    /* ---------- レーンの区切り（ぽんぽん点線） ---------- */
+    /* ---------- 道の区切り（ぽんぽん点線） ---------- */
 
     ctx.setLineDash([1, 9]);
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = "rgba(124,111,100,0.35)";
 
-    for (let k = 1; k <= 4; k++) {
+    for (const a of [-52.5, -17.5, 17.5, 52.5]) {
 
-        const l = k - 0.5;
+        const E = ellipsePt(g, a, 1.14);
 
         ctx.beginPath();
-        ctx.moveTo(projectX(g, l, s0), yTop);
-        ctx.lineTo(projectX(g, l, sB), yBot);
+        ctx.moveTo(O.x, O.y);
+        ctx.lineTo(E.x, E.y);
         ctx.stroke();
     }
 
     ctx.setLineDash([]);
 
-    /* ---------- 小道のふち（ぬい目） ---------- */
-
-    for (const l of [-0.5, 4.5]) {
-
-        ctx.strokeStyle = "#d9b48c";
-        ctx.lineWidth = 6;
-
-        ctx.beginPath();
-        ctx.moveTo(projectX(g, l, s0), yTop);
-        ctx.lineTo(projectX(g, l, sB), yBot);
-        ctx.stroke();
-
-        ctx.strokeStyle = INK;
-        ctx.lineWidth = 1.5;
-
-        ctx.beginPath();
-        ctx.moveTo(projectX(g, l, s0), yTop);
-        ctx.lineTo(projectX(g, l, sB), yBot);
-        ctx.stroke();
-
-        ctx.setLineDash([7, 7]);
-        ctx.strokeStyle = "#fffdf9";
-        ctx.lineWidth = 2;
-
-        ctx.beginPath();
-        ctx.moveTo(projectX(g, l, s0), yTop);
-        ctx.lineTo(projectX(g, l, sB), yBot);
-        ctx.stroke();
-
-        ctx.setLineDash([]);
-    }
-
-    /* ---------- 判定ライン（ロープ） ---------- */
-
-    const yJ = g.judgeY;
+    /* ---------- 判定の弧（ロープ） ---------- */
 
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
+    const arc = () => {
+
+        ctx.beginPath();
+
+        for (let a = -84; a <= 84; a += 4) {
+
+            const p = ellipsePt(g, a, 1.0);
+
+            if (a === -84) {
+
+                ctx.moveTo(p.x, p.y);
+
+            } else {
+
+                ctx.lineTo(p.x, p.y);
+            }
+        }
+    };
+
+    arc();
     ctx.strokeStyle = "#d4a373";
     ctx.lineWidth = 6;
-
-    ctx.beginPath();
-    ctx.moveTo(cx - 2.5 * laneW, yJ);
-    ctx.lineTo(cx + 2.5 * laneW, yJ);
     ctx.stroke();
 
+    arc();
     ctx.setLineDash([6, 6]);
     ctx.strokeStyle = "#fffdf9";
     ctx.lineWidth = 2;
-
-    ctx.beginPath();
-    ctx.moveTo(cx - 2.5 * laneW, yJ);
-    ctx.lineTo(cx + 2.5 * laneW, yJ);
     ctx.stroke();
 
     ctx.setLineDash([]);
     ctx.lineCap = "butt";
 
-    /* ---------- 各レーンの「ここで押す」枠 ---------- */
+    /* ---------- 5つの「ここで押す」枠 ---------- */
 
-    const th = HIGHWAY.noteH;
+    const fw = g.noteW * 1.08;
+    const fh = g.noteH * 1.12;
 
     for (let i = 0; i < 5; i++) {
 
-        const x = projectX(g, i, 1);
+        const P = g.pts[i];
+
+        ctx.save();
+
+        ctx.translate(P.x, P.y);
+        ctx.rotate(g.rots[i]);
 
         rrPath(
-            x - laneW * 0.45,
-            yJ - th / 2,
-            laneW * 0.9,
-            th,
-            th * 0.42
+            -fw / 2,
+            -fh / 2,
+            fw,
+            fh,
+            fh * 0.42
         );
 
         ctx.fillStyle =
@@ -6497,18 +6583,20 @@ function drawStage(
         ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.setLineDash([]);
+
+        ctx.restore();
     }
 }
 
 
 /* =========================================================
-   女の子（小道の奥の、草の丘に立っている）
+   女の子（扇の要の、草の丘に立っている）
 ========================================================= */
 
 function drawGirl(g) {
 
     const feetY =
-        projectY(g, g.s0) + 22;
+        g.O.y + 16;
 
     const bob =
         Math.sin(animTimer * 2) * 4;
@@ -6519,7 +6607,7 @@ function drawGirl(g) {
 
     ctx.beginPath();
     ctx.ellipse(
-        g.centerX,
+        g.cx,
         feetY,
         78,
         20,
@@ -6535,9 +6623,9 @@ function drawGirl(g) {
 
     /* 小さなお花 */
 
-    drawFlower(ctx, g.centerX - 52, feetY + 2, 3.5, "#ffb7c5");
-    drawFlower(ctx, g.centerX + 55, feetY - 2, 3.5, "#fff3b0");
-    drawFlower(ctx, g.centerX + 38, feetY + 6, 3, "#ffffff");
+    drawFlower(ctx, g.cx - 52, feetY + 2, 3.5, "#ffb7c5");
+    drawFlower(ctx, g.cx + 55, feetY - 2, 3.5, "#fff3b0");
+    drawFlower(ctx, g.cx + 38, feetY + 6, 3, "#ffffff");
 
     /* 足元のかげ */
 
@@ -6545,7 +6633,7 @@ function drawGirl(g) {
 
     ctx.beginPath();
     ctx.ellipse(
-        g.centerX,
+        g.cx,
         feetY + 2,
         34,
         8,
@@ -6569,7 +6657,7 @@ function drawGirl(g) {
 
         ctx.drawImage(
             girlImg,
-            g.centerX - gw / 2,
+            g.cx - gw / 2,
             feetY - gh + bob,
             gw,
             gh
@@ -6581,7 +6669,7 @@ function drawGirl(g) {
 
         ctx.beginPath();
         ctx.arc(
-            g.centerX,
+            g.cx,
             feetY - 60 + bob,
             45,
             0,
@@ -6774,37 +6862,28 @@ function gameLoop() {
                         p: progress,
 
                         fn: () => {
-
                             curNoteSeed = note.time * 37 + note.lane * 11;
 
-
-                            const s =
-                                depthScale(
+                            const pos =
+                                fanPos(
+                                    g,
+                                    note.lane,
                                     progress
                                 );
 
                             drawNote3D(
                                 g,
-                                projectX(
-                                    g,
-                                    note.lane,
-                                    s
-                                ),
-                                projectY(
-                                    g,
-                                    s
-                                ),
-                                s,
-                                1,
+                                pos.x,
+                                pos.y,
+                                pos.s,
+                                pos.rot,
                                 isFlick
                                     ? NOTE_COLORS.flick
                                     : NOTE_COLORS.tap,
                                 isFlick
                                     ? "◆"
                                     : null,
-                                noteAlpha(
-                                    progress
-                                )
+                                noteAlpha(progress)
                             );
                         }
                     });
@@ -6899,79 +6978,60 @@ function gameLoop() {
                         p: headP,
 
                         fn: () => {
-
                             curNoteSeed = note.time * 37 + note.lane * 11;
-
-
-                            const sH =
-                                depthScale(
-                                    headP
-                                );
-
-                            const sT =
-                                depthScale(
-                                    tailP
-                                );
 
                             const a =
                                 noteAlpha(
-                                    Math.min(
-                                        headP,
-                                        1
-                                    )
+                                    Math.min(headP, 1)
+                                );
+
+                            const ph =
+                                fanPos(
+                                    g,
+                                    note.lane,
+                                    headP
+                                );
+
+                            const pt =
+                                fanPos(
+                                    g,
+                                    note.lane,
+                                    tailP
                                 );
 
                             /* 帯 */
                             drawLongBody(
                                 g,
-                                note.lane,
-                                sH,
-                                sT,
+                                ph,
+                                pt,
                                 a
                             );
 
                             /* 終点 */
                             if (
                                 tailProg >= 0 &&
-                                currentTime <
-                                endTime
+                                currentTime < endTime
                             ) {
 
                                 drawNote3D(
                                     g,
-                                    projectX(
-                                        g,
-                                        note.lane,
-                                        sT
-                                    ),
-                                    projectY(
-                                        g,
-                                        sT
-                                    ),
-                                    sT,
-                                    1,
+                                    pt.x,
+                                    pt.y,
+                                    pt.s,
+                                    pt.rot,
                                     NOTE_COLORS.long,
                                     null,
-                                    noteAlpha(
-                                        tailP
-                                    )
+                                    noteAlpha(tailP)
                                 );
                             }
 
                             /* 頭 */
                             drawNote3D(
                                 g,
-                                projectX(
-                                    g,
-                                    note.lane,
-                                    sH
-                                ),
-                                projectY(
-                                    g,
-                                    sH
-                                ),
-                                sH,
-                                1,
+                                ph.x,
+                                ph.y,
+                                ph.s,
+                                ph.rot,
                                 NOTE_COLORS.long,
                                 null,
                                 a
@@ -7100,46 +7160,41 @@ function gameLoop() {
                         p: drawP,
 
                         fn: () => {
-
                             curNoteSeed = note.time * 37 + note.lane * 11;
 
-
-                            const s =
-                                depthScale(
-                                    drawP
-                                );
-
                             const a =
-                                noteAlpha(
-                                    drawP
-                                );
-
-                            const y =
-                                projectY(
-                                    g,
-                                    s
-                                );
+                                noteAlpha(drawP);
 
                             /* 帯 */
                             drawSlideBody(
                                 g,
                                 startLane,
                                 endLane,
-                                s,
+                                drawP,
                                 a
                             );
+
+                            const pe =
+                                fanPos(
+                                    g,
+                                    endLane,
+                                    drawP
+                                );
+
+                            const ps =
+                                fanPos(
+                                    g,
+                                    startLane,
+                                    drawP
+                                );
 
                             /* 終点 */
                             drawNote3D(
                                 g,
-                                projectX(
-                                    g,
-                                    endLane,
-                                    s
-                                ),
-                                y,
-                                s,
-                                1,
+                                pe.x,
+                                pe.y,
+                                pe.s,
+                                pe.rot,
                                 NOTE_COLORS.slide,
                                 null,
                                 a
@@ -7148,17 +7203,12 @@ function gameLoop() {
                             /* 始点（矢印つき） */
                             drawNote3D(
                                 g,
-                                projectX(
-                                    g,
-                                    startLane,
-                                    s
-                                ),
-                                y,
-                                s,
-                                1,
+                                ps.x,
+                                ps.y,
+                                ps.s,
+                                ps.rot,
                                 NOTE_COLORS.slide,
-                                note.direction ===
-                                "left"
+                                note.direction === "left"
                                     ? "◀︎"
                                     : "▶︎",
                                 a
