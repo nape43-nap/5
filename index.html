@@ -2324,10 +2324,10 @@ function generateChart(
 const FAN = {
 
     /* 奥行きの深さ（大きいほど出だしが小さく見える） */
-    zFar: 4,
+    zFar: 2.5,
 
     /* ノーツが出現する時の大きさ */
-    s0: 0.25,
+    s0: 0.4,
 
     /* 5つの判定位置の角度（真下が0度） */
     angles: [-70, -35, 0, 35, 70]
@@ -2393,8 +2393,8 @@ function getHighwayGeometry() {
         pts: pts,
         rots: rots,
         s0: FAN.s0,
-        noteW: 84 * k,
-        noteH: 36 * k
+        noteW: 64 * k,
+        noteH: 64 * k
     };
 }
 
@@ -6067,66 +6067,50 @@ function drawNote3D(
     alpha
 ) {
 
-    const w = g.noteW * s;
-    const h = g.noteH * s;
+    /* 丸ノーツ（向きは関係ないので rot は使いません） */
+    const r = g.noteW * 0.5 * s;
 
     const depth =
-        Math.max(2, 6 * s);
-
-    /* ほんの少しだけ傾けて、手作り感を出す */
-    const tilt =
-        Math.sin(curNoteSeed) * 0.035;
+        Math.max(2, 5 * s);
 
     ctx.save();
 
     ctx.globalAlpha = alpha;
 
     ctx.translate(cx, cy);
-    ctx.rotate(rot + tilt);
-
-    const x = -w / 2;
-    const y = -h / 2;
-
-    const radius = h * 0.42;
 
     /* かげ */
-    rrPath(x + 1, y + depth + 3 * s, w, h, radius);
+    ctx.beginPath();
+    ctx.arc(1, depth + 3 * s, r, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(124,111,100,0.22)";
     ctx.fill();
 
     /* 厚み */
-    rrPath(x, y + depth, w, h, radius);
+    ctx.beginPath();
+    ctx.arc(0, depth, r, 0, Math.PI * 2);
     ctx.fillStyle = palette.side;
     ctx.fill();
 
     /* 表面 */
-    rrPath(x, y, w, h, radius);
-
     const grad =
-        ctx.createLinearGradient(0, y, 0, y + h);
+        ctx.createLinearGradient(0, -r, 0, r);
 
     grad.addColorStop(0, palette.top);
     grad.addColorStop(1, palette.bottom);
 
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
     ctx.fillStyle = grad;
     ctx.fill();
 
     /* こげ茶のふち */
     ctx.lineWidth = Math.max(1.5, 3 * s);
     ctx.strokeStyle = INK;
-    ctx.lineJoin = "round";
     ctx.stroke();
 
     /* ぬい目 */
-    const inset = h * 0.2;
-
-    rrPath(
-        x + inset,
-        y + inset,
-        w - inset * 2,
-        h - inset * 2,
-        Math.max(1, radius - inset)
-    );
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.68, 0, Math.PI * 2);
 
     ctx.setLineDash([
         Math.max(2, 5 * s),
@@ -6144,7 +6128,7 @@ function drawNote3D(
 
         ctx.font =
             "bold " +
-            Math.max(8, h * 0.58) +
+            Math.max(8, r * 0.95) +
             "px sans-serif";
 
         ctx.textAlign = "center";
@@ -6152,10 +6136,10 @@ function drawNote3D(
 
         ctx.lineWidth = Math.max(2, 3 * s);
         ctx.strokeStyle = INK;
-        ctx.strokeText(symbol, 0, h * 0.04);
+        ctx.strokeText(symbol, 0, r * 0.05);
 
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(symbol, 0, h * 0.04);
+        ctx.fillText(symbol, 0, r * 0.05);
     }
 
     ctx.restore();
@@ -6193,8 +6177,8 @@ function drawLongBody(
     const ax = Math.cos(ph.rot);
     const ay = Math.sin(ph.rot);
 
-    const hwH = g.noteW * ph.s * 0.4;
-    const hwT = g.noteW * pt.s * 0.4;
+    const hwH = g.noteW * ph.s * 0.34;
+    const hwT = g.noteW * pt.s * 0.34;
 
     ctx.save();
 
@@ -6249,7 +6233,7 @@ function drawSlideBody(
 
     const s = depthScale(p);
 
-    const bandH = g.noteH * s * 0.7;
+    const bandH = g.noteH * s * 0.55;
 
     const line = [];
 
@@ -6549,27 +6533,16 @@ function drawStage(
     ctx.setLineDash([]);
     ctx.lineCap = "butt";
 
-    /* ---------- 5つの「ここで押す」枠 ---------- */
+    /* ---------- 5つの「ここで押す」枠（まる） ---------- */
 
-    const fw = g.noteW * 1.08;
-    const fh = g.noteH * 1.12;
+    const fr = g.noteW * 0.56;
 
     for (let i = 0; i < 5; i++) {
 
         const P = g.pts[i];
 
-        ctx.save();
-
-        ctx.translate(P.x, P.y);
-        ctx.rotate(g.rots[i]);
-
-        rrPath(
-            -fw / 2,
-            -fh / 2,
-            fw,
-            fh,
-            fh * 0.42
-        );
+        ctx.beginPath();
+        ctx.arc(P.x, P.y, fr, 0, Math.PI * 2);
 
         ctx.fillStyle =
             pressed[i]
@@ -6583,8 +6556,6 @@ function drawStage(
         ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.setLineDash([]);
-
-        ctx.restore();
     }
 }
 
