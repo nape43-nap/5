@@ -1638,7 +1638,6 @@ async function loadSongIndex() {
             );
         }
 
-
         await loadSongInfoForSelector();
 
 
@@ -2329,8 +2328,9 @@ const FAN = {
     /* ノーツが出現する時の大きさ */
     s0: 0.4,
 
-    /* 5つの判定位置の角度（真下が0度） */
-    angles: [-56, -30, 0, 30, 56]
+    /* 判定の弧の両端の角度（真下が0度）
+       5つの判定は、この間に「同じ間隔」で並びます */
+    maxAngle: 60
 };
 
 
@@ -2349,10 +2349,10 @@ function getHighwayGeometry() {
 
     const cx = w / 2;
 
-    /* 判定の弧（楕円の下半分） */
-    const Rx = w * 0.40;
-    const Ry = h * 0.30;
-    const cyE = h * 0.50;
+    /* 判定の弧（楕円の下半分・ゆるやか） */
+    const Rx = w * 0.43;
+    const Ry = h * 0.04;
+    const cyE = h * 0.81;
 
     /* ノーツの出どころ（女の子の足元） */
     const O = {
@@ -2360,16 +2360,56 @@ function getHighwayGeometry() {
         y: h * 0.28
     };
 
+    /* 弧の上で、5つの判定が「同じ間隔」になる角度を求める */
+    const maxA = FAN.maxAngle;
+
+    const ex = a => cx + Rx * Math.sin(a * Math.PI / 180);
+    const ey = a => cyE + Ry * Math.cos(a * Math.PI / 180);
+
+    const steps = 240;
+    const cum = [0];
+
+    for (let i = 1; i <= steps; i++) {
+
+        const a0 = -maxA + 2 * maxA * (i - 1) / steps;
+        const a1 = -maxA + 2 * maxA * i / steps;
+
+        cum.push(
+            cum[i - 1] +
+            Math.hypot(
+                ex(a1) - ex(a0),
+                ey(a1) - ey(a0)
+            )
+        );
+    }
+
+    const angles = [];
+
+    for (let n = 0; n < 5; n++) {
+
+        const target = cum[steps] * n / 4;
+
+        let i = 1;
+
+        while (i < steps && cum[i] < target) i++;
+
+        const f =
+            (target - cum[i - 1]) /
+            ((cum[i] - cum[i - 1]) || 1);
+
+        angles.push(
+            -maxA + 2 * maxA * ((i - 1) + f) / steps
+        );
+    }
+
     const pts = [];
     const rots = [];
 
-    for (const a of FAN.angles) {
-
-        const r = a * Math.PI / 180;
+    for (const a of angles) {
 
         const p = {
-            x: cx + Rx * Math.sin(r),
-            y: cyE + Ry * Math.cos(r)
+            x: ex(a),
+            y: ey(a)
         };
 
         pts.push(p);
@@ -2380,6 +2420,32 @@ function getHighwayGeometry() {
             Math.PI / 2
         );
     }
+
+    /* レーンの境目（となりとの中間点。両端は外側にそろえる） */
+    const mids = [];
+
+    for (let i = 0; i < 4; i++) {
+
+        mids.push({
+            x: (pts[i].x + pts[i + 1].x) / 2,
+            y: (pts[i].y + pts[i + 1].y) / 2
+        });
+    }
+
+    const bounds = [
+        {
+            x: 2 * pts[0].x - mids[0].x,
+            y: 2 * pts[0].y - mids[0].y
+        },
+        mids[0],
+        mids[1],
+        mids[2],
+        mids[3],
+        {
+            x: 2 * pts[4].x - mids[3].x,
+            y: 2 * pts[4].y - mids[3].y
+        }
+    ];
 
     return {
 
@@ -2392,9 +2458,24 @@ function getHighwayGeometry() {
         O: O,
         pts: pts,
         rots: rots,
+        angles: angles,
+        mids: mids,
+        bounds: bounds,
         s0: FAN.s0,
         noteW: 64 * k,
         noteH: 64 * k
+    };
+}
+
+
+/* 扇のふちの点（判定の弧から、左右・下に余白をとる） */
+function outlinePt(g, aDeg) {
+
+    const r = aDeg * Math.PI / 180;
+
+    return {
+        x: g.cx + (g.Rx + g.w * 0.06) * Math.sin(r),
+        y: g.cyE + g.Ry * Math.cos(r) + g.h * 0.065
     };
 }
 
@@ -2443,13 +2524,16 @@ function fanPos(g, laneFloat, p) {
     const i1 = Math.min(4, i0 + 1);
     const f = l - i0;
 
-    const P = {
-        x: g.pts[i0].x + (g.pts[i1].x - g.pts[i0].x) * f,
-        y: g.pts[i0].y + (g.pts[i1].y - g.pts[i0].y) * f
-    };
+    /* レーンの間は、弧の上をなめらかに進む */
+    const ang =
+        g.angles[i0] +
+        (g.angles[i1] - g.angles[i0]) * f;
+
+    const P = ellipsePt(g, ang, 1.0);
 
     const rot =
-        g.rots[i0] + (g.rots[i1] - g.rots[i0]) * f;
+        Math.atan2(P.y - g.O.y, P.x - g.O.x) -
+        Math.PI / 2;
 
     return {
 
@@ -6237,12 +6321,12 @@ function drawSlideBody(
 
     const line = [];
 
-    for (let i = 0; i <= 10; i++) {
+    for (let i = 0; i <= 28; i++) {
 
         line.push(
             fanPos(
                 g,
-                laneA + (laneB - laneA) * i / 10,
+                laneA + (laneB - laneA) * i / 28,
                 p
             )
         );
@@ -6337,22 +6421,51 @@ function drawStage(
 
     /* ---------- 扇（広がる小道） ---------- */
 
+    /* 左右のふち：両端の判定の少し外側をとおり、画面の下まで続く線 */
+    const sideEnd = (P, sign) => {
+
+        const vx = P.x - O.x;
+        const vy = P.y - O.y;
+
+        const len = Math.hypot(vx, vy);
+
+        const spread =
+            Math.asin(
+                Math.min(
+                    0.9,
+                    (g.noteW * 0.56 + 10) / len
+                )
+            );
+
+        const th =
+            Math.atan2(vy, vx) + sign * spread;
+
+        const yEnd = h + 40;
+
+        const t = (yEnd - O.y) / Math.sin(th);
+
+        return {
+            x: O.x + Math.cos(th) * t,
+            y: yEnd
+        };
+    };
+
+    const sL = sideEnd(g.pts[0], 1);
+    const sR = sideEnd(g.pts[4], -1);
+
     ctx.beginPath();
     ctx.moveTo(O.x, O.y);
 
-    for (let a = -64; a <= 64; a += 8) {
+    ctx.lineTo(sL.x, sL.y);
 
-        const p = ellipsePt(g, a, 1.22);
-
-        ctx.lineTo(p.x, p.y);
-    }
+    ctx.lineTo(sR.x, sR.y);
 
     ctx.closePath();
 
     const fanGrad =
         ctx.createRadialGradient(
             O.x, O.y, 10,
-            O.x, O.y, h * 0.62
+            O.x, O.y, h * 0.8
         );
 
     fanGrad.addColorStop(0, "#fff7e6");
@@ -6384,13 +6497,11 @@ function drawStage(
 
         if (!pressed[i]) continue;
 
-        const a = FAN.angles[i];
-
         const P = g.pts[i];
 
-        const e1 = ellipsePt(g, a - 13, 1.0);
-        const e2 = ellipsePt(g, a, 1.0);
-        const e3 = ellipsePt(g, a + 13, 1.0);
+        const e1 = g.bounds[i];
+        const e2 = P;
+        const e3 = g.bounds[i + 1];
 
         const glow =
             ctx.createLinearGradient(
@@ -6455,14 +6566,14 @@ function drawStage(
 
         ctx.beginPath();
 
-        for (let a = -64; a <= 64; a += 8) {
+        for (let a = -68; a <= 68; a += 8) {
 
             const B = ellipsePt(g, a, 1.0);
 
             const x = O.x + (B.x - O.x) * q;
             const y = O.y + (B.y - O.y) * q;
 
-            if (a === -64) {
+            if (a === -68) {
 
                 ctx.moveTo(x, y);
 
@@ -6483,9 +6594,14 @@ function drawStage(
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = "rgba(124,111,100,0.35)";
 
-    for (const a of [-43, -15, 15, 43]) {
+    for (const M of g.mids) {
 
-        const E = ellipsePt(g, a, 1.22);
+        const tEnd = (h + 40 - O.y) / (M.y - O.y);
+
+        const E = {
+            x: O.x + (M.x - O.x) * tEnd,
+            y: h + 40
+        };
 
         ctx.beginPath();
         ctx.moveTo(O.x, O.y);
@@ -6504,11 +6620,11 @@ function drawStage(
 
         ctx.beginPath();
 
-        for (let a = -62; a <= 62; a += 4) {
+        for (let a = -66; a <= 66; a += 4) {
 
             const p = ellipsePt(g, a, 1.0);
 
-            if (a === -62) {
+            if (a === -66) {
 
                 ctx.moveTo(p.x, p.y);
 
@@ -7179,7 +7295,13 @@ function gameLoop() {
                                 ps.s,
                                 ps.rot,
                                 NOTE_COLORS.slide,
-                                note.direction === "left"
+                                (
+                                    endLane < startLane ||
+                                    (
+                                        endLane === startLane &&
+                                        note.direction === "left"
+                                    )
+                                )
                                     ? "◀︎"
                                     : "▶︎",
                                 a
