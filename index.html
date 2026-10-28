@@ -5039,6 +5039,12 @@ canvas.addEventListener(
 
                    /*
     TAP
+
+    同じレーンにフリックがあっても、
+    「そのフリックのほうが、タップより押した時刻に近いとき」だけ
+    フリック側を優先する。
+    （タップのすぐあとにフリックが続く並びでも、
+      タップが押せなくならないようにするため）
 */
 
 if (
@@ -5058,7 +5064,7 @@ if (
                 Math.abs(
                     currentTime -
                     otherNote.time
-                ) < 0.4
+                ) < diff
         );
 
     if (
@@ -5098,7 +5104,7 @@ const flickNearby =
             Math.abs(
                 n.time -
                 currentTime
-            ) < 0.2
+            ) < Math.min(0.2, diff)
     );
 
 if (
