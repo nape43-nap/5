@@ -869,6 +869,136 @@ html {
     -webkit-user-drag: none;
 }
 
+
+/* =========================================================
+   フルコンボ / オールパーフェクト の表示
+========================================================= */
+
+.clear-badge {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 22px);
+    left: 0;
+    right: 0;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.clear-badge.show {
+    display: flex;
+}
+
+.clear-badge-body {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: clearBadgePop 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.clear-badge-img {
+    max-width: 280px;
+    max-height: 110px;
+    object-fit: contain;
+}
+
+.clear-badge-text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 26px 7px;
+    border-radius: 999px;
+    border: 3px solid #7c6f64;
+    box-shadow:
+        0 4px 0 #b89f8a,
+        0 8px 16px rgba(124, 111, 100, 0.25);
+    color: #7c6f64;
+    text-align: center;
+}
+
+.clear-badge-text::before,
+.clear-badge-text::after {
+    content: "✦";
+    position: absolute;
+    font-size: 16px;
+    color: #f5c45e;
+    animation: clearBadgeTwinkle 1.6s ease-in-out infinite;
+}
+
+.clear-badge-text::before {
+    top: -10px;
+    left: 12px;
+}
+
+.clear-badge-text::after {
+    bottom: -8px;
+    right: 14px;
+    animation-delay: 0.8s;
+}
+
+.clear-badge-text::before,
+.clear-badge-text::after {
+    text-shadow: 0 0 6px #fff;
+}
+
+/* 内側のぬい目 */
+.clear-badge-text > .clear-badge-main {
+    position: relative;
+}
+
+.clear-badge.fc .clear-badge-text {
+    background: linear-gradient(180deg, #fff0bd, #f5c45e);
+}
+
+.clear-badge.ap .clear-badge-text {
+    background: linear-gradient(
+        90deg,
+        #ffd4dc,
+        #fff0bd,
+        #d3f3e6,
+        #cfe6ff,
+        #eadcfa
+    );
+}
+
+.clear-badge-main {
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: 1px;
+    text-shadow:
+        0 2px 0 rgba(255, 255, 255, 0.9),
+        0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.clear-badge-sub {
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-top: 1px;
+}
+
+/* 画像のときは、ぽんっではなく、ふわっと現れる */
+.clear-badge-body.fade {
+    animation: clearBadgeFade 0.9s ease-out both;
+}
+
+@keyframes clearBadgeFade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes clearBadgePop {
+    0% { transform: scale(0.2) rotate(-6deg); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes clearBadgeTwinkle {
+    0%, 100% { opacity: 0.35; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
 </style>
 
 </head>
@@ -1206,6 +1336,37 @@ html {
 
     <div class="result-panel">
 
+        <!-- フルコンボ / オールパーフェクト の表示 -->
+        <div
+            class="clear-badge"
+            id="clear-badge"
+        >
+            <div
+                class="clear-badge-body"
+                id="clear-badge-body"
+            >
+                <img
+                    class="clear-badge-img"
+                    id="clear-badge-img"
+                    alt=""
+                    style="display:none;"
+                >
+                <div
+                    class="clear-badge-text"
+                    id="clear-badge-text"
+                >
+                    <span
+                        class="clear-badge-main en-font"
+                        id="clear-badge-main"
+                    ></span>
+                    <span
+                        class="clear-badge-sub"
+                        id="clear-badge-sub"
+                    ></span>
+                </div>
+            </div>
+        </div>
+
         <div
             class="rank-badge"
             id="result-rank"
@@ -1428,11 +1589,89 @@ resizeCanvas();
    女の子
 ========================================================= */
 
-const girlImg =
-    new Image();
+/* =========================================================
+   画像（imagesフォルダ）
 
-girlImg.src =
-    "girl.png";
+   読み込めた画像は、画像で表示します。
+   読み込めなかったものは、これまでどおり、コードで描いた絵が出ます。
+
+   ※ ファイル名の大文字・小文字は、GitHub上の名前と同じにしてください
+     （例：cloud.PNG と cloud.png は別のファイルとして扱われます）
+========================================================= */
+
+const IMAGE_DIR = "images/";
+
+const IMAGE_FILES = {
+
+    girl: "girl.png",
+
+    tree: "tree.PNG",
+    cloud: "cloud.PNG",
+    sun: "sun.PNG",
+    mound: "mound.PNG",
+
+    flower1: "flower1.PNG",
+    flower2: "flower2.PNG",
+    flower3: "flower3.PNG",
+
+    road: "road.PNG",
+
+    note: "note.PNG",
+    flick: "flick.PNG",
+    hold: "hold.PNG",
+    slide_left: "slide_left.PNG",
+    slide_right: "slide_right.PNG",
+    slide_end: "slide_end.PNG"
+};
+
+/* 背景に使う画像（読み込めたら、背景を作り直す） */
+const BG_IMAGE_KEYS =
+    ["tree", "sun", "flower1", "flower2", "flower3"];
+
+const IMAGES = {};
+
+let bgVersion = 0;
+
+for (const key in IMAGE_FILES) {
+
+    const img = new Image();
+
+    img.onload = () => {
+
+        if (BG_IMAGE_KEYS.indexOf(key) >= 0) {
+
+            bgVersion++;
+        }
+    };
+
+    img.src = IMAGE_DIR + IMAGE_FILES[key];
+
+    IMAGES[key] = img;
+}
+
+function imgReady(key) {
+
+    const img = IMAGES[key];
+
+    return !!(
+        img &&
+        img.complete &&
+        img.naturalWidth > 0
+    );
+}
+
+/* 女の子：imagesフォルダに無ければ、以前の場所（girl.png）も探す */
+const girlImg = IMAGES.girl;
+
+girlImg.onerror = () => {
+
+    if (!girlImg.dataset.fallback) {
+
+        girlImg.dataset.fallback = "1";
+
+        girlImg.src = "girl.png";
+    }
+};
 
 
 /* =========================================================
@@ -3992,6 +4231,130 @@ function returnToSelectFromPause() {
 
 
 /* =========================================================
+   フルコンボ / オールパーフェクト の表示
+
+   ・フルコンボ    ：MISSが0のとき
+   ・オールパーフェクト：全部PERFECTのとき
+
+   自分のイラストに差し替えるときは、ここに画像のファイル名を入れます。
+   例）fullCombo: "images/fullcombo.png"
+   空のままなら、今のかざり文字のバッジが出ます。
+========================================================= */
+
+const RESULT_BADGE_IMAGES = {
+
+    fullCombo: "images/fullcombo.PNG",
+
+    allPerfect: "images/allparfect.PNG"
+};
+
+const RESULT_BADGE_TEXT = {
+
+    fullCombo: {
+        main: "FULL COMBO",
+        sub: ""
+    },
+
+    allPerfect: {
+        main: "ALL PERFECT",
+        sub: ""
+    }
+};
+
+
+/* アニメーションを最初からやり直す */
+function restartBadgeAnimation(el) {
+
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "";
+}
+
+
+/* kind: "fc"（フルコンボ） / "ap"（オールパーフェクト） / null（なし） */
+function showClearBadge(kind) {
+
+    const badge = document.getElementById("clear-badge");
+    const body = document.getElementById("clear-badge-body");
+    const img = document.getElementById("clear-badge-img");
+    const text = document.getElementById("clear-badge-text");
+    const main = document.getElementById("clear-badge-main");
+    const sub = document.getElementById("clear-badge-sub");
+
+    if (!badge) return;
+
+    badge.classList.remove("show", "fc", "ap");
+    body.classList.remove("fade");
+    body.style.visibility = "";
+    body.style.animation = "";
+
+    if (!kind) return;
+
+    const key = kind === "ap" ? "allPerfect" : "fullCombo";
+
+    main.innerText = RESULT_BADGE_TEXT[key].main;
+    sub.innerText = RESULT_BADGE_TEXT[key].sub;
+    sub.style.display = RESULT_BADGE_TEXT[key].sub ? "" : "none";
+
+    badge.classList.add(kind);
+    badge.classList.add("show");
+
+    /* かざり文字のバッジ（ぽんっと出る） */
+    const showTextBadge = () => {
+
+        img.style.display = "none";
+        text.style.display = "flex";
+
+        body.style.visibility = "";
+        body.classList.remove("fade");
+
+        restartBadgeAnimation(body);
+    };
+
+    const path = RESULT_BADGE_IMAGES[key];
+
+    if (!path) {
+
+        showTextBadge();
+
+        return;
+    }
+
+    /* 画像：読み込めるまでは何も出さず、読み込めたらふわっと出す */
+    text.style.display = "none";
+    img.style.display = "none";
+    body.style.visibility = "hidden";
+
+    const showImageBadge = () => {
+
+        text.style.display = "none";
+        img.style.display = "";
+
+        body.style.visibility = "";
+        body.classList.add("fade");
+
+        restartBadgeAnimation(body);
+    };
+
+    img.onload = showImageBadge;
+    img.onerror = showTextBadge;
+
+    if (
+        img.getAttribute("src") === path &&
+        img.complete &&
+        img.naturalWidth > 0
+    ) {
+
+        showImageBadge();
+
+    } else {
+
+        img.src = path;
+    }
+}
+
+
+/* =========================================================
    RESULT
 ========================================================= */
 
@@ -4197,6 +4560,27 @@ function finishGame() {
         score,
         accuracy,
         rank
+    );
+
+    /*
+        フルコンボ / オールパーフェクト の表示
+    */
+    showClearBadge(
+        (
+            judgeCounts.alara === 0 &&
+            total > 0
+        )
+        ?
+        (
+            (
+                judgeCounts.suteki === 0 &&
+                judgeCounts.ii === 0
+            )
+            ? "ap"
+            : "fc"
+        )
+        :
+        null
     );
 
 
@@ -5917,6 +6301,25 @@ function seededRandom(seed) {
 
 function drawTree(c, x, y, size) {
 
+    /* 画像の木：根元を (x, y) に合わせる */
+    if (imgReady("tree")) {
+
+        const ti = IMAGES.tree;
+
+        const th = size * 1.05;
+        const tw = th * ti.naturalWidth / ti.naturalHeight;
+
+        c.drawImage(
+            ti,
+            x - tw / 2,
+            y + size * 0.05 - th,
+            tw,
+            th
+        );
+
+        return;
+    }
+
     /* みき */
     c.fillStyle = "#c9a27e";
     c.fillRect(x - size * 0.08, y - size * 0.35, size * 0.16, size * 0.4);
@@ -5946,6 +6349,35 @@ function drawTree(c, x, y, size) {
 
 
 function drawFlower(c, x, y, r, color) {
+
+    /* 画像のお花（位置ごとに、決まった1枚を使う） */
+    const list =
+        ["flower1", "flower2", "flower3"].filter(imgReady);
+
+    if (list.length > 0) {
+
+        const fi =
+            IMAGES[
+                list[
+                    Math.abs(
+                        Math.floor(x * 3 + y * 7)
+                    ) % list.length
+                ]
+            ];
+
+        const fw = r * 3.6 * 1.25;
+        const fh = fw * fi.naturalHeight / fi.naturalWidth;
+
+        c.drawImage(
+            fi,
+            x - fw / 2,
+            y - fh / 2,
+            fw,
+            fh
+        );
+
+        return;
+    }
 
     c.fillStyle = color;
 
@@ -6000,22 +6432,41 @@ function buildBackground(w, h) {
     const sunX = w * 0.82;
     const sunY = h * 0.1;
 
-    const sunGlow =
-        c.createRadialGradient(
-            sunX, sunY, 6,
-            sunX, sunY, 70
+    if (imgReady("sun")) {
+
+        /* 画像の太陽（光のぼかしも含めて 約140px） */
+        const si = IMAGES.sun;
+
+        const sw = 140;
+        const sh = sw * si.naturalHeight / si.naturalWidth;
+
+        c.drawImage(
+            si,
+            sunX - sw / 2,
+            sunY - sh / 2,
+            sw,
+            sh
         );
 
-    sunGlow.addColorStop(0, "rgba(255,236,160,0.9)");
-    sunGlow.addColorStop(1, "rgba(255,236,160,0)");
+    } else {
 
-    c.fillStyle = sunGlow;
-    c.fillRect(0, 0, w, h * 0.3);
+        const sunGlow =
+            c.createRadialGradient(
+                sunX, sunY, 6,
+                sunX, sunY, 70
+            );
 
-    c.fillStyle = "#ffe596";
-    c.beginPath();
-    c.arc(sunX, sunY, 24, 0, Math.PI * 2);
-    c.fill();
+        sunGlow.addColorStop(0, "rgba(255,236,160,0.9)");
+        sunGlow.addColorStop(1, "rgba(255,236,160,0)");
+
+        c.fillStyle = sunGlow;
+        c.fillRect(0, 0, w, h * 0.3);
+
+        c.fillStyle = "#ffe596";
+        c.beginPath();
+        c.arc(sunX, sunY, 24, 0, Math.PI * 2);
+        c.fill();
+    }
 
     /* ---------- とおくの丘 ---------- */
 
@@ -6150,6 +6601,25 @@ function buildBackground(w, h) {
 
 function drawCloud(x, y, scale) {
 
+    /* 画像の雲 */
+    if (imgReady("cloud")) {
+
+        const ci = IMAGES.cloud;
+
+        const cw = 80 * scale;
+        const ch = cw * ci.naturalHeight / ci.naturalWidth;
+
+        ctx.drawImage(
+            ci,
+            x + 20 * scale - cw / 2,
+            y - ch / 2,
+            cw,
+            ch
+        );
+
+        return;
+    }
+
     ctx.fillStyle = "rgba(255,255,255,0.92)";
 
     ctx.beginPath();
@@ -6171,6 +6641,58 @@ function drawCloud(x, y, scale) {
    ノーツ（紙で作ったカードのような長方形）
 ========================================================= */
 
+/* 画像ノーツの表示サイズ（丸の直径に対する倍率） */
+const NOTE_IMAGE_SCALE = 200 / 180;
+
+/* 画像の中心を、上下にずらしたいとき用（0のままでOK） */
+const NOTE_IMAGE_OFFSET_Y = 0;
+
+
+/* どの画像を使うか */
+function noteImageKey(palette, symbol) {
+
+    if (palette === NOTE_COLORS.tap) return "note";
+
+    if (palette === NOTE_COLORS.flick) return "flick";
+
+    if (palette === NOTE_COLORS.long) return "hold";
+
+    if (palette === NOTE_COLORS.slide) {
+
+        if (symbol && symbol.indexOf("◀") === 0) return "slide_left";
+
+        if (symbol && symbol.indexOf("▶") === 0) return "slide_right";
+
+        return "slide_end";
+    }
+
+    return null;
+}
+
+
+function drawNoteImage(g, key, cx, cy, s, alpha) {
+
+    const img = IMAGES[key];
+
+    const w = g.noteW * NOTE_IMAGE_SCALE * s;
+    const h = w * img.naturalHeight / img.naturalWidth;
+
+    ctx.save();
+
+    ctx.globalAlpha = alpha;
+
+    ctx.drawImage(
+        img,
+        cx - w / 2,
+        cy - h / 2 + NOTE_IMAGE_OFFSET_Y * s,
+        w,
+        h
+    );
+
+    ctx.restore();
+}
+
+
 function drawNote3D(
     g,
     cx,
@@ -6181,6 +6703,16 @@ function drawNote3D(
     symbol,
     alpha
 ) {
+
+    /* 画像があれば、画像で描く */
+    const imageKey = noteImageKey(palette, symbol);
+
+    if (imageKey && imgReady(imageKey)) {
+
+        drawNoteImage(g, imageKey, cx, cy, s, alpha);
+
+        return;
+    }
 
     /* 丸ノーツ（向きは関係ないので rot は使いません） */
     const r = g.noteW * 0.5 * s;
@@ -6423,7 +6955,7 @@ function drawStage(
 
     /* ---------- 背景（キャッシュ） ---------- */
 
-    const key = w + "x" + h;
+    const key = w + "x" + h + "v" + bgVersion;
 
     if (!bgCache || bgCacheKey !== key) {
 
@@ -6504,6 +7036,35 @@ function drawStage(
 
     ctx.fillStyle = fanGrad;
     ctx.fill();
+
+    /* 画像の道：扇の形に切り抜いて、女の子の足元から下へ敷く */
+    if (imgReady("road")) {
+
+        const ri = IMAGES.road;
+
+        const rs =
+            Math.max(
+                w / ri.naturalWidth,
+                (h + 40 - O.y) / ri.naturalHeight
+            );
+
+        const rw = ri.naturalWidth * rs;
+        const rh = ri.naturalHeight * rs;
+
+        ctx.save();
+
+        ctx.clip();
+
+        ctx.drawImage(
+            ri,
+            O.x - rw / 2,
+            O.y,
+            rw,
+            rh
+        );
+
+        ctx.restore();
+    }
 
     /* ふち（ぬい目） */
     ctx.lineJoin = "round";
@@ -6719,6 +7280,24 @@ function drawGirl(g) {
     const bob =
         Math.sin(animTimer * 2) * 4;
 
+    if (imgReady("mound")) {
+
+        /* 画像のマウンド（足元が中央） */
+        const mi = IMAGES.mound;
+
+        const mw = 160;
+        const mh = mw * mi.naturalHeight / mi.naturalWidth;
+
+        ctx.drawImage(
+            mi,
+            g.cx - mw / 2,
+            feetY - mh / 2,
+            mw,
+            mh
+        );
+
+    } else {
+
     /* 草の小さな丘 */
 
     ctx.fillStyle = "#b5dc98";
@@ -6760,6 +7339,8 @@ function drawGirl(g) {
         Math.PI * 2
     );
     ctx.fill();
+
+    }
 
     if (
         girlImg.complete &&
