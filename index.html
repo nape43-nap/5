@@ -999,6 +999,33 @@ html {
     50% { opacity: 1; transform: scale(1.2); }
 }
 
+
+/* =========================================================
+   READY画面：ジャケットの枠（画像を重ねる）
+========================================================= */
+
+.credit-jacket-wrap {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin-bottom: 20px;
+}
+
+.credit-jacket-wrap .credit-jacket-large {
+    margin-bottom: 0;
+}
+
+.credit-jacket-frame {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 160px;
+    height: 160px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
 </style>
 
 </head>
@@ -1128,11 +1155,21 @@ html {
     class="screen hidden"
 >
 
-    <div
+    <div class="credit-jacket-wrap">
+
+        <div
         class="credit-jacket-large"
         id="credit-jacket-icon"
     >
         🎵
+    </div>
+
+        <img
+            class="credit-jacket-frame"
+            id="credit-jacket-frame"
+            alt=""
+        >
+
     </div>
 
 
@@ -1621,7 +1658,18 @@ const IMAGE_FILES = {
     hold: "hold.PNG",
     slide_left: "slide_left.PNG",
     slide_right: "slide_right.PNG",
-    slide_end: "slide_end.PNG"
+    slide_end: "slide_end.PNG",
+
+    /* READY・リザルト画面 */
+    ready_bg: "ready_bg.PNG",
+    ready_jacket_frame: "ready_jacket_frame.PNG",
+    ready_text: "ready_text.PNG",
+
+    result_bg: "result_bg.PNG",
+    result_card: "result_card.PNG",
+    result_btn_retry: "result_btn_retry.PNG",
+    result_btn_back: "result_btn_back.PNG",
+    rank_badge: "rank_badge.PNG"
 };
 
 /* 背景に使う画像（読み込めたら、背景を作り直す） */
@@ -1642,6 +1690,8 @@ for (const key in IMAGE_FILES) {
 
             bgVersion++;
         }
+
+        applyScreenImages();
     };
 
     img.src = IMAGE_DIR + IMAGE_FILES[key];
@@ -1659,6 +1709,124 @@ function imgReady(key) {
         img.naturalWidth > 0
     );
 }
+
+/* =========================================================
+   READY・リザルト画面の画像
+
+   画像が読み込めたものだけ、画像に差し替えます。
+   （読み込めなければ、これまでの見た目のままです）
+========================================================= */
+
+function imgUrl(key) {
+
+    return 'url("' + IMAGE_DIR + IMAGE_FILES[key] + '")';
+}
+
+
+/* 画面いっぱいの背景 */
+function setScreenBg(id, key) {
+
+    const el = document.getElementById(id);
+
+    if (!el || !imgReady(key)) return;
+
+    el.style.backgroundColor = "transparent";
+    el.style.backgroundImage = imgUrl(key);
+    el.style.backgroundSize = "cover";
+    el.style.backgroundPosition = "center";
+    el.style.backgroundRepeat = "no-repeat";
+}
+
+
+/* ボタンの絵（文字は絵の中に描く） */
+function setImageButton(el, key) {
+
+    if (!el || !imgReady(key)) return;
+
+    el.style.backgroundColor = "transparent";
+    el.style.backgroundImage = imgUrl(key);
+    el.style.backgroundSize = "100% 100%";
+    el.style.backgroundRepeat = "no-repeat";
+    el.style.boxShadow = "none";
+    el.style.color = "transparent";
+    el.style.padding = "0";
+    el.style.height = "44px";
+}
+
+
+function applyScreenImages() {
+
+    /* 背景 */
+    setScreenBg("credit-screen", "ready_bg");
+    setScreenBg("result-screen", "result_bg");
+
+    /* READY：ジャケットの枠 */
+    const frame = document.getElementById("credit-jacket-frame");
+    const jacket = document.getElementById("credit-jacket-icon");
+
+    if (frame && imgReady("ready_jacket_frame")) {
+
+        const path = IMAGE_DIR + IMAGE_FILES.ready_jacket_frame;
+
+        if (frame.getAttribute("src") !== path) {
+
+            frame.setAttribute("src", path);
+        }
+
+        frame.style.display = "block";
+
+        if (jacket) jacket.style.border = "none";
+    }
+
+    /* READY：READY...♪ の文字 */
+    const readyText =
+        document.querySelector("#credit-screen .ready-text");
+
+    if (readyText && imgReady("ready_text")) {
+
+        readyText.style.fontSize = "0";
+        readyText.style.color = "transparent";
+        readyText.style.width = "200px";
+        readyText.style.height = "60px";
+        readyText.style.backgroundImage = imgUrl("ready_text");
+        readyText.style.backgroundSize = "contain";
+        readyText.style.backgroundRepeat = "no-repeat";
+        readyText.style.backgroundPosition = "center";
+    }
+
+    /* リザルト：カード */
+    const panel =
+        document.querySelector("#result-screen .result-panel");
+
+    if (panel && imgReady("result_card")) {
+
+        panel.style.backgroundColor = "transparent";
+        panel.style.backgroundImage = imgUrl("result_card");
+        panel.style.backgroundSize = "100% 100%";
+        panel.style.backgroundRepeat = "no-repeat";
+        panel.style.border = "none";
+        panel.style.boxShadow = "none";
+    }
+
+    /* リザルト：ボタン */
+    const buttons =
+        document.querySelectorAll("#result-screen .result-btn");
+
+    setImageButton(buttons[0], "result_btn_retry");
+    setImageButton(buttons[1], "result_btn_back");
+
+    /* リザルト：ランクのまる（文字はそのまま上に出ます） */
+    const rank = document.getElementById("result-rank");
+
+    if (rank && imgReady("rank_badge")) {
+
+        rank.style.backgroundColor = "transparent";
+        rank.style.backgroundImage = imgUrl("rank_badge");
+        rank.style.backgroundSize = "100% 100%";
+        rank.style.backgroundRepeat = "no-repeat";
+    }
+}
+
 
 /* 女の子：imagesフォルダに無ければ、以前の場所（girl.png）も探す */
 const girlImg = IMAGES.girl;
@@ -6641,6 +6809,9 @@ function drawCloud(x, y, scale) {
    ノーツ（紙で作ったカードのような長方形）
 ========================================================= */
 
+/* 画像の道のとき、左右のふちの線を出すか（出さない = false） */
+const SHOW_ROAD_EDGE_WITH_IMAGE = false;
+
 /* 画像ノーツの表示サイズ（丸の直径に対する倍率） */
 const NOTE_IMAGE_SCALE = 200 / 180;
 
@@ -7066,22 +7237,27 @@ function drawStage(
         ctx.restore();
     }
 
-    /* ふち（ぬい目） */
-    ctx.lineJoin = "round";
+    /* ふち（ぬい目）
+       画像の道（road.PNG）のときは、ふちの線を出しません。
+       出したいときは、SHOW_ROAD_EDGE_WITH_IMAGE を true にしてください */
+    if (!imgReady("road") || SHOW_ROAD_EDGE_WITH_IMAGE) {
 
-    ctx.strokeStyle = "#d9b48c";
-    ctx.lineWidth = 6;
-    ctx.stroke();
+        ctx.lineJoin = "round";
 
-    ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+        ctx.strokeStyle = "#d9b48c";
+        ctx.lineWidth = 6;
+        ctx.stroke();
 
-    ctx.setLineDash([7, 7]);
-    ctx.strokeStyle = "#fffdf9";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.setLineDash([]);
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.setLineDash([7, 7]);
+        ctx.strokeStyle = "#fffdf9";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
 
     /* ---------- 押している道をほんのり光らせる ---------- */
 
